@@ -1,0 +1,78 @@
+.square0 {
+	background-image: url("pic/1.png");
+	background-size: contain;
+	background-color:rgb(258,221,206); 
+}
+
+.square1 {
+	background-image: url("pic/2.png");
+	background-size: contain;
+	background-color:rgb(258,221,206); 
+}
+
+.square2 {
+	background-image: url("pic/3.png");
+	background-size: contain;
+	background-color:rgb(258,221,206); 
+}
+.square3 {
+	background-image: url("pic/4.png");
+	background-size: contain;
+	background-color:rgb(258,221,206); 
+}
+.square4 {
+	background-image: url("pic/5.png");
+	background-size: contain;
+	background-color:rgb(258,221,206); 
+}
+.square5 {
+	background-image: url("pic/6.png");
+	background-size: contain;
+	background-color:rgb(258,221,206); 
+}
+
+.picked {
+	box-shadow: 1px 1px 1px 1px #02FFD6;
+}
+
+#viewport {
+	text-align:center;
+	color:black;	
+	background-color:rgb(258,221,206); 
+	font-family: cursive;
+}
+
+.help{
+	text-align:center;
+}
+
+#tutorial {
+	border-radius: 5px;
+	background-color:#7FFFD4;
+}
+
+.help .tutorial{
+	font-size:32px;
+	font-weight:bold;
+}
+
+.help .time{
+	font-size:20px;
+	margin-top:auto;
+	margin-bottom:auto;
+}
+
+.help .score{
+	font-size:15px;
+	margin-top:auto;
+	margin-bottom:auto;
+}
+
+.tutorialboardOn {
+	background-color:rgb(258,221,206); 
+}
+
+.tutorialboardOff {
+	background-color:rgb(0,0,0);
+}
+
