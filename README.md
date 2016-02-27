@@ -1,5 +1,4 @@
-Square-html5
+﻿My Blog
 ===============
-html5 game
+Square game http://dashyang.github.io/square.html
 
-在途中寻找找四个角颜色一致的矩形，选择对角的两个方块消去整个矩形，在规定时间内得到最大分数！
