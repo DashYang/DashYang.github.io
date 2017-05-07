@@ -1,0 +1,458 @@
+<!doctype html>
+<html class="no-js" lang="" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- Place favicon.ico in the root directory -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="js/vendor/modernizr-2.8.3.min.js"></script>
+</head>
+<body>
+<!--[if lt IE 8]>
+<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade
+    your browser</a> to improve your experience.</p>
+<![endif]-->
+
+<!-- Add your site or application content here -->
+
+<div class="container">
+    <div class="row">
+        <p>Hello world! This is HTML5 Boilerplate.</p>
+    </div>
+    <div class="row">
+        <div id="player1" class="col-md-6 player-status targetHero" style=border-style:groove>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="col-md-11">
+                        <h4>等级:</h4>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select id="player1-level" class="form-control level">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                        <option>11</option>
+                        <option>12</option>
+                        <option>13</option>
+                        <option>14</option>
+                        <option>15</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div id="player1-avatar" class="col-md-11 avatar">
+                        <a id="heroImage">
+                            <img src="http://game.gtimg.cn/images/yxzj/img201606/heroimg/166/166.jpg" width="91px"
+                                 alt="亚瑟">亚瑟
+                        </a>
+                    </div>
+                    <div id="player1-itemList" class="col-md-11 itemList">
+                        <h4>装备栏</h4>
+                        <ul>
+                            <li>
+                            </li>
+                            <li>
+                            </li>
+                            <li>
+                            </li>
+                            <li>
+                            </li>
+                            <li>
+                            </li>
+                            <li>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">基本信息</div>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>物理攻击:<span id="player1-attackDamage">167</span></td>
+                                <td>法术攻击:<span id="player1-abilityPower">2</span></td>
+                            </tr>
+                            <tr>
+                                <td>最大生命:<span id="player1-maxHp">3824</span></td>
+                                <td>最大法力:<span id="player1-maxMp">0</span></td>
+                            </tr>
+                            <tr>
+                                <td>物理防御:<span id="player1-attackShield">101</span></td>
+                                <td>法术防御:<span id="player1-abilityShield">55</span></td>
+                            </tr>
+                            <tr>
+                                <td>攻速加成:<span id="player1-attackSpeedBonus">1</span>%</td>   <!-- 作用不明显-->
+                                <td>冷却缩减:<span id="player1-coolDownSpeed">0</span>%</td>
+                            </tr>
+
+                            <tr>
+                                <td>暴击几率:<span id="player1-criticalStrike">0.5</span>%</td>
+                                <td>移速:<span id="player1-speed">390</span></td>
+                            </tr>
+                            <tr>
+                                <td>每5s回血:<span id="player1-healUp">87</span></td>
+                                <td>每5s回蓝:<span id="player1-powerUp">0</span></td>
+                            </tr>
+                            <tr>
+                                <td>物理穿透:<span id="player1-piercingAttack">87</span></td>
+                                <td>法术穿透:<span id="player1-piercingAbility">0</span></td>
+                            </tr>
+                            <tr>
+                                <td>物理吸血:<span id="player1-lifeSteal">0</span>%</td>
+                                <td>法术吸血:<span id="player1-spellVamp">0.6%</span></td>
+                            </tr>
+                            <tr>
+                                <td>攻击范围:<span id="player1-isArcher">近程</span></td>
+                                <td>韧性:<span id="player1-toughness">35</span>%</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="panel panel-success">
+                        <div class="panel-heading">对战信息</div>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>对玩家2单次攻击造成的伤害:<span id="player1-damage"></span></td>
+                            </tr>
+                            <tr>
+                                <td>对玩家2所需造成的普攻次数:<span id="player1-combo"></span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="player2" class="col-md-6 player-status" style=border-style:groove>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="col-md-11">
+                        <h4>等级:</h4>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select id="player2-level" class="form-control level">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                        <option>6</option>
+                        <option>7</option>
+                        <option>8</option>
+                        <option>9</option>
+                        <option>10</option>
+                        <option>11</option>
+                        <option>12</option>
+                        <option>13</option>
+                        <option>14</option>
+                        <option>15</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div id="player2-avatar" class="col-md-11 avatar">
+                        <a>
+                            <img src="http://game.gtimg.cn/images/yxzj/img201606/heroimg/166/166.jpg" width="91px"
+                                 alt="亚瑟">亚瑟
+                        </a>
+                    </div>
+                    <div id="player2-itemList" class="col-md-11 itemList">
+                        <h4>装备栏</h4>
+                        <ul>
+                            <li>
+                            </li>
+                            <li>
+                            </li>
+                            <li>
+                            </li>
+                            <li>
+                            </li>
+                            <li>
+                            </li>
+                            <li>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">基本信息</div>
+                        <table class="table table-striped">
+                            <tr>
+                                <td>物理攻击:<span id="player2-attackDamage">167</span></td>
+                                <td>法术攻击:<span id="player2-abilityPower">2</span></td>
+                            </tr>
+                            <tr>
+                                <td>最大生命:<span id="player2-maxHp">3824</span></td>
+                                <td>最大法力:<span id="player2-maxMp">0</span></td>
+                            </tr>
+                            <tr>
+                                <td>物理防御:<span id="player2-attackShield">101</span></td>
+                                <td>法术防御:<span id="player2-abilityShield">55</span></td>
+                            </tr>
+                            <tr>
+                                <td>攻速加成:<span id="player2-attackSpeedBonus">1</span>%</td>   <!-- 作用不明显-->
+                                <td>冷却缩减:<span id="player2-coolDownSpeed">0</span>%</td>
+                            </tr>
+
+                            <tr>
+                                <td>暴击几率:<span id="player2-criticalStrike">0.5</span>%</td>
+                                <td>移速:<span id="player2-speed">390</span></td>
+                            </tr>
+                            <tr>
+                                <td>每5s回血:<span id="player2-healUp">87</span></td>
+                                <td>每5s回蓝:<span id="player2-powerUp">0</span></td>
+                            </tr>
+                            <tr>
+                                <td>物理穿透:<span id="player2-piercingAttack">87</span></td>
+                                <td>法术穿透:<span id="player2-piercingAbility">0</span></td>
+                            </tr>
+                            <tr>
+                                <td>物理吸血:<span id="player2-lifeSteal">0</span>%</td>
+                                <td>法术吸血:<span id="player2-spellVamp">0.6%</span></td>
+                            </tr>
+                            <tr>
+                                <td>攻击范围:<span id="player2-isArcher">近程</span></td>
+                                <td>韧性:<span id="player2-toughness">35</span>%</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="panel panel-success">
+                        <div class="panel-heading">对战信息</div>
+                        <table class="table table-striped">
+                            <tr>
+                                <td colspan="2">对玩家1单次攻击造成的伤害:<span id="player2-damage"></span></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">对玩家1所需造成的普攻次数:<span id="player2-combo"></span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="shop" class="row ">
+        <div id="displayBoard" class="col-md-12" style=border-style:groove>
+            <h4>物品列表</h4>
+            <ul class="itemShop">
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1327.jpg" width="50px" alt="反伤刺甲">反伤刺甲</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1328.jpg" width="50px" alt="血魔之怒">血魔之怒</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1331.jpg" width="50px" alt="红莲斗篷">红莲斗篷</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1332.jpg" width="50px" alt="霸者重装">霸者重装</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1333.jpg" width="50px" alt="不祥征兆">不祥征兆</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1334.jpg" width="50px" alt="不死鸟之眼">不死鸟之眼</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1335.jpg" width="50px" alt="魔女斗篷">魔女斗篷</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1336.jpg" width="50px" alt="极寒风暴">极寒风暴</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/13310.jpg" width="50px" alt="冰痕之握">冰痕之握</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1337.jpg" width="50px" alt="贤者的庇护">贤者的庇护</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1338.jpg" width="50px" alt="暴烈之甲">暴烈之甲</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1421.jpg" width="50px" alt="影忍之足">影忍之足</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1422.jpg" width="50px" alt="抵抗之靴">抵抗之靴</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1423.jpg" width="50px" alt="冷静之靴">冷静之靴</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1424.jpg" width="50px" alt="秘法之靴">秘法之靴</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1425.jpg" width="50px" alt="急速战靴">急速战靴</a>
+                </li>
+                <li><a><img
+                    src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1426.jpg" width="50px" alt="疾步之靴">疾步之靴</a>
+                </li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1131.jpg" width="50px"
+                            alt="破甲弓">破甲弓</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1126.jpg" width="50px"
+                            alt="末世">末世</a>
+                </li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1127.jpg" width="50px"
+                            alt="名刀·司命">名刀·司命</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1128.jpg" width="50px"
+                            alt="冰霜长矛">冰霜长矛</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/11210.jpg" width="50px"
+                            alt="制裁之刃">制裁之刃</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1132.jpg" width="50px"
+                            alt="泣血之刃">泣血之刃</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1133.jpg" width="50px"
+                            alt="无尽战刃">无尽战刃</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1134.jpg" width="50px"
+                            alt="宗师之力">宗师之力</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1135.jpg" width="50px"
+                            alt="闪电匕首">闪电匕首</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1136.jpg" width="50px"
+                            alt="影刃">影刃</a>
+                </li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1137.jpg" width="50px"
+                            alt="暗影战斧">暗影战斧</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1138.jpg" width="50px"
+                            alt="破军">破军</a>
+                </li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/11311.jpg" width="50px"
+                            alt="纯净苍穹">纯净苍穹</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/91040.jpg" width="50px"
+                            alt="逐日之弓">逐日之弓</a></li>
+                <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/itemimg/1125.jpg" width="50px"
+                            alt="破魔刀">破魔刀</a></li>
+            </ul>
+        </div>
+    </div>
+    <div id="heroListModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">英雄列表</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#archer" aria-controls="archer" role="tab"
+                                                                      data-toggle="tab">射手</a></li>
+                            <li role="presentation"><a href="#assassin" aria-controls="assassin" role="tab"
+                                                       data-toggle="tab">刺客</a></li>
+                            <li role="presentation"><a href="#tank" aria-controls="tank" role="tab"
+                                                       data-toggle="tab">坦克</a></li>
+                            <li role="presentation"><a href="#fighter" aria-controls="fighter" role="tab"
+                                                       data-toggle="tab">战士</a></li>
+                        </ul>
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane active" id="archer">
+                                <ul class="heroList">
+                                    <li><a><img
+                                        src='http://game.gtimg.cn/images/yxzj/img201606/heroimg/132/132.jpg'
+                                        width='91px' alt='马可波罗'>马可波罗</a></li>
+                                    <li><a><img
+                                        src='http://game.gtimg.cn/images/yxzj/img201606/heroimg/174/174.jpg'
+                                        width='91px' alt='虞姬'>虞姬</a></li>
+                                    <li><a><img
+                                        src='http://game.gtimg.cn/images/yxzj/img201606/heroimg/169/169.jpg'
+                                        width='91px' alt='后羿'>后羿</a></li>
+                                    <li><a><img
+                                        src='http://game.gtimg.cn/images/yxzj/img201606/heroimg/133/133.jpg'
+                                        width='91px' alt='狄仁杰'>狄仁杰</a></li>
+                                    <li><a><img
+                                        src='http://game.gtimg.cn/images/yxzj/img201606/heroimg/112/112.jpg'
+                                        width='91px' alt='鲁班七号'>鲁班七号</a></li>
+                                    <li><a><img
+                                        src='http://game.gtimg.cn/images/yxzj/img201606/heroimg/111/111.jpg'
+                                        width='91px' alt='孙尚香'>孙尚香</a></li>
+                                    <li><a><img
+                                        src='http://game.gtimg.cn/images/yxzj/img201606/heroimg/170/170.jpg'
+                                        width='91px' alt='刘备'>刘备</a></li>
+                                    <li><a><img
+                                        src='http://game.gtimg.cn/images/yxzj/img201606/heroimg/173/173.jpg'
+                                        width='91px' alt='李元芳'>李元芳</a></li>
+                                </ul>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="assassin">
+                                <ul class="heroList">
+                                    <li><a><img
+                                        src="http://game.gtimg.cn/images/yxzj/img201606/heroimg/153/153.jpg"
+                                        width="91px" alt="兰陵王">兰陵王</a></li>
+                                    <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/heroimg/131/131.jpg"
+                                                width="91px" alt="李白">李白</a></li>
+                                </ul>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="tank">
+                                <ul class="heroList">
+                                    <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/heroimg/135/135.jpg"
+                                                width="91px" alt="项羽">项羽</a></li>
+                                    <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/heroimg/120/120.jpg"
+                                                width="91px" alt="白起">白起</a></li>
+                                    <li><a><img src="http://game.gtimg.cn/images/yxzj/img201606/heroimg/149/149.jpg"
+                                                width="91px" alt="刘邦">刘邦</a></li>
+                                </ul>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="fighter">
+                                <ul class="heroList">
+                                    <li><a><img
+                                        src="http://game.gtimg.cn/images/yxzj/img201606/heroimg/163/163.jpg"
+                                        width="91px" alt="橘右京">橘右京</a></li>
+                                    <li><a><img
+                                        src="http://game.gtimg.cn/images/yxzj/img201606/heroimg/166/166.jpg"
+                                        width="91px" alt="亚瑟">亚瑟</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+</div>
+<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.12.0.min.js"><\/script>')</script>
+<script src="js/plugins.js"></script>
+<script src="js/main.js"></script>
+<script src="js/heroList.js"></script>
+<script src="js/itemList.js"></script>
+
+<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+<script>
+    (function (b, o, i, l, e, r) {
+        b.GoogleAnalyticsObject = l;
+        b[l] || (b[l] =
+            function () {
+                (b[l].q = b[l].q || []).push(arguments)
+            });
+        b[l].l = +new Date;
+        e = o.createElement(i);
+        r = o.getElementsByTagName(i)[0];
+        e.src = 'https://www.google-analytics.com/analytics.js';
+        r.parentNode.insertBefore(e, r)
+    }(window, document, 'script', 'ga'));
+    ga('create', 'UA-XXXXX-X', 'auto');
+    ga('send', 'pageview');
+</script>
+</body>
+</html>
