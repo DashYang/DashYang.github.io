@@ -205,7 +205,7 @@ function Hero(name) {
 
         if(isHeroHasWeaponNamed(this, itemMap["秘法之靴"])) {
             heroInformation.speed += 60;
-            heroInformation.toughness += 35;
+            heroInformation.piercingAbility += 75;
         }
 
         if(isHeroHasWeaponNamed(this, itemMap["急速战靴"])) {
@@ -276,7 +276,7 @@ function normalAttackFromAttackerToDefender(attacker, defender) {
     var percentDamageAvoiding = 0;    //百分比伤害减免
     var extraAttackDamageBonus = 0;
     var abilityAttackDamageBonus = 0;
-    //TODO 唯一被动的效果
+    //唯一被动的效果
     if(isHeroHasWeaponNamed(attacker, itemMap["破甲弓"])) {
         percentShieldDecreasing += 45;
     }

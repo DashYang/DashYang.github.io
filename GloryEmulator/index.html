@@ -23,19 +23,28 @@
 <!-- Add your site or application content here -->
 
 <div class="container">
-    <div class="row">
-        <div class="board">
-            <strong class="text-success">荣耀模拟</strong>是一个为王者荣耀中英雄普攻伤害进行简单模拟的工具，点击英雄头像可以更换英雄。点击英雄面板，待面板高亮
-            显示后可以通过单击物品列表提供的装备，对特定英雄进行装备的添加，点击装备栏的装备可以卸下对应的装备。还可以选择相应的英雄等级从而查看
-            英雄的成长情况。对战信息中的攻击力的计算如下:
-            <p class="text-center text-primary">最低攻击力=初始攻击力 * 护甲减免系数 * 免伤系数</p>
-            <p class="text-center text-primary">最大攻击力 =(初始攻击力 + 暴击伤害加成 + 灭世的最大攻击加成 + 宗师之力和冰痕之握的攻击力加成) * 护甲减免系数 * 免伤系数 </p>
-            <p class="text-center text-primary">期望攻击力 =(初始攻击力 + 暴击伤害加成*暴击几率 + 灭世的最大攻击加成 * 0.5 + 宗师之力和冰痕之握的攻击力加成 * 0.5)
-                * 护甲减免系数 * 免伤系数 </p>
-            攻击次数考虑了末世和破军根据对手血量不同的攻击力变化情况，并未考虑<mark class="text-info">自动回血</mark>和<mark class=
-            "text-info">攻击吸血</mark>的生命恢复情况。<br>
-            <p class="text-danger">由于官网对于某些属性没给出具体数值以及随机因素的存在，以下计算结果只做参考，切勿盲目迷信！<p>
+    <div class="row"><div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headingOne">
+            <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    点击显示使用说明
+                </a>
+            </h4>
         </div>
+        <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+            <div class="panel-body">
+                <strong class="text-success">荣耀模拟</strong>是一个为王者荣耀中英雄普攻伤害进行简单模拟的工具，点击英雄头像可以更换英雄。点击英雄面板，待面板高亮
+                显示后可以通过单击物品列表提供的装备，对特定英雄进行装备的添加，点击装备栏的装备可以卸下对应的装备。还可以选择相应的英雄等级从而查看英雄的成长情况。对战信息中的攻击力的计算如下:
+                <p class="text-center text-primary">最低攻击力=初始攻击力 * 护甲减免系数 * 免伤系数</p>
+                <p class="text-center text-primary">最大攻击力 =(初始攻击力 + 暴击伤害加成 + 灭世的最大攻击加成 + 宗师之力和冰痕之握的攻击力加成) * 护甲减免系数 * 免伤系数 </p>
+                <p class="text-center text-primary">期望攻击力 =(初始攻击力 + 暴击伤害加成*暴击几率 + 灭世的最大攻击加成 * 0.5 + 宗师之力和冰痕之握的攻击力加成 * 0.5)
+                    * 护甲减免系数 * 免伤系数 </p>
+                攻击次数考虑了末世和破军根据对手血量不同的攻击力变化情况，并未考虑<mark class="text-info">自动回血</mark>和<mark class=
+                                                                                                   "text-info">攻击吸血</mark>的生命恢复情况。<br>
+                <p class="text-danger">由于官方没有给出某些具体数值以及随机因素的存在，以下计算结果只做参考，切勿盲目迷信！<p>
+            </div>
+        </div>
+     </div>
     </div>
     <div class="row">
         <div id="player1" class="col-md-6 player-status targetHero" style=border-style:groove>
