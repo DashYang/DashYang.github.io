@@ -155,6 +155,7 @@ a:hover {
 .heroList li {
     float: left;
     width: 91px;
+    margin: 1px;
 }
 
 .heroList ul {

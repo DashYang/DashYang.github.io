@@ -24,7 +24,18 @@
 
 <div class="container">
     <div class="row">
-        <p>Hello world! This is HTML5 Boilerplate.</p>
+        <div class="board">
+            <strong class="text-success">荣耀模拟</strong>是一个为王者荣耀中英雄普攻伤害进行简单模拟的工具，点击英雄头像可以更换英雄。点击英雄面板，待面板高亮
+            显示后可以通过单击物品列表提供的装备，对特定英雄进行装备的添加，点击装备栏的装备可以卸下对应的装备。还可以选择相应的英雄等级从而查看
+            英雄的成长情况。对战信息中的攻击力的计算如下:
+            <p class="text-center text-primary">最低攻击力=初始攻击力 * 护甲减免系数 * 免伤系数</p>
+            <p class="text-center text-primary">最大攻击力 =(初始攻击力 + 暴击伤害加成 + 灭世的最大攻击加成 + 宗师之力和冰痕之握的攻击力加成) * 护甲减免系数 * 免伤系数 </p>
+            <p class="text-center text-primary">期望攻击力 =(初始攻击力 + 暴击伤害加成*暴击几率 + 灭世的最大攻击加成 * 0.5 + 宗师之力和冰痕之握的攻击力加成 * 0.5)
+                * 护甲减免系数 * 免伤系数 </p>
+            攻击次数考虑了末世和破军根据对手血量不同的攻击力变化情况，并未考虑<mark class="text-info">自动回血</mark>和<mark class=
+            "text-info">攻击吸血</mark>的生命恢复情况。<br>
+            <p class="text-danger">由于官网对于某些属性没给出具体数值以及随机因素的存在，以下计算结果只做参考，切勿盲目迷信！<p>
+        </div>
     </div>
     <div class="row">
         <div id="player1" class="col-md-6 player-status targetHero" style=border-style:groove>
@@ -359,6 +370,8 @@
                                                        data-toggle="tab">坦克</a></li>
                             <li role="presentation"><a href="#fighter" aria-controls="fighter" role="tab"
                                                        data-toggle="tab">战士</a></li>
+                            <li role="presentation"><a href="#monster" aria-controls="monster" role="tab"
+                                                       data-toggle="tab">野怪</a></li>
                         </ul>
                         <!-- Tab panes -->
                         <div class="tab-content">
@@ -417,6 +430,19 @@
                                     <li><a><img
                                         src="http://game.gtimg.cn/images/yxzj/img201606/heroimg/166/166.jpg"
                                         width="91px" alt="亚瑟">亚瑟</a></li>
+                                </ul>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="monster">
+                                <ul class="heroList">
+                                    <li><a><img
+                                            src="http://img.mp.itc.cn/upload/20160928/a1e0d1c79383422fa8b250b11ec12be5_th.jpg"
+                                            width="91px" alt="主宰" height="91px">主宰</a></li>
+                                    <li><a><img
+                                            src="http://img.mp.itc.cn/upload/20160928/67b81d030aaf4a898283259776c94e54_th.jpg"
+                                            width="91px" alt="暴君" height="91px">暴君</a></li>
+                                    <li><a><img
+                                            src="http://img.mp.itc.cn/upload/20160928/67b81d030aaf4a898283259776c94e54_th.jpg"
+                                            width="91px" alt="黑暗暴君" height="91px">黑暗暴君</a></li>
                                 </ul>
                             </div>
                         </div>

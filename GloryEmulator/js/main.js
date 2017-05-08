@@ -137,11 +137,31 @@ function Hero(name) {
         }
 
         var heroInformation = new Property(this.name);
-        //TODO 最高加成限制
         heroInformation.attackDamage = attackDamage;
         heroInformation.abilityPower = abilityPower;
         heroInformation.maxHp = maxHp;
         heroInformation.maxMp = maxMp;
+
+        //主宰成长上限
+        if(this.name == "主宰") {
+            if(heroInformation.attackDamage > 990)
+                heroInformation.attackDamage =  990;
+            if(heroInformation.abilityPower > 990)
+                heroInformation.abilityPower = 990;
+            if(heroInformation.maxHp > 45000)
+                heroInformation.maxHp = 45000;
+        }
+
+        //黑暗暴君成长上限
+        if(this.name == "黑暗暴君") {
+            if(heroInformation.attackDamage > 810)
+                heroInformation.attackDamage =  810;
+            if(heroInformation.abilityPower > 810)
+                heroInformation.abilityPower = 810;
+            if(heroInformation.maxHp > 45000)
+                heroInformation.maxHp = 45000;
+        }
+
         heroInformation.attackShield = attackShield;
         heroInformation.abilityShield = abilityShield;
         heroInformation.attackSpeedBonus = attackSpeedBonus < 200 ? attackSpeedBonus : 200;
@@ -293,7 +313,7 @@ function normalAttackFromAttackerToDefender(attacker, defender) {
 
     //期望攻击力 基础攻击力 + 暴击期望加成（暴击加成 * 暴击几率） + 技能附带攻击力提升 * 0.5
     var expectedAttackDamage = (attackDamage + criticalDamageBonus * 1.0 * attackerProperty.criticalStrike / 100 ) +
-        abilityAttackDamageBonus * 0.5;
+        abilityAttackDamageBonus * 0.5 + extraAttackDamageBonus * 0.5;
     expectedAttackDamage = avoidDamage(getDamageAfterShielding(expectedAttackDamage, realAttackShieldValue),percentDamageAvoiding);
 
     var harmProperty = new HarmProperty();

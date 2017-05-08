@@ -475,3 +475,59 @@ function copyJuyoujing() {
 
 heroMap['橘右京'] = copyJuyoujing;
 
+/** 暴君 **/
+function copyTyrant() {
+    var hero = new Hero("暴君");
+    hero.level = 1;
+    hero.maxHp = 9000;
+    hero.attackDamage = 204;
+    hero.abilityPower = 204
+    hero.attackShield = 183;
+    hero.abilityShield = 183;
+    hero.isArcher = false;
+
+    hero.increaseHp = 710;
+    hero.increaseAttackDamage = 14;
+    hero.increaseAbilityPower = 14;
+    return hero;
+}
+
+heroMap['暴君'] = copyTyrant;
+
+/** 黑暗暴君 **/
+function copyDarktyrant() {
+    var hero = new Hero("黑暗暴君");
+    hero.level = 1;
+    hero.maxHp = 42143;
+    hero.attackDamage = 784;
+    hero.abilityPower = 784
+    hero.attackShield = 183;
+    hero.abilityShield = 183;
+    hero.isArcher = false;
+
+    hero.increaseHp = 620;
+    hero.increaseAttackDamage = 25;
+    hero.increaseAbilityPower = 25;
+    return hero;
+}
+
+heroMap['黑暗暴君'] = copyDarktyrant;
+
+/** 主宰 **/
+function copyDominator() {
+    var hero = new Hero("主宰");
+    hero.level = 1;
+    hero.maxHp = 39303;
+    hero.attackDamage = 898;
+    hero.abilityPower = 898
+    hero.attackShield = 183;
+    hero.abilityShield = 183;
+    hero.isArcher = false;
+
+    hero.increaseHp = 1420;
+    hero.increaseAttackDamage = 30;
+    hero.increaseAbilityPower = 30;
+    return hero;
+}
+
+heroMap['主宰'] = copyDominator;
