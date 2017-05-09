@@ -338,13 +338,13 @@ function normalAttackFromAttackerToDefender(attacker, defender) {
     var currentHp = defenderProperty.maxHp;
     while(currentHp > 0) {
         var totalDamage = 0;
-        if(doomFlag == true)
-            currentHp -= Math.round(currentHp * 0.08);
         if(destructionFlag == true && currentHp <= defenderProperty.maxHp / 2) {
             totalDamage += Math.round(attackDamage * 1.3);
         } else {
             totalDamage += attackDamage;
         }
+        if(doomFlag == true && currentHp - totalDamage > 0)
+            totalDamage += Math.round((currentHp - totalDamage)* 0.08);
 
         currentHp -= avoidDamage(getDamageAfterShielding(totalDamage,realAttackShieldValue), percentDamageAvoiding) - 2;
         harmProperty.maxAttackNumber ++;
@@ -357,10 +357,13 @@ function normalAttackFromAttackerToDefender(attacker, defender) {
         if(doomFlag == true)
             currentHp -= Math.round(currentHp * 0.08);
         if(destructionFlag == true && currentHp <= defenderProperty.maxHp / 2) {
-            totalDamage += Math.round((attackDamage + criticalDamageBonus) * 1.3) + abilityAttackDamageBonus;
+            totalDamage += Math.round((attackDamage + criticalDamageBonus) * 1.3);
         } else {
-            totalDamage += attackDamage + criticalDamageBonus + abilityAttackDamageBonus;
+            totalDamage += attackDamage + criticalDamageBonus;
         }
+        if(doomFlag == true && currentHp - totalDamage > 0)
+            totalDamage += Math.round((currentHp - totalDamage)* 0.08);
+        totalDamage += abilityAttackDamageBonus;
         currentHp -= avoidDamage(getDamageAfterShielding(totalDamage,realAttackShieldValue), percentDamageAvoiding) + 2;
         harmProperty.minAttackNumber ++;
     }
@@ -370,18 +373,17 @@ function normalAttackFromAttackerToDefender(attacker, defender) {
     currentHp = defenderProperty.maxHp;
     while(currentHp > 0) {
         var totalDamage = 0;
-        if (doomFlag == true)
-            currentHp -= Math.round(currentHp * 0.08);
-        if (destructionFlag == true && currentHp <= defenderProperty.maxHp / 2) {
-            totalDamage += Math.round((attackDamage + expectedCriticalDamage) * 1.3) + Math.round(abilityAttackDamageBonus * 0.5);
+        if(destructionFlag == true && currentHp <= defenderProperty.maxHp / 2) {
+            totalDamage += Math.round((attackDamage + expectedCriticalDamage) * 1.3);
         } else {
-            totalDamage += attackDamage + expectedCriticalDamage + Math.round(abilityAttackDamageBonus * 0.5);
+            totalDamage += attackDamage + expectedCriticalDamage;
         }
-
+        if(doomFlag == true && currentHp - totalDamage > 0)
+            totalDamage += Math.round((currentHp - totalDamage)* 0.08);
+        totalDamage += Math.round(abilityAttackDamageBonus * 0.5);
         currentHp -= avoidDamage(getDamageAfterShielding(totalDamage,realAttackShieldValue), percentDamageAvoiding);
         harmProperty.expectedAttackNumber ++;
     }
-
     return harmProperty;
 
 }
