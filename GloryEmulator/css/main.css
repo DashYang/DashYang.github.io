@@ -116,6 +116,8 @@ a:hover {
 
 #displayBoard ul {
     list-style: none;
+    overflow:auto;
+    zoom:1;
 }
 
 #displayBoard ul li {
@@ -126,11 +128,17 @@ a:hover {
     height: 95px
 }
 
+.itemList {
+    overflow:auto;
+    zoom:1;
+}
+
 .itemList ul {
     list-style: none;
     width: 120px;
     margin-top: 20px;
     padding: 2px;
+    float:left;
 }
 
 .itemList ul li {
