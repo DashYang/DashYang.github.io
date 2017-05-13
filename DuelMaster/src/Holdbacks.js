@@ -26,11 +26,7 @@ var Holdbacks = ns.Holdbacks = Hilo.Class.create({
         this.height = properties.height;
 
         this.isRunning = false;
-        this.reset();
         this.createHoses(properties.image);
-        this.moveTween = new Hilo.Tween(this, null, {
-            onComplete: this.resetHoses.bind(this)
-        });
     },
 
     startX: 0, //障碍开始的起始x轴坐标
@@ -82,53 +78,6 @@ var Holdbacks = ns.Holdbacks = Hilo.Class.create({
         console.log("left point :(" + leftHose.x + ", " + leftHose.y + ")");
     },
 
-    resetHoses: function(){
-        var total = this.children.length;
-
-        //把已移出屏幕外的管子放到队列最后面，并重置它们的可穿越位置
-        for(var i = 0; i < this.numOffscreenHoses; i++){
-            var rightHose = this.getChildAt(0);
-            var leftHose = this.getChildAt(1);
-            this.setChildIndex(rightHose, total - 1);
-            this.setChildIndex(leftHose, total - 1);
-            this.placeHose(leftHose, rightHose, (this.passThrough) % 4);
-        }
-
-        //重新确定队列中所有管子的x轴坐标
-        for(var i = 0; i < total - this.numOffscreenHoses * 2; i++){
-            var hose = this.getChildAt(i);
-            hose.x = this.hoseWidth * (i * 0.5 >> 0);
-        }
-
-        //重新确定障碍的x轴坐标
-        this.x = 0;
-
-        //更新穿过的管子数量
-        this.passThrough += this.numOffscreenHoses;
-
-        //继续移动
-        this.startMove();
-    },
-
-    startMove: function(){
-        //设置缓动的x轴坐标
-        var targetX = -this.hoseWidth * this.numOffscreenHoses;
-        Hilo.Tween._tweens.push(this.moveTween);
-        //设置缓动时间
-        this.moveTween.duration = (this.x - targetX) * 4;
-        //设置缓动的变换属性，即x从当前坐标变换到targetX
-        this.moveTween.setProps({x:this.x}, {x:targetX});
-        //启动缓动动画
-        this.moveTween.start();
-        this.isRunning = true;
-    },
-
-    stopMove: function(){
-        if(this.moveTween) {
-            this.moveTween.pause();
-            this.isRunning = false;
-        }
-    },
 
     checkCollision: function(bird){
         for(var i = 0, len = this.children.length; i < len; i++){
@@ -138,24 +87,6 @@ var Holdbacks = ns.Holdbacks = Hilo.Class.create({
         }
         return false;
     },
-
-    calcPassThrough: function(x){
-        var count = 0;
-
-        x = -this.x + x;
-        if(x > 0){
-            var num = x / this.hoseWidth + 0.5 >> 0;
-            count += num;
-        }
-        count += this.passThrough;
-
-        return count;
-    },
-
-    reset: function(){
-        this.x = this.startX;
-        this.passThrough = 0;
-    }
 
 });
 

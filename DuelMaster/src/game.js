@@ -31,7 +31,7 @@ var game = window.game = {
     },
 
     initStage: function(){
-        this.width = 720;
+        this.width = 2080;
         this.height = 1280;
         this.scale = 0.5;
 
@@ -86,7 +86,7 @@ var game = window.game = {
         document.body.insertBefore(Hilo.createElement('div', {
             id: 'bg',
             style: {
-                background: 'url(images/bg.png) no-repeat',
+                background: 'url(images/bg.png) repeat',
                 backgroundSize: bgWidth + 'px, ' + bgHeight + 'px',
                 position: 'absolute',
                 width: bgWidth + 'px',
@@ -97,14 +97,16 @@ var game = window.game = {
         //地面
         this.ground = new Hilo.Bitmap({
             id: 'ground',
-            image: this.asset.ground
+            image: this.asset.ground,
         }).addTo(this.stage);
 
         //设置地面的y轴坐标
         this.ground.y = this.height - this.ground.height;
-
+		console.log(this.ground.width);	
+		this.ground.width = bgWidth * 3;
+		console.log(this.ground.width);
         //移动地面
-        Hilo.Tween.to(this.ground, {x:-60}, {duration:300, loop:true});
+//        Hilo.Tween.to(this.ground, {x:-60}, {duration:300, loop:true});
     },
 
     initCurrentScore: function(){
@@ -205,14 +207,12 @@ var game = window.game = {
         this.currentScore.visible = true;
         this.currentScore.setText(this.score);
         this.gameReadyScene.visible = true;
-        this.holdbacks.reset();
         this.bird.getReady();
     },
 
     gameStart: function(){
         this.state = 'playing';
         this.gameReadyScene.visible = false;
-        this.holdbacks.startMove();
     },
 
     gameOver: function(){
@@ -231,8 +231,7 @@ var game = window.game = {
     },
 
     calcScore: function(){
-        var count = this.holdbacks.calcPassThrough(this.bird.x);
-        return this.score = count;
+        return this.score = 0;
     },
 
     saveBestScore: function(){
