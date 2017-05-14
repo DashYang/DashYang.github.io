@@ -19,7 +19,7 @@ var Holdbacks = ns.Holdbacks = Hilo.Class.create({
         //管子的宽度（包括管子之间的间隔）
         // this.hoseWidth = 148 + this.hoseSpacingX;
         this.hoseWidth = 148;
-        this.hoseLength = 40;
+        this.hoseLength = 80;
 
         //初始化障碍的宽和长度
         this.width = this.hoseWidth * this.numHoses;
@@ -50,7 +50,7 @@ var Holdbacks = ns.Holdbacks = Hilo.Class.create({
                 rect: [0, 0, 148, 820],
                 pivotX: 74,
                 pivotY: 410,
-                rotation:this.hoseRotation
+                //rotation:this.hoseRotation
             }).addTo(this);
 
             var leftHose = new Hilo.Bitmap({
@@ -59,7 +59,7 @@ var Holdbacks = ns.Holdbacks = Hilo.Class.create({
                 rect: [148, 0, 148, 820],
                 pivotX: 74,
                 pivotY: 410,
-                rotation:this.hoseRotation
+                //rotation:this.hoseRotation
             }).addTo(this);
 
             this.placeHose(leftHose, rightHose, i);
@@ -68,21 +68,41 @@ var Holdbacks = ns.Holdbacks = Hilo.Class.create({
 
     placeHose: function(leftHose, rightHose, index){
         rightHose.y = 0 + index * (rightHose.width * 2 - 50) + 148 / 2;
-        rightHose.x = 30;
-        rightHose.height = this.hoseLength + 2;
+        rightHose.x = rightHose.height*index;
+//        rightHose.height = this.hoseLength + 2;
         leftHose.y = rightHose.y - 1;
-        leftHose.x = rightHose.x - this.hoseLength;
-        leftHose.height = this.hoseLength + 2;
+        leftHose.x = rightHose.x - leftHose.height + 50;	
+//        leftHose.height = this.hoseLength + 2;
 
-        console.log("right point :(" + rightHose.x + ", " + rightHose.y + ")");
-        console.log("left point :(" + leftHose.x + ", " + leftHose.y + ")");
+        console.log("right point :(" + rightHose.x + ", " + rightHose.y + "," + (rightHose.x + rightHose.height) + " " +
+				(rightHose.y + rightHose.width) + ")");
+        console.log("left point :(" + leftHose.x + ", " + leftHose.y + "," + (leftHose.x + rightHose.height) + " " +
+				(leftHose.y + leftHose.width) + ")");
     },
 
 
     checkCollision: function(bird){
         for(var i = 0, len = this.children.length; i < len; i++){
             if(bird.hitTestObject(this.children[i], true)){
-                return true;
+                console.log("bird: " + bird.x + " " + bird.y);
+				console.log("holdback: " + i + " "  + this.children[i].x + " " + this.children[i].y + " " + (this.children[i].x + this.children[i].height) + " " +(this.children[i].y + this.children[i].width));
+				if(this.children[i].y <= bird.y && this.children[i].x < bird.x && 
+						bird.x < this.children[i].x + this.children[i].height) {
+					bird.stopHigh();
+					console.log("knock ceiling ...");
+				} else if(this.children[i].y > bird.y && this.children[i].x < bird.x &&
+						bird.x < this.children[i].x + this.children[i].height){
+					bird.stopDown();
+					console.log("knock floor...");
+				} else if(this.children[i].x + this.children[i].height < bird.x &&
+						this.children[i].y < bird.y && bird.y < this.children[i].y + this.children[i].width) {
+					bird.stopLeft();
+					console.log("knock left");
+				} else {
+					bird.stopRight();
+					console.log("knock right");
+				}
+				return true;
             }
         }
         return false;

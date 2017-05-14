@@ -18,6 +18,7 @@ var Bird = ns.Bird = Hilo.Class.create({
 
     startX: 0, //小鸟的起始x坐标
     startY: 0, //小鸟的起始y坐标
+	horizontalVelocity: 0, //水平速度
     groundY: 0, //地面的坐标
     gravity: 0, //重力加速度
     flyHeight: 0, //小鸟每次往上飞的高度
@@ -25,6 +26,8 @@ var Bird = ns.Bird = Hilo.Class.create({
 
     isDead: true, //小鸟是否已死亡
     isUp: false, //小鸟是在往上飞阶段，还是下落阶段
+	ceilFlag: false, //天花板
+	floorFlag: false, //地板
     flyStartY: 0, //小鸟往上飞的起始y轴坐标
     flyStartTime: 0, //小鸟飞行起始时间
 
@@ -46,6 +49,34 @@ var Bird = ns.Bird = Hilo.Class.create({
         this.flyStartTime = +new Date();
         if(this.tween) this.tween.stop();
     },
+	
+	moveLeft: function(){
+		this.horizontalVelocity = -10;
+	},
+
+	moveRight: function(){
+		this.horizontalVelocity = 10;
+	},
+
+	stopLeft: function(){
+		if(this.horizontalVelocity === -10) {
+			this.horizontalVelocity = 0;
+		}
+	},
+
+	stopRight: function(){
+		if(this.horizontalVelocity === 10) {
+			this.horizontalVelocity = 0;
+		}
+	},
+	
+	stopHigh: function(){
+		this.ceilFlag = true;
+	},
+	
+	stopDown: function(){
+		this.floorFlag = true;
+	},
 
     onUpdate: function(){
         if(this.isDead) return;
@@ -53,11 +84,13 @@ var Bird = ns.Bird = Hilo.Class.create({
         //飞行时间
         var time = (+new Date()) - this.flyStartTime;
         //飞行距离
-        var distance = this.initVelocity * time - 0.5 * this.gravity * time * time;
+        var distance = - 0.5 * this.gravity * time * time;
+		if(this.ceilFlag === false)
+			distance += this.initVelocity * time;
         //y轴坐标
         var y = this.flyStartY - distance;
 
-        if(y <= this.groundY){
+        if(y <= this.groundY && this.floorFlag === false){
             //小鸟未落地
             this.y = y;
             if(distance > 0 && !this.isUp){
@@ -66,14 +99,11 @@ var Bird = ns.Bird = Hilo.Class.create({
                 this.isUp = true;
             }else if(distance < 0 && this.isUp){
                 //往下跌落时，角度往下90度
-                // this.tween = Hilo.Tween.to(this, {rotation:90}, {duration:this.groundY - this.y});
                 this.isUp = false;
             }
-        }else{
-            //小鸟已经落地，即死亡
-            // this.y = this.groundY;
-            // this.isDead = true;
         }
+		this.x += this.horizontalVelocity;
+		this.floorFlag = this.ceilFlag = false;
     }
 });
 

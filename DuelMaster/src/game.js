@@ -55,15 +55,18 @@ var game = window.game = {
         this.stage.enableDOMEvent(Hilo.event.POINTER_START, true);
         this.stage.on(Hilo.event.POINTER_START, this.onUserInput.bind(this));
 
-        //Space键控制
+        //w键控制
         document.addEventListener('keydown', function(e){
-            if(e.keyCode === 32) this.onUserInput(e);
+            if(e.keyCode === 87) this.onUserInput(e);
+			if(e.keyCode === 80) this.onPauseGame(e);
+			if(e.keyCode === 65) this.onMoveLeft(e);
+            if(e.keyCode === 68) this.onMoveRight(e);
         }.bind(this));
-
-        //P键控制
-        document.addEventListener('keydown', function(e){
-            if(e.keyCode === 80) this.onPauseGame(e);
-        }.bind(this));
+        //a鍵后退 
+		document.addEventListener('keyup', function(e){
+            if(e.keyCode === 65) this.onStopLeft(e);
+            if(e.keyCode === 68) this.onStopRight(e);
+		}.bind(this));
 
         //舞台更新
         this.stage.onUpdate = this.onUpdate.bind(this);
@@ -106,7 +109,6 @@ var game = window.game = {
 		this.ground.width = bgWidth * 3;
 		console.log(this.ground.width);
         //移动地面
-//        Hilo.Tween.to(this.ground, {x:-60}, {duration:300, loop:true});
     },
 
     initCurrentScore: function(){
@@ -126,8 +128,8 @@ var game = window.game = {
         this.bird = new game.Bird({
             id: 'bird',
             atlas: this.asset.birdAtlas,
-            startX: 100,
-            startY: this.height >> 1,
+            startX: 470,
+            startY: 811,
             groundY: this.ground.y - 12
         }).addTo(this.stage, this.ground.depth - 1);
     },
@@ -175,6 +177,43 @@ var game = window.game = {
             this.bird.startFly();
         }
     },
+	
+	onMoveRight: function(e){
+        if(this.state !== 'over'){
+            //启动游戏场景
+            if(this.state !== 'playing') this.gameStart();
+            //控制小鸟往上飞
+            this.bird.moveRight();
+        }
+    },
+
+	onMoveLeft: function(e){
+        if(this.state !== 'over'){
+            //启动游戏场景
+            if(this.state !== 'playing') this.gameStart();
+            //控制小鸟往上飞
+            this.bird.moveLeft();
+        }
+    },
+
+	onStopLeft: function(e){
+        if(this.state !== 'over'){
+            //启动游戏场景
+            if(this.state !== 'playing') this.gameStart();
+            //控制小鸟往上飞
+            this.bird.stopLeft();
+        }
+    },
+
+	onStopRight: function(e){
+        if(this.state !== 'over'){
+            //启动游戏场景
+            if(this.state !== 'playing') this.gameStart();
+            //控制小鸟往上飞
+            this.bird.stopRight();
+        }
+    },
+
 
     onPauseGame: function (e) {
         if(this.state !== 'over'){
@@ -193,10 +232,10 @@ var game = window.game = {
         if(this.bird.isDead){
             this.gameOver();
         }else{
-            this.currentScore.setText(this.calcScore());
             //碰撞检测
             if(this.holdbacks.checkCollision(this.bird)){
-                this.gameOver();
+                //this.gameOver();
+
             }
         }
     },
@@ -220,8 +259,6 @@ var game = window.game = {
             //设置当前状态为结束over
             this.state = 'over';
             //停止障碍的移动
-            this.holdbacks.stopMove();
-            //小鸟跳转到第一帧并暂停
             this.bird.goto(0, true);
             //隐藏屏幕中间显示的分数
             this.currentScore.visible = false;
