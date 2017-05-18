@@ -27,7 +27,7 @@ var ReadyScene = ns.ReadyScene = Hilo.Class.create({
         getready.x = this.width - getready.width >> 1;
         getready.y = tap.y - getready.height >> 0;
 
-        this.addChild(tap, getready);
+        // this.addChild(tap, getready);
     }
 });
 

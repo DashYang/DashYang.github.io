@@ -20,6 +20,8 @@ var game = window.game = {
     holdbacks: null,
     gameReadyScene: null,
     gameOverScene: null,
+    birdStatusText: null,
+    borderMap: new Object(),
 
     init: function(){
         this.asset = new game.Asset();
@@ -77,7 +79,7 @@ var game = window.game = {
         this.initHoldbacks();
         this.initBird();
         this.initCurrentScore();
-
+        this.initBirdStatusText();
         //准备游戏
         this.gameReady();
     },
@@ -89,7 +91,7 @@ var game = window.game = {
         document.body.insertBefore(Hilo.createElement('div', {
             id: 'bg',
             style: {
-                background: 'url(images/bg.png) repeat',
+                background: 'url(images/bg.png) no-repeat',
                 backgroundSize: bgWidth + 'px, ' + bgHeight + 'px',
                 position: 'absolute',
                 width: bgWidth + 'px',
@@ -105,9 +107,7 @@ var game = window.game = {
 
         //设置地面的y轴坐标
         this.ground.y = this.height - this.ground.height;
-		console.log(this.ground.width);	
 		this.ground.width = bgWidth * 3;
-		console.log(this.ground.width);
         //移动地面
     },
 
@@ -152,21 +152,22 @@ var game = window.game = {
             image: this.asset.ready
         }).addTo(this.stage);
 
-        //结束场景
-        this.gameOverScene = new game.OverScene({
-            width: this.width,
-            height: this.height,
-            image: this.asset.over,
-            numberGlyphs: this.asset.numberGlyphs,
-            visible: false
+    },
+
+    initBirdStatusText: function() {
+        var font = "30px arial";
+        var content = "鸟的状态:";
+        this.birdStatusText = new Hilo.Text({
+            font: font,
+            text: content,
+            color:"crimson",
+            lineSpacing: 0,
+            width: 400,
+            height: 100,
+            x: 40,
+            y: 50
         }).addTo(this.stage);
 
-        //绑定开始按钮事件
-        this.gameOverScene.getChildById('start').on(Hilo.event.POINTER_START, function(e){
-            e._stopped = true;
-            this.gameOverScene.visible = false;
-            this.gameReady();
-        }.bind(this));
     },
 
     onUserInput: function(e){
@@ -232,11 +233,38 @@ var game = window.game = {
         if(this.bird.isDead){
             this.gameOver();
         }else{
-            //碰撞检测
-            if(this.holdbacks.checkCollision(this.bird)){
-                //this.gameOver();
+            //画鸟
+            // this.assignBorder("bird", this.bird.x, this.bird.y, this.bird.width, this.bird.height);
 
+            // this.bird.showPropertyOnBoard(this.birdStatusText);  //鸟的状态
+            var birdBound = this.bird.getBounds();
+            var birdPivotX = (birdBound[0].x + birdBound[2].x) >> 1;
+            var birdPivotY = (birdBound[0].y + birdBound[2].y) >> 1;
+
+            for(var i = 0, len = this.holdbacks.children.length; i < len; i++){
+                if(this.bird.hitTestObject(this.holdbacks.children[i], true)) {
+                    // console.log(birdPivotX + " " + birdPivotY);
+                    var holdBackBound = this.holdbacks.children[i].getBounds();
+                    if ((holdBackBound.y + holdBackBound.height) <= birdPivotY &&
+                        holdBackBound.x < birdPivotX && birdPivotX < (holdBackBound.x + holdBackBound.width)) {
+                        this.bird.stopHigh();
+
+                    } else if (holdBackBound.y >= birdPivotY &&
+                        holdBackBound.x < birdPivotX && birdPivotX < (holdBackBound.x + holdBackBound.width)) {
+                        this.bird.stopDown();
+
+                    } else if ((holdBackBound.x + holdBackBound.width) <= birdPivotX &&
+                        holdBackBound.y < birdPivotY && birdPivotY < (holdBackBound.y + holdBackBound.height)) {
+                        this.bird.stopLeft();
+                    } else if (holdBackBound.x >= birdPivotX &&
+                        holdBackBound.y < birdPivotY && birdPivotY < (holdBackBound.y + holdBackBound.height)) {
+                        this.bird.stopRight();
+                    }
+                }
             }
+            this.birdStatusText.text = "撞到板:" + this.bird.hitFloorCount + "\n" + "撞到头:" + this.bird.hitCeilingCount +
+            "\n垂直速度:" + this.bird.verticalVelocity + "\n状态: " + this.bird.isUp;
+            this.bird.emulateMovement();
         }
     },
 
@@ -247,6 +275,10 @@ var game = window.game = {
         this.currentScore.setText(this.score);
         this.gameReadyScene.visible = true;
         this.bird.getReady();
+        for(var i = 0, len = this.holdbacks.children.length; i < len; i++) {
+            this.assignBorder("hb"+i, this.holdbacks.children[i].x, this.holdbacks.children[i].y,
+                this.holdbacks.children[i].width, this.holdbacks.children[i].height);
+        }
     },
 
     gameStart: function(){
@@ -281,6 +313,27 @@ var game = window.game = {
             localStorage.setItem('hilo-flappy-best-score', score);
         }
         return best;
+    },
+
+    assignBorder: function(id, x, y, width, height) {
+        if(this.borderMap[id] != null) {
+            this.borderMap[id].x = x;
+            this.borderMap[id].y = y;
+        } else {
+            var domView = new Hilo.DOMElement({
+                element: Hilo.createElement('div', {
+                    style: {
+                        position: 'absolute',
+                        border: '1px solid #f00'
+                    }
+                }),
+                width: width * this.scale,
+                height: height * this.scale,
+                x: x * this.scale,
+                y: y * this.scale
+            }).addTo(this.stage);
+            this.borderMap[id] = domView;
+        }
     }
 };
 

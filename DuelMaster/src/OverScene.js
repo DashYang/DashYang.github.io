@@ -72,7 +72,7 @@ var OverScene = ns.OverScene = Hilo.Class.create({
         bestLabel.x = scoreLabel.x;
         bestLabel.y = scoreLabel.y + 105;
 
-        this.addChild(gameover, board, startBtn, gradeBtn, scoreLabel, bestLabel, whiteMask);
+        // this.addChild(gameover, board, startBtn, gradeBtn, scoreLabel, bestLabel, whiteMask);
     },
 
     show: function(score, bestScore){
