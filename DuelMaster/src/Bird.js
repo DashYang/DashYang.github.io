@@ -94,7 +94,7 @@ var Bird = ns.Bird = Hilo.Class.create({
     showPropertyOnBoard: function(infoBoard) {
         infoBoard.text = "location:( " + this.x + " "  + this.y + ")";
         infoBoard.text = "撞到板:" + this.hitFloorCount + "\n" + "撞到头:" + this.hitCeilingCount +
-            "\n垂直速度:" + this.verticalVelocity + "\n状态: " + this.isUp;
+            "\n垂直速度:" + this.verticalVelocity + "\n上升: " + this.isUp;
     },
 
     //运动模拟
@@ -123,6 +123,8 @@ var Bird = ns.Bird = Hilo.Class.create({
             this.flyStartY = this.y;
             this.verticalVelocity = 0;
             this.floorFlag = this.ceilFlag = false;
+            //撞击修正
+            this.tween = Hilo.Tween.to(this, {rotation: 0}, {duration: 0});
 
         } else {
             if (y <= this.groundY - this.height + 10) {

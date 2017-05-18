@@ -31,7 +31,7 @@
       <file leaf-file-name="game.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/game.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="305">
+            <state relative-caret-position="-1315">
               <caret line="249" column="42" lean-forward="false" selection-start-line="249" selection-start-column="34" selection-end-line="249" selection-end-column="42" />
               <folding />
             </state>
@@ -51,8 +51,8 @@
       <file leaf-file-name="Bird.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Bird.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="260">
-              <caret line="127" column="52" lean-forward="false" selection-start-line="127" selection-start-column="52" selection-end-line="127" selection-end-column="52" />
+            <state relative-caret-position="386">
+              <caret line="96" column="53" lean-forward="false" selection-start-line="96" selection-start-column="53" selection-end-line="96" selection-end-column="53" />
               <folding />
             </state>
           </provider>
@@ -250,12 +250,12 @@
       <updated>1494485161997</updated>
       <workItem from="1494485163261" duration="20658000" />
       <workItem from="1494814903880" duration="57615000" />
-      <workItem from="1495078371451" duration="11084000" />
+      <workItem from="1495078371451" duration="11278000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="89357000" />
+    <option name="totallyTimeSpent" value="89551000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -473,7 +473,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/game.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="305">
+        <state relative-caret-position="-1315">
           <caret line="249" column="42" lean-forward="false" selection-start-line="249" selection-start-column="34" selection-end-line="249" selection-end-column="42" />
           <folding />
         </state>
@@ -481,8 +481,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Bird.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="260">
-          <caret line="127" column="52" lean-forward="false" selection-start-line="127" selection-start-column="52" selection-end-line="127" selection-end-column="52" />
+        <state relative-caret-position="386">
+          <caret line="96" column="53" lean-forward="false" selection-start-line="96" selection-start-column="53" selection-end-line="96" selection-end-column="53" />
           <folding />
         </state>
       </provider>
