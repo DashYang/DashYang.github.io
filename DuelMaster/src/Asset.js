@@ -23,7 +23,8 @@ var Asset = ns.Asset = Hilo.Class.create({
             {id:'number', src:'images/number.png'},
             {id:'bird', src:'images/bird.png'},
             {id:'holdback', src:'images/holdback.png'},
-            {id:'blade', src:'images/blade.png'}
+            {id:'blade', src:'images/blade.png'},
+            {id:'bullet', src:'images/bullet.png'}
         ];
 
         this.queue = new Hilo.LoadQueue();
@@ -39,6 +40,7 @@ var Asset = ns.Asset = Hilo.Class.create({
         this.over = this.queue.get('over').content;
         this.holdback = this.queue.get('holdback').content;
         this.blade = this.queue.get('blade').content;
+        this.bullet = this.queue.get('bullet').content;
 
         this.birdAtlas = new Hilo.TextureAtlas({
             image: this.queue.get('bird').content,

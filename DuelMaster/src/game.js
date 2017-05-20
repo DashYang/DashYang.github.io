@@ -58,11 +58,13 @@ var game = window.game = {
         this.stage.on(Hilo.event.POINTER_START, this.onUserInput.bind(this));
 
         document.addEventListener('keydown', function(e){
+            this.avatar.bird.isDead = false;
             if(e.keyCode === 87) this.onUserInput(e);
-			if(e.keyCode === 80) this.onPauseGame(e);
 			if(e.keyCode === 65) this.onMoveLeft(e);
             if(e.keyCode === 68) this.onMoveRight(e);
             if(e.keyCode === 74) this.onAttack(e);
+            if(e.keyCode === 75) this.onFire(e);
+
         }.bind(this));
 		document.addEventListener('keyup', function(e){
             if(e.keyCode === 65) this.onStopLeft(e);
@@ -137,10 +139,16 @@ var game = window.game = {
             image: this.asset.blade,
         });
 
+        var bullet = new game.Bullet({
+           id: 'bulltes',
+           image: this.asset.bullet,
+        });
+
         this.avatar = new game.Avatar({
             id: "player1",
             bird: bird,
             blade: blade,
+            bullet: bullet,
         }).addTo(this.stage, this.ground.depth - 1)
     },
 
@@ -185,7 +193,7 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.avatar.bird.startFly();
+            this.avatar.startFly();
         }
     },
 	
@@ -194,7 +202,7 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.avatar.bird.moveRight();
+            this.avatar.moveRight();
         }
     },
 
@@ -203,7 +211,7 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.avatar.bird.moveLeft();
+            this.avatar.moveLeft();
         }
     },
 
@@ -212,7 +220,7 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.avatar.bird.stopLeft();
+            this.avatar.stopLeft();
         }
     },
 
@@ -221,7 +229,7 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.avatar.bird.stopRight();
+            this.avatar.stopRight();
         }
     },
 
@@ -230,7 +238,16 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.avatar.blade.attack()
+            this.avatar.attack()
+        }
+    },
+
+    onFire: function (e) {
+        if(this.state !== 'over'){
+            //启动游戏场景
+            if(this.state !== 'playing') this.gameStart();
+            //控制小鸟往上飞
+            this.avatar.fire();
         }
     },
 
@@ -256,18 +273,18 @@ var game = window.game = {
                     var holdBackBound = this.holdbacks.children[i].getBounds();
                     if ((holdBackBound.y + holdBackBound.height) <= birdPivotY &&
                         holdBackBound.x < birdPivotX && birdPivotX < (holdBackBound.x + holdBackBound.width)) {
-                        this.avatar.bird.stopHigh();
+                        this.avatar.stopHigh();
 
                     } else if (holdBackBound.y >= birdPivotY &&
                         holdBackBound.x < birdPivotX && birdPivotX < (holdBackBound.x + holdBackBound.width)) {
-                        this.avatar.bird.stopDown();
+                        this.avatar.stopDown();
 
                     } else if ((holdBackBound.x + holdBackBound.width) <= birdPivotX &&
                         holdBackBound.y < birdPivotY && birdPivotY < (holdBackBound.y + holdBackBound.height)) {
-                        this.avatar.bird.stopLeft();
+                        this.avatar.stopLeft();
                     } else if (holdBackBound.x >= birdPivotX &&
                         holdBackBound.y < birdPivotY && birdPivotY < (holdBackBound.y + holdBackBound.height)) {
-                        this.avatar.bird.stopRight();
+                        this.avatar.stopRight();
                     }
                 }
             }

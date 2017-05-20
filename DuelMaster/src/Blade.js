@@ -23,7 +23,6 @@
             this.suitUp();
         },
 
-        ownerX: 0, ownerY: 0,//持有者坐标
         holdPivotXdistance: 0, holdPivotYdistance: 0, //相对距离
         attackRange: 120,   //反转
         blade: null,
@@ -36,8 +35,12 @@
             return this.y + this.holdPivotYdistance;
         },
 
+        attack: function () {
+            if(this.blade.rotation === 0)
+                this.blade.tween = Hilo.Tween.to(this.blade, {rotation: this.attackRange}, {duration: 120});
+        },
 
-        suitUp: function (holdPivotX, holdPivotY, scaleX, scaleY) {
+        suitUp: function (holdPivotX, holdPivotY, scaleX) {
             //设置起始坐标
             if(scaleX > 0)
                 this.attackRange = 120;
@@ -46,12 +49,6 @@
             this.blade.x = holdPivotX;
             this.blade.y = holdPivotY;
 
-        },
-
-        attack: function () {
-            var rotation = 120;
-            if(this.blade.rotation === 0)
-                this.blade.tween = Hilo.Tween.to(this.blade, {rotation: this.attackRange}, {duration: 120});
         },
 
         //运动模拟
