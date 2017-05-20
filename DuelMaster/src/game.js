@@ -16,7 +16,7 @@ var game = window.game = {
 
     bg: null,
     ground: null,
-    bird: null,
+    avatar:null,
     holdbacks: null,
     gameReadyScene: null,
     gameOverScene: null,
@@ -57,14 +57,13 @@ var game = window.game = {
         this.stage.enableDOMEvent(Hilo.event.POINTER_START, true);
         this.stage.on(Hilo.event.POINTER_START, this.onUserInput.bind(this));
 
-        //w键控制
         document.addEventListener('keydown', function(e){
             if(e.keyCode === 87) this.onUserInput(e);
 			if(e.keyCode === 80) this.onPauseGame(e);
 			if(e.keyCode === 65) this.onMoveLeft(e);
             if(e.keyCode === 68) this.onMoveRight(e);
+            if(e.keyCode === 74) this.onAttack(e);
         }.bind(this));
-        //a鍵后退 
 		document.addEventListener('keyup', function(e){
             if(e.keyCode === 65) this.onStopLeft(e);
             if(e.keyCode === 68) this.onStopRight(e);
@@ -76,8 +75,8 @@ var game = window.game = {
         //初始化
         this.initBackground();
         this.initScenes();
+        this.initAvatar();
         this.initHoldbacks();
-        this.initBird();
         this.initCurrentScore();
         this.initBirdStatusText();
         //准备游戏
@@ -124,14 +123,25 @@ var game = window.game = {
         this.currentScore.y = 180;
     },
 
-    initBird: function(){
-        this.bird = new game.Bird({
+    initAvatar: function () {
+        var bird = new game.Bird({
             id: 'bird',
             atlas: this.asset.birdAtlas,
             startX: 470,
             startY: 811,
             groundY: this.ground.y - 12
-        }).addTo(this.stage, this.ground.depth - 1);
+        });
+
+        var blade = new game.Blade({
+            id: 'blade',
+            image: this.asset.blade,
+        });
+
+        this.avatar = new game.Avatar({
+            id: "player1",
+            bird: bird,
+            blade: blade,
+        }).addTo(this.stage, this.ground.depth - 1)
     },
 
     initHoldbacks: function(){
@@ -162,7 +172,7 @@ var game = window.game = {
             text: content,
             color:"crimson",
             lineSpacing: 0,
-            width: 400,
+            width: 500,
             height: 100,
             x: 40,
             y: 50
@@ -175,7 +185,7 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.bird.startFly();
+            this.avatar.bird.startFly();
         }
     },
 	
@@ -184,7 +194,7 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.bird.moveRight();
+            this.avatar.bird.moveRight();
         }
     },
 
@@ -193,7 +203,7 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.bird.moveLeft();
+            this.avatar.bird.moveLeft();
         }
     },
 
@@ -202,7 +212,7 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.bird.stopLeft();
+            this.avatar.bird.stopLeft();
         }
     },
 
@@ -211,17 +221,16 @@ var game = window.game = {
             //启动游戏场景
             if(this.state !== 'playing') this.gameStart();
             //控制小鸟往上飞
-            this.bird.stopRight();
+            this.avatar.bird.stopRight();
         }
     },
 
-
-    onPauseGame: function (e) {
+    onAttack: function (e) {
         if(this.state !== 'over'){
-            if(this.holdbacks.isRunning === true)
-                this.holdbacks.stopMove();
-            else
-                this.holdbacks.startMove();
+            //启动游戏场景
+            if(this.state !== 'playing') this.gameStart();
+            //控制小鸟往上飞
+            this.avatar.blade.attack()
         }
     },
 
@@ -230,41 +239,41 @@ var game = window.game = {
             return;
         }
 
-        if(this.bird.isDead){
+        if(this.avatar.bird.isDead){
             this.gameOver();
         }else{
             //画鸟
             // this.assignBorder("bird", this.bird.x, this.bird.y, this.bird.width, this.bird.height);
 
-            // this.bird.showPropertyOnBoard(this.birdStatusText);  //鸟的状态
-            var birdBound = this.bird.getBounds();
+            // this.bird.showPropertyOnBoard(this.avatar.birdStatusText);  //鸟的状态
+            var birdBound = this.avatar.bird.getBounds();
             var birdPivotX = (birdBound[0].x + birdBound[2].x) >> 1;
             var birdPivotY = (birdBound[0].y + birdBound[2].y) >> 1;
 
             for(var i = 0, len = this.holdbacks.children.length; i < len; i++){
-                if(this.bird.hitTestObject(this.holdbacks.children[i], true)) {
+                if(this.avatar.bird.hitTestObject(this.holdbacks.children[i], true)) {
                     // console.log(birdPivotX + " " + birdPivotY);
                     var holdBackBound = this.holdbacks.children[i].getBounds();
                     if ((holdBackBound.y + holdBackBound.height) <= birdPivotY &&
                         holdBackBound.x < birdPivotX && birdPivotX < (holdBackBound.x + holdBackBound.width)) {
-                        this.bird.stopHigh();
+                        this.avatar.bird.stopHigh();
 
                     } else if (holdBackBound.y >= birdPivotY &&
                         holdBackBound.x < birdPivotX && birdPivotX < (holdBackBound.x + holdBackBound.width)) {
-                        this.bird.stopDown();
+                        this.avatar.bird.stopDown();
 
                     } else if ((holdBackBound.x + holdBackBound.width) <= birdPivotX &&
                         holdBackBound.y < birdPivotY && birdPivotY < (holdBackBound.y + holdBackBound.height)) {
-                        this.bird.stopLeft();
+                        this.avatar.bird.stopLeft();
                     } else if (holdBackBound.x >= birdPivotX &&
                         holdBackBound.y < birdPivotY && birdPivotY < (holdBackBound.y + holdBackBound.height)) {
-                        this.bird.stopRight();
+                        this.avatar.bird.stopRight();
                     }
                 }
             }
-            this.birdStatusText.text = "撞到板:" + this.bird.hitFloorCount + "\n" + "撞到头:" + this.bird.hitCeilingCount +
-            "\n垂直速度:" + this.bird.verticalVelocity + "\n状态: " + this.bird.isUp;
-            this.bird.emulateMovement();
+            this.birdStatusText.text = "撞到板:" + this.avatar.bird.hitFloorCount + "\n" + "撞到头:" + this.avatar.bird.hitCeilingCount +
+            "\n垂直速度:" + this.avatar.bird.verticalVelocity + "\n状态: " + this.avatar.bird.isUp;
+            this.avatar.emulateMovement();
         }
     },
 
@@ -274,7 +283,7 @@ var game = window.game = {
         this.currentScore.visible = true;
         this.currentScore.setText(this.score);
         this.gameReadyScene.visible = true;
-        this.bird.getReady();
+        this.avatar.getReady();
         for(var i = 0, len = this.holdbacks.children.length; i < len; i++) {
             this.assignBorder("hb"+i, this.holdbacks.children[i].x, this.holdbacks.children[i].y,
                 this.holdbacks.children[i].width, this.holdbacks.children[i].height);
@@ -291,7 +300,7 @@ var game = window.game = {
             //设置当前状态为结束over
             this.state = 'over';
             //停止障碍的移动
-            this.bird.goto(0, true);
+            this.avatar.bird.goto(0, true);
             //隐藏屏幕中间显示的分数
             this.currentScore.visible = false;
             //显示结束场景
