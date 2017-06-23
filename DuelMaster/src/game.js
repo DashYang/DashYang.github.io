@@ -20,8 +20,9 @@ var game = window.game = {
     holdbacks: null,
     gameReadyScene: null,
     gameOverScene: null,
-    birdStatusText: null,
+    bodyStatusText: null,
     borderMap: new Object(),
+    minions: new Array(),
 
     init: function(){
         this.asset = new game.Asset();
@@ -58,12 +59,14 @@ var game = window.game = {
         this.stage.on(Hilo.event.POINTER_START, this.onUserInput.bind(this));
 
         document.addEventListener('keydown', function(e){
-            this.avatar.bird.isDead = false;
+            this.avatar.body.isDead = false;
             if(e.keyCode === 87) this.onUserInput(e);
 			if(e.keyCode === 65) this.onMoveLeft(e);
+            if(e.keyCode === 83) this.onFalling(e);
             if(e.keyCode === 68) this.onMoveRight(e);
             if(e.keyCode === 74) this.onAttack(e);
             if(e.keyCode === 75) this.onFire(e);
+            if(e.keyCode === 76) this.onDash(e);
 
         }.bind(this));
 		document.addEventListener('keyup', function(e){
@@ -126,16 +129,18 @@ var game = window.game = {
     },
 
     initAvatar: function () {
-        var bird = new game.Bird({
+        var bird = new game.Body({
             id: 'bird',
             atlas: this.asset.birdAtlas,
             startX: 470,
             startY: 811,
+            maxHp: 3000,
             groundY: this.ground.y - 12
         });
 
         var blade = new game.Blade({
             id: 'blade',
+            attackDamage: 100,
             image: this.asset.blade,
         });
 
@@ -146,7 +151,7 @@ var game = window.game = {
 
         this.avatar = new game.Avatar({
             id: "player1",
-            bird: bird,
+            body: bird,
             blade: blade,
             bullet: bullet,
         }).addTo(this.stage, this.ground.depth - 1)
@@ -161,7 +166,7 @@ var game = window.game = {
             groundY: this.ground.y
         }).addTo(this.stage, this.ground.depth - 1);
     },
-
+    
     initScenes: function(){
         //准备场景
         this.gameReadyScene = new game.ReadyScene({
@@ -175,7 +180,7 @@ var game = window.game = {
     initBirdStatusText: function() {
         var font = "30px arial";
         var content = "鸟的状态:";
-        this.birdStatusText = new Hilo.Text({
+        this.bodyStatusText = new Hilo.Text({
             font: font,
             text: content,
             color:"crimson",
@@ -186,6 +191,39 @@ var game = window.game = {
             y: 50
         }).addTo(this.stage);
 
+    },
+    
+    createMinions: function () {
+        var body = new game.Body({
+            id: 'body',
+            atlas: this.asset.birdAtlas,
+            startX: 2000,
+            startY: 120,
+            maxHp: 200,
+            groundY: 200 //第一个柱子
+        });
+
+        var blade = new game.Blade({
+            id: 'blade',
+            attackDamage: 50,
+            image: this.asset.blade,
+        });
+
+        var bullet = new game.Bullet({
+            id: 'bulltes',
+            image: this.asset.bullet,
+        });
+
+        var minion = new game.Minion({
+            id: "minion1",
+            body: body,
+            blade: blade,
+            bullet: bullet,
+        }).addTo(this.stage, this.ground.depth - 1)
+
+        minion.getReady();
+        minion.moveLeft();
+        this.minions.push(minion);
     },
 
     onUserInput: function(e){
@@ -233,6 +271,15 @@ var game = window.game = {
         }
     },
 
+    onFalling: function (e) {
+        if(this.state !== 'over'){
+            //启动游戏场景
+            if(this.state !== 'playing') this.gameStart();
+            //控制小鸟往上飞
+            this.avatar.fall();
+        }
+    },
+
     onAttack: function (e) {
         if(this.state !== 'over'){
             //启动游戏场景
@@ -251,45 +298,61 @@ var game = window.game = {
         }
     },
 
+    onDash: function (e) {
+        if(this.state !== 'over'){
+            //启动游戏场景
+            if(this.state !== 'playing') this.gameStart();
+            //控制小鸟往上飞
+            this.avatar.dash();
+        }
+    },
+
     onUpdate: function(delta){
         if(this.state === 'ready'){
             return;
         }
 
-        if(this.avatar.bird.isDead){
+        if(this.avatar.body.isDead){
             this.gameOver();
         }else{
             //画鸟
-            // this.assignBorder("bird", this.bird.x, this.bird.y, this.bird.width, this.bird.height);
+            // this.assignBorder("body", this.body.x, this.body.y, this.body.width, this.body.height);
 
-            // this.bird.showPropertyOnBoard(this.avatar.birdStatusText);  //鸟的状态
-            var birdBound = this.avatar.bird.getBounds();
-            var birdPivotX = (birdBound[0].x + birdBound[2].x) >> 1;
-            var birdPivotY = (birdBound[0].y + birdBound[2].y) >> 1;
+            // this.body.showPropertyOnBoard(this.avatar.bodyStatusText);  //鸟的状态
+            var bodyBound = this.avatar.body.getBounds();
+            var bodyPivotX = (bodyBound[0].x + bodyBound[2].x) >> 1;
+            var bodyPivotY = (bodyBound[0].y + bodyBound[2].y) >> 1 + (this.avatar.body.height >> 1);
 
             for(var i = 0, len = this.holdbacks.children.length; i < len; i++){
-                if(this.avatar.bird.hitTestObject(this.holdbacks.children[i], true)) {
-                    // console.log(birdPivotX + " " + birdPivotY);
-                    var holdBackBound = this.holdbacks.children[i].getBounds();
-                    if ((holdBackBound.y + holdBackBound.height) <= birdPivotY &&
-                        holdBackBound.x < birdPivotX && birdPivotX < (holdBackBound.x + holdBackBound.width)) {
-                        this.avatar.stopHigh();
-
-                    } else if (holdBackBound.y >= birdPivotY &&
-                        holdBackBound.x < birdPivotX && birdPivotX < (holdBackBound.x + holdBackBound.width)) {
-                        this.avatar.stopDown();
-
-                    } else if ((holdBackBound.x + holdBackBound.width) <= birdPivotX &&
-                        holdBackBound.y < birdPivotY && birdPivotY < (holdBackBound.y + holdBackBound.height)) {
-                        this.avatar.stopLeft();
-                    } else if (holdBackBound.x >= birdPivotX &&
-                        holdBackBound.y < birdPivotY && birdPivotY < (holdBackBound.y + holdBackBound.height)) {
-                        this.avatar.stopRight();
-                    }
+                if(this.avatar.body.hitTestObject(this.holdbacks.children[i], true)) {
+                   // console.log(bodyPivotX + " " + bodyPivotY);
+                   var holdBackBound = this.holdbacks.children[i].getBounds();
+                   if (holdBackBound.y >= bodyPivotY &&
+                        holdBackBound.x < bodyPivotX && bodyPivotX < (holdBackBound.x + holdBackBound.width)) {
+                       if(this.avatar.body.isFallen === false)
+                           this.avatar.stopDown();
+                   }
                 }
             }
-            this.birdStatusText.text = "撞到板:" + this.avatar.bird.hitFloorCount + "\n" + "撞到头:" + this.avatar.bird.hitCeilingCount +
-            "\n垂直速度:" + this.avatar.bird.verticalVelocity + "\n状态: " + this.avatar.bird.isUp;
+
+            for(var i = 0, len = this.minions.length; i < len; i++){
+                if(this.minions[i].body.hitTestObject(this.avatar.body)) {
+                    this.minions[i].stopLeft();
+                } else {
+                    this.minions[i].moveLeft();
+                }
+            }
+
+            for(var i = 0, len = this.minions.length; i < len; i++){
+
+                if(this.minions[i].blade.entity.hitTestObject(this.avatar.body) &&
+                    this.minions[i].blade.isAttacking() === true) {
+                        this.avatar.body.currentHp -= this.minions[i].blade.getAttackDamage();
+                }
+            }
+
+            this.bodyStatusText.text = "\n垂直速度:" + this.avatar.body.verticalVelocity + "\n可穿透: "
+                + this.avatar.body.isFallen;
             this.avatar.emulateMovement();
         }
     },
@@ -305,6 +368,7 @@ var game = window.game = {
             this.assignBorder("hb"+i, this.holdbacks.children[i].x, this.holdbacks.children[i].y,
                 this.holdbacks.children[i].width, this.holdbacks.children[i].height);
         }
+        this.createMinions();
     },
 
     gameStart: function(){
@@ -317,7 +381,7 @@ var game = window.game = {
             //设置当前状态为结束over
             this.state = 'over';
             //停止障碍的移动
-            this.avatar.bird.goto(0, true);
+            this.avatar.body.goto(0, true);
             //隐藏屏幕中间显示的分数
             this.currentScore.visible = false;
             //显示结束场景

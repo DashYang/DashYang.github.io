@@ -20,9 +20,14 @@
         passed: 0,
         velocity: 15,
         queue: new Array(),
+        coolDown: 500,
+        fireStartime: 0,
 
         fire: function (fireX, fireY, ratio) {
-            var bullet = new Hilo.Bitmap({
+            if(((+new Date())) - this.fireStartime <= this.coolDown)
+                return;
+            this.fireStartime = (+new Date());
+            var bullet1 = new Hilo.Bitmap({
                 id: 'bullet' + this.count,
                 image: this.image,
                 rect: [0, 0, 20, 20],
@@ -31,8 +36,39 @@
                 x: fireX,
                 y: fireY,
             }).addTo(this);
-            this.queue.push({bullet:bullet, startX: fireX, velocity: this.velocity*ratio});
             this.count += 1;
+            this.queue.push({bullet:bullet1, startX: fireX, horizontalVelocity: this.velocity*ratio,
+                verticalVelocity: this.velocity*ratio * 0.5});
+
+            var bullet2 = new Hilo.Bitmap({
+                id: 'bullet' + this.count,
+                image: this.image,
+                rect: [0, 0, 20, 20],
+                pivotX:10,
+                pivotY:10,
+                x: fireX,
+                y: fireY,
+            }).addTo(this);
+            //上下的是一半速度
+            this.count += 1;
+            this.queue.push({bullet:bullet2, startX: fireX, horizontalVelocity: this.velocity*ratio,
+                verticalVelocity: 0});
+
+            var bullet3 = new Hilo.Bitmap({
+                id: 'bullet' + this.count,
+                image: this.image,
+                rect: [0, 0, 20, 20],
+                pivotX:10,
+                pivotY:10,
+                x: fireX,
+                y: fireY,
+            }).addTo(this);
+            //上下的是一半速度
+            this.count += 1;
+            this.queue.push({bullet:bullet3, startX: fireX, horizontalVelocity: this.velocity*ratio,
+                verticalVelocity: this.velocity*ratio * -0.5});
+
+
         },
 
         onUpdate: function () {
@@ -43,9 +79,11 @@
                     this.queue[i].bullet.visible = false;
                     continue;
                 }
-                this.queue[i].bullet.x += this.queue[i].velocity;
-                this.queue[i].alpha -= 0.01;
+                this.queue[i].bullet.x += this.queue[i].horizontalVelocity;
+                this.queue[i].bullet.y += this.queue[i].verticalVelocity;
+
             }
+            //TODO 垃圾回收
         }
 
     });

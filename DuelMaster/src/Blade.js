@@ -11,8 +11,9 @@
             this.holdPivotXdistance = 10;
             this.holdPivotYdistance = 100;
 
+            this.attackDamage = properties.attackDamage;
 
-            this.blade = new Hilo.Bitmap({
+            this.entity = new Hilo.Bitmap({
                 id: 'blade',
                 image: properties.image,
                 rect: [0, 0, 20, 100],
@@ -24,8 +25,18 @@
         },
 
         holdPivotXdistance: 0, holdPivotYdistance: 0, //相对距离
-        attackRange: 120,   //反转
-        blade: null,
+        attackRange: 120,   //挥动范围
+        coolDown: 500,
+        startime: 0,
+        entity: null,
+        attackDamage: 0,
+        currentDamage: 0,
+
+        getAttackDamage: function () {
+            var result = this.currentDamage;
+            this.currentDamage = 0;
+            return result;
+        },
 
         getHoldPivotX: function () {
             return this.x + this.holdPivotXdistance;
@@ -35,9 +46,18 @@
             return this.y + this.holdPivotYdistance;
         },
 
+        isAttacking: function () {
+            if((+new Date()) - this.startime > this.coolDown)
+                return false;
+            else
+                return true;
+        },
+
         attack: function () {
-            if(this.blade.rotation === 0)
-                this.blade.tween = Hilo.Tween.to(this.blade, {rotation: this.attackRange}, {duration: 120});
+            if((+new Date()) - this.startime > this.coolDown) {
+                this.entity.tween = Hilo.Tween.to(this.entity, {rotation: this.attackRange}, {duration: this.coolDown});
+                this.startime = (+new Date());
+            }
         },
 
         suitUp: function (holdPivotX, holdPivotY, scaleX) {
@@ -46,8 +66,8 @@
                 this.attackRange = 120;
             else
                 this.attackRange = -120;
-            this.blade.x = holdPivotX;
-            this.blade.y = holdPivotY;
+            this.entity.x = holdPivotX;
+            this.entity.y = holdPivotY;
 
         },
 
@@ -57,8 +77,11 @@
         },
 
         onUpdate: function () {
-            if (this.blade.rotation === 120 || this.blade.rotation === -120)
-                this.blade.tween = Hilo.Tween.to(this.blade, {rotation: 0}, {duration: 100});
+            if (this.entity.rotation === 120 || this.entity.rotation === -120)
+                this.entity.tween = Hilo.Tween.to(this.entity, {rotation: 0}, {duration: this.coolDown});
+
+            if(this.entity.rotation === 0)
+                this.currentDamage = this.attackDamage;
         }
     });
 

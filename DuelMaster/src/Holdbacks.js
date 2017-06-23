@@ -9,14 +9,14 @@ var Holdbacks = ns.Holdbacks = Hilo.Class.create({
         //管子之间的水平间隔
         this.hoseSpacingX = 100;
         //上下管子之间的垂直间隔，即小鸟要穿越的空间大小
-        this.hoseSpacingY = 200;
+        this.hoseSpacingY = 300;
         //管子的总数左右一对管子算一个）
-        this.numHoses = 4;
+        this.numHoses = 3;
         //移出屏幕左侧的管子数量，一般设置为管子总数的一半
         this.numOffscreenHoses = this.numHoses * 0.5;
         //管子的宽度（包括管子之间的间隔）
         // this.hoseWidth = 148 + this.hoseSpacingX;
-        this.hoseWidth = 300;
+        this.hoseWidth = 2080;
         this.hoseHeight = 50;
 
         //初始化障碍的宽和长度
@@ -54,8 +54,8 @@ var Holdbacks = ns.Holdbacks = Hilo.Class.create({
     placeHose: function(hose, index){
         hose.width = this.hoseWidth;
         hose.height = this.hoseHeight;
-        hose.y = parseInt(Math.random() * 4) * (this.hoseSpacingY) + 300;
-        hose.x = index * (this.hoseSpacingX + hose.width) + 500;
+        hose.y = index * (this.hoseSpacingY) + 200;
+        hose.x = 0;
 
     },
 
