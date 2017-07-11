@@ -47,11 +47,19 @@
         },
 
         isAttacking: function () {
-            if((+new Date()) - this.startime > this.coolDown)
+            if(this.getWaitingTime() == 0)
                 return false;
             else
                 return true;
         },
+
+		getWaitingTime: function() {
+			var elapseTime = (+new Date()) - this.startime;
+			var res =  this.coolDown - elapseTime;
+		  	if(res < 0)
+				res = 0;
+			return res;
+		},
 
         attack: function () {
             if((+new Date()) - this.startime > this.coolDown) {

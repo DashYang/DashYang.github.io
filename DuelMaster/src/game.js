@@ -351,8 +351,10 @@ var game = window.game = {
                 }
             }
 
+			//提示信息
             this.bodyStatusText.text = "\n垂直速度:" + this.avatar.body.verticalVelocity + "\n可穿透: "
-                + this.avatar.body.isFallen;
+                + this.avatar.body.isFallen + "\n射击CD：" + this.avatar.getWaitingTimeofFiring() + " 攻击cd: " 
+				+ this.avatar.getWaitingTimeofBlade() + " 冲击cd:" + this.avatar.getWaitingTimeofDashing();
             this.avatar.emulateMovement();
         }
     },

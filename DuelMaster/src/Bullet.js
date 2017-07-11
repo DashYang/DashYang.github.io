@@ -22,9 +22,17 @@
         queue: new Array(),
         coolDown: 500,
         fireStartime: 0,
+		
+		getWaitingTime: function() {
+			var elapseTime = ((+new Date())) - this.fireStartime;
+			var res = this.coolDown - elapseTime; 
+			if(res < 0)
+				res = 0;
+			return res;
+		},
 
         fire: function (fireX, fireY, ratio) {
-            if(((+new Date())) - this.fireStartime <= this.coolDown)
+            if(this.getWaitingTime() != 0)
                 return;
             this.fireStartime = (+new Date());
             var bullet1 = new Hilo.Bitmap({

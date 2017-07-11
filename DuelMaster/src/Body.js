@@ -40,7 +40,9 @@
         flyStartTime: 0, //小鸟飞行起始时间
         hitCeilingCount: 0, hitFloorCount: 0, //撞板
         isFallen: false, isFallenStartime: 0, isFallenCoolDown: 250,
-        getReady: function () {
+        dashCoolDownTime: 1000,
+
+		getReady: function () {
         },
 
 
@@ -67,12 +69,19 @@
         },
 
         dash: function () {
-            if ((+new Date()) - this.dashingStartime > 1000) {
+            if ((+new Date()) - this.dashingStartime > this.dashCoolDownTime) {
                 this.tween = Hilo.Tween.to(this, {x: this.x + this.scaleX * this.defaultHorizontalVelocity * 20},
                     {duration: 10});
                 this.dashingStartime = (+new Date());
             }
         },
+		
+		getWaitingTime: function() {
+			var elapseTime = (+new Date()) - this.dashingStartime;						var res = this.dashCoolDownTime - elapseTime;
+		  	if(res < 0 )
+				res = 0;
+			return res;	
+		},
 
         fall: function () {
             if(this.isFallen == false) {

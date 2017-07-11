@@ -22,7 +22,7 @@
                 lineSpacing: 0,
                 width: this.body.width + 100,
                 height: 20,
-                pivotY: 30,s
+                pivotY: 30,
                 x: this.body.x,
                 y: this.body.y,
             }).addTo(this);
@@ -108,6 +108,19 @@
         dash: function () {
             this.body.dash();
         },
+		
+		//获取等待时间
+		getWaitingTimeofFiring: function() {
+			return this.bullet.getWaitingTime();
+		},
+		
+		getWaitingTimeofBlade: function() {
+			return this.blade.getWaitingTime();
+		},
+
+		getWaitingTimeofDashing: function() {
+			return this.body.getWaitingTime();
+		},
 
         emulateMovement: function () {
             this.body.emulateMovement();
