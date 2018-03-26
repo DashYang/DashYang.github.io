@@ -1,4 +1,5 @@
-﻿My Blog
+﻿Square Game
 ===============
-Square game http://dashyang.github.io/square.html
+link http://dashyang.github.io/SquareGame/square.html
+a simple web game, more informations are displayed in game!
 
