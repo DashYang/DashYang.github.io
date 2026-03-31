@@ -3,13 +3,21 @@ function getSquareType() {
     return Math.floor(Math.random() * 6); 
 } 
 
-// Phase control variables
-var phaseIndex = 1; // 1,2,3
-var phaseTimerId = null;
-var phaseHintTimerId = null;
-var phase3RefreshTimerId = null;
+// Stage control variables
+// stageIndex: 1 = Tutorial, 2 = Stage2 (hints & time bonus), 3 = Stage3 (no hints/time bonus),
+// 4 = Stage4 (auto-refresh single-solution), 5 = Stage5 (end/score input)
+var stageIndex = 1;
+var stageTimerId = null;
+var stageHintTimerId = null;
+var stage4RefreshTimerId = null;
+// prevent re-entrant advanceStage calls
+var advanceLocked = false;
 // track last clear in game ticks (not physical time)
 var lastClearTick = 0;
+// track last user selection in game ticks (used for stage2 auto-hint gating)
+var lastSelectionTick = 0;
+// whether current stage gameplay is actively running (not paused / intro)
+var stageRunning = false;
 // prevent map-regeneration / auto-refresh from interfering while user has a selection
 var selectionPending = false;
 var selectionTimeoutId = null;
@@ -39,15 +47,17 @@ function initMap() {
 }
 
 function refreshScreen() {
-	for(var i = 0 ; i < row ; i ++)
-		for(var j = 0 ; j < column ; j ++)
-		{
-			var square = G.O['square'+(i * column + j)];
-			if (square == undefined)
-				console.log(i + " " + j)
-			square.swapClass(square.tag.className , 'square' + map[i][j]).draw();
-			
-		}
+    for(var i = 0 ; i < row ; i ++)
+        for(var j = 0 ; j < column ; j ++)
+        {
+            var square = G.O['square'+(i * column + j)];
+            if (!square) {
+                try { if (typeof debugMode !== 'undefined' && debugMode) console.log('refreshScreen: missing square', i, j); } catch(e) {}
+                continue;
+            }
+            try { square.swapClass(square.tag.className , 'square' + map[i][j]).draw(); } catch(e) {}
+
+        }
 
 }
 
@@ -106,6 +116,39 @@ function renderLeaderboardHTML() {
     return html;
 }
 
+// show end-of-game screen: if score qualifies for leaderboard allow name entry,
+// otherwise show read-only score with only a Skip button.
+function showEndScreen(scoreValue) {
+    try {
+        var list = getLeaderboard() || [];
+        var qualifies = false;
+        if (!list || list.length < (leaderboardSize || 0)) {
+            qualifies = true;
+        } else {
+            var lowest = (list[list.length - 1] && list[list.length - 1].score) || 0;
+            // allow tie to qualify
+            if (scoreValue >= lowest) qualifies = true;
+        }
+        if (qualifies) {
+            // delegate to name picker for qualified scores
+            return showNamePicker(scoreValue);
+        }
+        // non-qualifying: show read-only score + Skip
+        gamestate = 'off';
+        isTouched = true;
+        var html = '<div style="text-align:center; color:#fff;">'
+            + '<h1 class="game-over-title">' + (I18N && I18N.gameOverTitle ? I18N.gameOverTitle : 'Game Over') + '</h1>'
+            + '<h2 class="you-got-text">' + ((I18N && I18N.youGot) ? I18N.youGot : 'You got') + '</h2>'
+            + '<h1 class="score-display">' + ((I18N && I18N.pointsLabel) ? I18N.pointsLabel + ' ' : '') + scoreValue + '</h1>'
+            + '<div style="margin-top:8px;"><button id="skipOnly">' + (I18N && I18N.skipText ? I18N.skipText : 'Skip') + '</button></div>'
+            + renderLeaderboardHTML()
+            + '</div>';
+        G.O.viewport.setSrc(html).draw();
+        var btn = document.getElementById('skipOnly');
+        if (btn) btn.addEventListener('click', function(){ try { resetGame(); } catch(e) { G.O.viewport.setSrc(renderLeaderboardHTML()).draw(); } });
+    } catch(e) { console.log('showEndScreen error', e); }
+}
+
 // show a name picker UI (3 sliders A-Z) and save score when confirmed
 function showNamePicker(scoreValue) {
     try {
@@ -117,9 +160,9 @@ function showNamePicker(scoreValue) {
 
         // build HTML with visible up/down buttons for each letter column (better for touch)
         var html = '<div style="text-align:center; color:#fff;">'
-            + '<h1 style="color:#FFD700; text-shadow:0 0 8px #fff">' + (I18N && I18N.gameOverTitle ? I18N.gameOverTitle : 'Game Over') + '</h1>'
-            + '<h2 style="color:#FF8C00">' + (I18N && I18N.youGot ? I18N.youGot : 'You got') + '</h2>'
-            + '<h1 style="font-size:48px; color:#00FF99">' + ((I18N && I18N.pointsLabel) ? I18N.pointsLabel + ' ' : '') + scoreValue + '</h1>'
+            + '<h1 class="game-over-title">' + (I18N && I18N.gameOverTitle ? I18N.gameOverTitle : 'Game Over') + '</h1>'
+            + '<h2 class="you-got-text">' + (I18N && I18N.youGot ? I18N.youGot : 'You got') + '</h2>'
+            + '<h1 class="score-display">' + ((I18N && I18N.pointsLabel) ? I18N.pointsLabel + ' ' : '') + scoreValue + '</h1>'
             + '<div class="name-picker">'
             + '<div class="name-columns">'
             + '<div class="letter-col"><button class="letter-up" data-idx="0"><i class="arrow"></i></button><span id="letter0" class="letter"><span class="strip">' + generateAlphaStripHTML() + '</span></span><button class="letter-down" data-idx="0"><i class="arrow"></i></button></div>'
@@ -211,15 +254,21 @@ function startInactivityTimer() {
     clearInactivityTimer();
     try {
         // 5000ms = 5s
-        window._inactivityTimer = setTimeout(function(){
-            // only trigger when game is running and hints available and we're in phase 1
-            if (gamestate !== 'on') return;
-            if (phaseIndex !== 1) return;
-            if ((window._hintRemaining || 0) <= 0) return;
-            // ensure we have an available rectangle and ansx/ansy set
-            if (enable() == 0) return;
-            // use the same visual effect as manual showHint(): flash the four corner squares
-            try {
+            window._inactivityTimer = setTimeout(function(){
+                // only trigger when game is running and hints available and we're in stage 2
+                if (gamestate !== 'on') return;
+                if (stageIndex !== 2) return;
+                if ((window._hintRemaining || 0) <= 0) return;
+                // ensure we have an available rectangle and ansx/ansy set
+                if (enable() == 0) return;
+                // use the same visual effect as manual showHint(): flash the four corner squares
+                try {
+                // Only show auto-hint if sufficient game-time has passed since last user selection
+                try {
+                    var elapsedTicks = (typeof gameTick !== 'undefined' ? gameTick : 0) - (lastSelectionTick || 0);
+                    var elapsedSec = Math.floor(elapsedTicks / 25);
+                    if (elapsedSec < (phase1HintIntervalSec || 5)) return;
+                } catch(e) {}
                 // set LOOK indicator and mark auto-hint active so UI shows LOOK during flash
                 try { if (G.O && G.O.tutorial) G.O.tutorial.setSrc("<p class='tutorial'>" + (I18N && I18N.tutorialLook ? I18N.tutorialLook : 'LOOK') + "</p>").draw(); } catch(e){}
                 window._autoHintActive = true;
@@ -234,9 +283,9 @@ function startInactivityTimer() {
                      try { if (G.O && G.O.tutorial) G.O.tutorial.setSrc("<p class='tutorial'>" + (I18N && I18N.tutorialHelp ? I18N.tutorialHelp : 'HELP!') + "</p>").draw(); } catch(e){}
                      window._autoHintActive = false;
                  }, 1200);
-            } catch(e) {
-                console.log('auto-hint showHint error', e);
-            }
+                } catch(e) {
+                    console.log('auto-hint showHint error', e);
+                }
             // restart timer for future inactivity
             startInactivityTimer();
         }, 5000);
@@ -291,6 +340,7 @@ function showHint() {
     }, 1200);
     return true;
 }
+
 
 function enable(){
 	var x1, y1 , x2 ,y2;
@@ -360,8 +410,10 @@ function createSquares(y1 , x1 , y2 , x2, pts, secBonus) {
             var square = G.O['square'+(i * column + j)];
             var oldType = 'square'+map[i][j];
             map[i][j] = getSquareType();
-            square.swapClass(oldType , 'square'+map[i][j]);
-            square.turnOn();
+            if (square) {
+                try { square.swapClass(oldType , 'square'+map[i][j]); } catch(e) {}
+                try { square.turnOn(); } catch(e) {}
+            }
         }
     // show pop +delta above the cleared rectangle (or below if would overflow)
     try {
@@ -407,10 +459,12 @@ function createSquares(y1 , x1 , y2 , x2, pts, secBonus) {
 function squareHandler(square) {
 	var id = square.id.substring(square.id.indexOf('e') + 1);
 	var columnIndex = id % column , rowIndex = Math.floor(id / column);
-	if (isPicked()) 
-	{
-		var lastSquare = G.O['square'+(lasty * column + lastx)];
-		lastSquare.removeClass('picked').draw();
+    if (isPicked()) 
+    {
+        var lastSquare = G.O['square'+(lasty * column + lastx)];
+        if (lastSquare) {
+            try { lastSquare.removeClass('picked').draw(); } catch(e) {}
+        }
 		if(isAcceptable(lasty , lastx , rowIndex , columnIndex)) {
 			var x1 = square.x , y1 = square.y , x2 = lastSquare.x , y2 = lastSquare.y;
 			var sx = x1 ,sy = y1 , bx = x2 ,by = y2;
@@ -427,7 +481,7 @@ function squareHandler(square) {
             // compute time bonus only in phase 1
             var secBonus = 0;
             try {
-                if (phaseIndex === 1) {
+                if (stageIndex === 2) {
                     // compute elapsed in game seconds (gameTick counts ticks; 25 ticks per second)
                     var elapsedTicks = (typeof gameTick !== 'undefined' ? gameTick : 0) - (lastClearTick || 0);
                     var elapsedSec = Math.floor(elapsedTicks / 25);
@@ -439,7 +493,7 @@ function squareHandler(square) {
             // record last clear in game ticks
             var prevLastClear = lastClearTick;
             lastClearTick = (typeof gameTick !== 'undefined' ? gameTick : 0);
-            try { console.log('[TESTLOG] clear: pts=', pts, ' secBonus=', secBonus, ' prevLastClear=', prevLastClear, ' gameTick=', (typeof gameTick !== 'undefined' ? gameTick : 0), ' elapsedTicks=', ((typeof gameTick !== 'undefined' ? gameTick : 0) - (prevLastClear || 0)), ' elapsedSec=', Math.floor(((typeof gameTick !== 'undefined' ? gameTick : 0) - (prevLastClear || 0))/25), ' newLastClear=', lastClearTick); } catch(e) {}
+            try { if (typeof debugMode !== 'undefined' && debugMode) console.log('[TESTLOG] clear: pts=', pts, ' secBonus=', secBonus, ' prevLastClear=', prevLastClear, ' gameTick=', (typeof gameTick !== 'undefined' ? gameTick : 0), ' elapsedTicks=', ((typeof gameTick !== 'undefined' ? gameTick : 0) - (prevLastClear || 0)), ' elapsedSec=', Math.floor(((typeof gameTick !== 'undefined' ? gameTick : 0) - (prevLastClear || 0))/25), ' newLastClear=', lastClearTick); } catch(e) {}
 			G.O.explosion.setVar({x:sx, y:sy , w:bx-sx+25 , h:by-sy+25}).AI('reset').turnOn();
             clearSquares(lasty , lastx , rowIndex , columnIndex);
             createSquares(lasty , lastx , rowIndex , columnIndex, pts, secBonus);
@@ -457,6 +511,8 @@ function squareHandler(square) {
 	}
     lasty = rowIndex , lastx = columnIndex;
     square.addClass("picked").draw();
+    // record the tick of the user's selection (used to gate auto-hint)
+    try { lastSelectionTick = (typeof gameTick !== 'undefined' ? gameTick : 0); } catch(e) {}
     // mark that there is a pending selection; start/reset a timeout to clear it
     try { if (selectionTimeoutId) { clearTimeout(selectionTimeoutId); selectionTimeoutId = null; } } catch(e) {}
     selectionPending = true;
@@ -545,15 +601,15 @@ function resetGame() {
         resumeGame();
         try { startInactivityTimer(); } catch(e) {}
         // initialize phase cycle
-        phaseIndex = 1;
+        stageIndex = 2; // when starting gameplay, enter stage 2
         // initialize lastClearTick to current gameTick (gameTick may be zero at start)
         lastClearTick = (typeof gameTick !== 'undefined' ? gameTick : 0);
-        try { console.log('[TESTLOG] resetGame: init lastClearTick=', lastClearTick, ' gameTick=', (typeof gameTick !== 'undefined' ? gameTick : 0)); } catch(e) {}
-        try { startPhaseCycle(); } catch(e) {}
+        try { if (typeof debugMode !== 'undefined' && debugMode) console.log('[TESTLOG] resetGame: init lastClearTick=', lastClearTick, ' gameTick=', (typeof gameTick !== 'undefined' ? gameTick : 0)); } catch(e) {}
+        try { startStageCycle(); } catch(e) {}
         gameStarted = true;
     } else {
         // for first run we still initialize lastClearTick but do not start timers
-        phaseIndex = 1;
+        stageIndex = 1;
         lastClearTick = (typeof gameTick !== 'undefined' ? gameTick : 0);
     }
 
@@ -565,31 +621,50 @@ function resetGame() {
 }
 
 // Phase control: start/stop cycle and handlers
-function startPhaseCycle() {
-    // clear any existing timers
-    try { if (phaseTimerId) clearTimeout(phaseTimerId); } catch(e) {}
-    try { if (phaseHintTimerId) clearInterval(phaseHintTimerId); } catch(e) {}
-    try { if (phase3RefreshTimerId) clearInterval(phase3RefreshTimerId); } catch(e) {}
-    // schedule phase advancement
+function startStageCycle() {
+    // clear any existing timers (only if timerSafeguards enabled)
     try {
-        phaseTimerId = setTimeout(function(){ advancePhase(); }, (phaseDurationSec || 20) * 1000);
+        if (typeof timerSafeguards === 'undefined' || timerSafeguards) {
+            if (stageTimerId) { clearTimeout(stageTimerId); stageTimerId = null; }
+            if (stageHintTimerId) { clearInterval(stageHintTimerId); stageHintTimerId = null; }
+            if (stage4RefreshTimerId) { clearInterval(stage4RefreshTimerId); stage4RefreshTimerId = null; }
+        }
     } catch(e) {}
-    // start phase-specific behaviors
-    if (phaseIndex === 1) {
+    // schedule stage advancement
+    try {
+        // ensure no duplicate timer exists when configured
+        try {
+            if (typeof timerSafeguards === 'undefined' || timerSafeguards) {
+                if (stageTimerId) { clearTimeout(stageTimerId); stageTimerId = null; }
+            }
+        } catch(e) {}
+        stageTimerId = setTimeout(function(){ advanceStage(); }, (phaseDurationSec || 20) * 1000);
+    } catch(e) {}
+    // start stage-specific behaviors
+    if (stageIndex === 2) {
         // periodic hints every configured seconds
         try {
-            phaseHintTimerId = setInterval(function(){
-                if (gamestate !== 'on') return;
-                if ((window._hintRemaining || 0) <= 0) return;
-                if (enable() == 0) return;
-                if (showHint()) { window._hintRemaining = Math.max(0, (window._hintRemaining||0) - 1); try{ updateDashboard(); }catch(e){} }
-            }, (phase1HintIntervalSec || 5) * 1000);
+            stageHintTimerId = setInterval(function(){
+                try {
+                    if (gamestate !== 'on') return;
+                    if ((window._hintRemaining || 0) <= 0) return;
+                    if (enable() == 0) return;
+                    // Only show auto-hint if at least phase1HintIntervalSec has passed since last user selection
+                    var elapsedTicks = (typeof gameTick !== 'undefined' ? gameTick : 0) - (lastSelectionTick || 0);
+                    var elapsedSec = Math.floor(elapsedTicks / 25);
+                    if (elapsedSec < (phase1HintIntervalSec || 5)) return;
+                    if (showHint()) { window._hintRemaining = Math.max(0, (window._hintRemaining||0) - 1); try{ updateDashboard(); }catch(e){} }
+                } catch(e) {}
+            }, 1000); // check every second whether to show the hint (gating logic handles interval)
         } catch(e){}
     }
-    if (phaseIndex === 3) {
+    if (stageIndex === 4) {
         // refresh board every configured seconds ensuring single solution
-        try {
-            phase3RefreshTimerId = setInterval(function(){
+            try {
+            if (typeof timerSafeguards === 'undefined' || timerSafeguards) {
+                if (stage4RefreshTimerId) { clearInterval(stage4RefreshTimerId); stage4RefreshTimerId = null; }
+            }
+            stage4RefreshTimerId = setInterval(function(){
                 if (gamestate !== 'on') return;
                 // if player currently has a selection pending, skip auto-refresh to avoid invalidating the pick
                 if (selectionPending) return;
@@ -597,34 +672,46 @@ function startPhaseCycle() {
                 var attempts = 0;
                 do { initMap(); attempts++; } while(enable() !== 1 && attempts < 30);
                 refreshScreen();
-            }, (phase3RefreshIntervalSec || 2) * 1000);
+            }, (phase3RefreshIntervalSec || 3) * 1000);
         } catch(e){}
     }
 }
 
-function advancePhase() {
+function advanceStage() {
+    if (advanceLocked) return;
+    advanceLocked = true;
     try {
-        // move to next phase up to 3
-        phaseIndex = Math.min(3, (phaseIndex || 1) + 1);
-        // restart phase cycle behaviors
-        try { if (phaseHintTimerId) { clearInterval(phaseHintTimerId); phaseHintTimerId = null; } } catch(e) {}
-        try { if (phase3RefreshTimerId) { clearInterval(phase3RefreshTimerId); phase3RefreshTimerId = null; } } catch(e) {}
-        // if entering phase3, start its refresh timer
-        if (phaseIndex === 3) {
-            try { startPhaseCycle(); } catch(e) {}
+        // ensure any legacy stage timer is cleared so we don't get immediate duplicate advances
+        try { if (stageTimerId) { clearTimeout(stageTimerId); stageTimerId = null; } } catch(e) {}
+        // move to next stage: 2->3->4->5 then wrap to 2
+        stageIndex = Math.min(5, (stageIndex || 1) + 1);
+        // restart stage cycle behaviors
+        try { if (stageHintTimerId) { clearInterval(stageHintTimerId); stageHintTimerId = null; } } catch(e) {}
+        try { if (stage4RefreshTimerId) { clearInterval(stage4RefreshTimerId); stage4RefreshTimerId = null; } } catch(e) {}
+        // if entering stage4, start its refresh timer
+    if (typeof debugMode !== 'undefined' && debugMode) try { console.log('advanceStage -> new stageIndex=', stageIndex); } catch(e) {}
+    if (stageIndex === 4) {
+            try { showStage4Intro(); } catch(e) {}
+        } else if (stageIndex === 5) {
+        // end stage: show score input / leaderboard flow
+        stageRunning = false;
+        try { showEndScreen(score); } catch(e) { console.log('showEndScreen error', e); }
         } else {
-            // schedule next advancement
-            try { phaseTimerId = setTimeout(function(){ advancePhase(); }, (phaseDurationSec || 20) * 1000); } catch(e) {}
-            // start phase1 hint timer if back to phase1
-            if (phaseIndex === 1) try { startPhaseCycle(); } catch(e) {}
+            // For stageIndex 2 or 3, start the stage cycle immediately (no intro overlay).
+            try { stageRunning = false; } catch(e) {}
+            try {
+                // start stage behaviors for this stage (startStageCycle will schedule advancement)
+                try { startStageCycle(); } catch(e) {}
+            } catch(e) { console.log('advanceStage startStageCycle error', e); }
         }
-    } catch(e) { console.log('advancePhase error', e); }
+    } catch(e) { console.log('advanceStage error', e); }
+    finally { advanceLocked = false; }
 }
 
-function stopPhaseCycle() {
-    try { if (phaseTimerId) clearTimeout(phaseTimerId); phaseTimerId = null; } catch(e) {}
-    try { if (phaseHintTimerId) clearInterval(phaseHintTimerId); phaseHintTimerId = null; } catch(e) {}
-    try { if (phase3RefreshTimerId) clearInterval(phase3RefreshTimerId); phase3RefreshTimerId = null; } catch(e) {}
+function stopStageCycle() {
+    try { if (stageTimerId) { clearTimeout(stageTimerId); stageTimerId = null; } } catch(e) {}
+    try { if (stageHintTimerId) { clearInterval(stageHintTimerId); stageHintTimerId = null; } } catch(e) {}
+    try { if (stage4RefreshTimerId) { clearInterval(stage4RefreshTimerId); stage4RefreshTimerId = null; } } catch(e) {}
 }
 
 // wire global user interactions to reset inactivity timer so auto-hint doesn't trigger while user is active
@@ -638,8 +725,8 @@ try {
 try { startInactivityTimer(); } catch(e) {}
 
 function popTutorial() {
-    // If in phase 3, do not allow pause/tutorial overlay
-    if (phaseIndex === 3) return;
+    // If in stage 4, do not allow pause/tutorial overlay
+    if (stageIndex === 4) return;
     gamestate = "pause";
     // cancel any pending selection to avoid leaving stray pick visuals
     try { if (selectionTimeoutId) { clearTimeout(selectionTimeoutId); selectionTimeoutId = null; } } catch(e) {}
@@ -658,9 +745,9 @@ function popTutorial() {
         // mark that we've shown the first-run tutorial
         startFlag = false;
     } else {
-        // show step text based on current phase
-        if (phaseIndex === 1) tipInfo = "<p class='tutorial'>" + (typeof step1Text !== 'undefined' ? step1Text : 'Step 1: You will receive extra time bonuses based on your recent performance.') + "</p>";
-        else if (phaseIndex === 2) tipInfo = "<p class='tutorial'>" + (typeof step2Text !== 'undefined' ? step2Text : 'Step 2: No extra time bonuses will be awarded now.') + "</p>";
+        // show step text based on current stage (map old step1/2/3 to stage2/3/4)
+        if (stageIndex === 2) tipInfo = "<p class='tutorial'>" + (typeof step1Text !== 'undefined' ? step1Text : 'Step 1: You will receive extra time bonuses based on your recent performance.') + "</p>";
+        else if (stageIndex === 3) tipInfo = "<p class='tutorial'>" + (typeof step2Text !== 'undefined' ? step2Text : 'Step 2: No extra time bonuses will be awarded now.') + "</p>";
         else tipInfo = "<p class='tutorial'>" + (typeof step3Text !== 'undefined' ? step3Text : 'Final Step: Everything will change soon — hurry up and good luck!') + "</p>";
     }
     // show tipInfo on the large tutorial board
@@ -669,30 +756,53 @@ function popTutorial() {
     // after showing overlay, set the small tutorial control: Start for first-run, Stop otherwise
     try {
         if (G.O && G.O.tutorial) {
-            var ctrl = wasFirst ? ((I18N && I18N.startControl) ? I18N.startControl : 'Start') : ((I18N && I18N.stopControl) ? I18N.stopControl : 'Stop');
+            var ctrl;
+            // For entering stage 4, the overlay should show Resume instead of Stop
+            if (!wasFirst && stageIndex === 4) {
+                ctrl = (I18N && I18N.tutorialResume) ? I18N.tutorialResume : 'Resume';
+            } else {
+                ctrl = wasFirst ? ((I18N && I18N.startControl) ? I18N.startControl : 'Start') : ((I18N && I18N.stopControl) ? I18N.stopControl : 'Stop');
+            }
             G.O.tutorial.setSrc("<p class='tutorial'>" + ctrl + "</p>").draw();
         }
     } catch(e){}
 }
 
 function resumeGame() {
-	if(gamestate == "pause") {
-		gamestate = "on";
-		G.O.tutorialboard.setSrc("").swapClass("tutorialboardOn" , "tutorialboardOff").draw();
+    if(gamestate == "pause") {
+        gamestate = "on";
+        G.O.tutorialboard.setSrc("").swapClass("tutorialboardOn" , "tutorialboardOff").draw();
         // set the small control label: if this was the first run we had startFlag true before popTutorial; after first run show Stop
         try {
             var label = (I18N && I18N.stopControl) ? I18N.stopControl : 'Stop';
             G.O.tutorial.setSrc("<p class='tutorial'>" + label + "</p>").draw();
         } catch(e) {}
-	}
+        // remove any stageInfo overlay if present (used for Stage4 intro)
+        try { if (G.O && G.O.stageInfo) { G.O.stageInfo.setSrc("").turnOff(); } } catch(e) {}
+    }
     // if game was not started yet (first-run), start timers and phase cycle now
     if (!gameStarted) {
         try { startInactivityTimer(); } catch(e) {}
-        try { phaseIndex = 1; } catch(e) {}
+        try { /* normalize to stage flow */ stageIndex = 2; } catch(e) {}
         try { lastClearTick = (typeof gameTick !== 'undefined' ? gameTick : 0); } catch(e) {}
-        try { startPhaseCycle(); } catch(e) {}
+        try { startStageCycle(); } catch(e) {}
         gameStarted = true;
     }
+    // If resuming from the Stage4 intro, start the Stage4 running behavior (auto-refresh)
+    try {
+        if (stageIndex === 4 && !stage4RefreshTimerId) {
+            // don't allow pausing while stage 4 is running
+            try { startStageCycle(); } catch(e) {}
+            stageRunning = true;
+            // ensure gamestate is on
+            try { gamestate = 'on'; } catch(e) {}
+        }
+        // If resuming from stage 2 or 3 intro, start that stage's timers/cycle now
+        if ((stageIndex === 2 || stageIndex === 3) && !stageTimerId) {
+            try { startStageCycle(); } catch(e) {}
+            stageRunning = true;
+        }
+    } catch(e) {}
 	var bigside = squareside + squaremargin;
     for (i = 0 ; i < row ; i ++) 
     {
@@ -712,5 +822,45 @@ function resumeGame() {
 
     // update dashboard using centralized updater
     updateDashboard();
+}
+
+// override G.O.tutorial click handler to start Stage4 when Resume is clicked while on stage 4
+try {
+    // When the tutorial small control is clicked and the current overlay label is Resume and we're on stageIndex===4,
+    // resumeGame will be called via existing handlers. We need to ensure Stage4 actually starts running after resume.
+    var originalTutorialOnClick = null; // placeholder (we don't override engine internals)
+} catch(e) {}
+
+// show the Stage 4 intro overlay (special Resume control). When user resumes,
+// startStageCycle will be invoked from resumeGame and Stage4's refresh will begin.
+function showStage4Intro() {
+    try {
+        // Render a dedicated stageInfo gob into the viewport so it's robust across load orders
+        var titleText = (I18N && I18N.tutorialTitle) ? I18N.tutorialTitle : 'Stage Info';
+        var html = '<div style="text-align:center; color:#fff; padding:16px;">'
+            + '<div class="stage-info"><h3>' + titleText + '</h3>'
+            + '<p class="tutorial">' + (typeof step3Text !== 'undefined' ? step3Text : 'Final Step: Everything will change soon \u2014 hurry up and good luck!') + '</p>'
+            + '<div style="margin-top:10px;"><button id="stage4Resume">' + ((I18N && I18N.tutorialResume) ? I18N.tutorialResume : 'Resume') + '</button></div>'
+            + '</div></div>';
+        try {
+            if (G && G.O && G.O.viewport) {
+                // create or reuse a dedicated stageInfo gob so other overlays (tutorialboard) are not required
+                if (!G.O.stageInfo) {
+                    G.makeGob('stageInfo', G.O.viewport).setVar({x:0,y:0,w:viewportwidth,h:viewportheight}).addClass('stage-info-gob').turnOn();
+                }
+                G.O.stageInfo.setSrc(html).draw();
+                // attach handler for resume button; small timeout to ensure DOM exists
+                setTimeout(function(){
+                    try {
+                        var btn = document.getElementById('stage4Resume');
+                        if (btn) btn.addEventListener('click', function(){ try { resumeGame(); } catch(e) {} });
+                    } catch(e) {}
+                }, 20);
+            }
+        } catch(e) { console.log('showStage4Intro set stageInfo error', e); }
+        // pause gameplay until user presses Resume
+        gamestate = 'pause';
+        stageRunning = false;
+    } catch(e) { console.log('showStage4Intro error', e); }
 }
 }

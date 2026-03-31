@@ -35,10 +35,17 @@ var I18N = {
     pointsLabel: 'Pts:'
 };
 
+// Debug flag: when true, enables verbose TESTLOG console output
+var debugMode = true;
+
+// Timer safeguards: when true, start/stop stage timers will clear existing timers
+// before creating new ones to avoid duplicates. Can be turned off for testing.
+var timerSafeguards = true;
+
 // Phase / gameplay configuration
 var phaseDurationSec = 20; // seconds before moving to next phase
 var phase1HintIntervalSec = 5; // phase1 hint periodic interval
-var phase3RefreshIntervalSec = 2; // phase3 board refresh interval
+var phase3RefreshIntervalSec = 3; // phase3 (stage4) board refresh interval (default 3s)
 
 // Step texts shown on pause (configurable)
 var step1Text = 'Step 1: You will receive extra time bonuses based on your recent performance.';

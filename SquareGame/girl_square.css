@@ -386,3 +386,46 @@
     border: 2px solid #3d3938 !important;
     box-shadow: 0 10px 0 rgba(0, 0, 0, 0.5) !important;
 }
+
+/* 标题：Game Over - 模拟霓虹招牌效果 */
+.game-over-title {
+    font-family: 'Arial Black', sans-serif; /* 建议使用粗壮的字体 */
+    color: #FFD700;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    /* 三层阴影：1. 黑色描边 2. 下方的物理厚度 3. 外层霓虹光晕 */
+    text-shadow: 
+        1px 1px 0 #000, 
+        2px 2px 0 #000, 
+        3px 3px 0 #000, 
+        0 0 10px rgba(255, 215, 0, 0.8);
+    margin-bottom: 10px;
+}
+
+/* 中间文字：You got - 沉稳的金属感 */
+.you-got-text {
+    font-family: 'Arial', sans-serif;
+    color: #FF8C00;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    margin: 5px 0;
+}
+
+/* 分数：Pts: 0 - 电子显示屏效果 */
+.score-display {
+    font-family: 'Courier New', monospace; /* 等宽字体更有电子表感 */
+    font-size: 56px !important;
+    color: #00FF99;
+    /* 模拟电子管发光 */
+    text-shadow: 
+        0 0 10px rgba(0, 255, 153, 0.7),
+        0 0 20px rgba(0, 255, 153, 0.4),
+        2px 2px 2px rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.2); /* 增加一层淡淡的暗色背景框，像显示屏 */
+    display: inline-block;
+    padding: 0 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 153, 0.2);
+}
