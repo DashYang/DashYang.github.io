@@ -3,11 +3,10 @@ function squareManage() {
 	{
 		for(var j = 0; j < column; j ++)
 		{
-			var square = G.O['square'+(i * column + j)];	
-			if ( square.tagContainsMouseClick() && isTouched == false)
-			{
-				squareHandler(square);
-			}
+            var square = G.O['square'+(i * column + j)];
+            if (square && typeof square.tagContainsMouseClick === 'function' && square.tagContainsMouseClick() && isTouched == false) {
+                try { squareHandler(square); } catch(e) { console.log('squareHandler error', e); }
+            }
 		}
 	}	
 }

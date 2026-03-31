@@ -5,6 +5,8 @@ var score = 0;
 var isTouched = false;
 var startFlag = true;
 var level = maxLevel;
+// gameTick counts game ticks (same unit as timer). 25 ticks == 1 visible second.
+var gameTick = 0;
 
 G.F.loadMain = function () {
 	this.AI = G.F.mainAI;
@@ -13,8 +15,11 @@ G.F.loadMain = function () {
 }; 
 
 G.F.mainAI = function () {
-	if(gamestate == "on")
-		timer -= 1;
+    if(gamestate == "on") {
+        // decrement timer and advance game tick (game time, not physical time)
+        timer -= 1;
+        gameTick += 1;
+    }
 	G.O.explosion.AI();
     if(timer <= 0 && gamestate == "on") {
         clearSquares(0 , 0 , row , column);

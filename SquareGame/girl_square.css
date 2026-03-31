@@ -52,21 +52,29 @@
 }
 
 .help .tutorial{
-	font-size:32px;
-	font-weight:bold;
+    font-size:32px;
+    font-weight:bold;
+    /* allow tutorial/help text to wrap to multiple lines on small screens */
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
 }
 
 .help .time{
-	font-size:20px;
-	margin-top:auto;
-	margin-bottom:auto;
+    font-size:20px;
+    margin-top:auto;
+    margin-bottom:auto;
 }
 
 .help .score{
-	font-size:15px;
-	margin-top:auto;
-	margin-bottom:auto;
+    font-size:15px;
+    margin-top:auto;
+    margin-bottom:auto;
 }
+
+/* allow dashboard/time/score labels to wrap */
+.help .time, .help .score { white-space:normal; overflow-wrap:break-word; word-break:break-word; }
 
 .tutorialboardOn {
 	background-color:rgb(258,221,206); 
@@ -110,6 +118,11 @@
 .name-picker .letter { display:inline-block; width:48px; height:48px; overflow:hidden; vertical-align:middle; margin:0 6px; border-radius:4px; background:linear-gradient(180deg,#222,#000); box-shadow: inset 0 -8px 16px rgba(255,255,255,0.02); }
 .name-picker .letter .strip { display:block; transition: transform 260ms cubic-bezier(.2,.9,.3,1); }
 .name-picker .letter .strip span { display:block; height:48px; line-height:48px; font-size:28px; font-weight:bold; color:#FFD700; text-shadow:0 0 8px rgba(255,215,0,0.8); }
+.name-picker .name-columns { display:flex; justify-content:center; align-items:center; gap:8px; }
+.name-picker .letter-col { display:flex; flex-direction:column; align-items:center; }
+.name-picker .letter-up, .name-picker .letter-down { width:44px; height:28px; font-size:16px; border-radius:6px; border:none; margin:4px 0; cursor:pointer; background:#333; color:#fff; box-shadow: 0 2px 6px rgba(0,0,0,0.6); }
+.name-picker .letter-up { background: linear-gradient(180deg,#4CAF50,#2E7D32); }
+.name-picker .letter-down { background: linear-gradient(180deg,#F44336,#C62828); }
 .name-picker .slider { width:120px; display:block; margin:6px auto; opacity:0; height:1px; }
 
 .name-picker button { padding:8px 14px; margin:6px; font-weight:bold; border-radius:6px; border:none; cursor:pointer; }
@@ -117,7 +130,7 @@
 .name-picker button#skipName { background:#444; color:#fff; box-shadow: 0 2px 6px rgba(0,0,0,0.6); }
 
 /* score pop animation */
-.score-pop { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); pointer-events: none; font-size:48px; font-weight:bold; color:#FFFF66; -webkit-text-stroke: 2px #000; text-shadow: 0 0 14px rgba(255,255,102,0.95), 0 6px 18px rgba(0,0,0,0.85); }
+.score-pop { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); pointer-events: none; font-size:48px; font-weight:bold; color:#FFFF66; -webkit-text-stroke: 2px #000; text-shadow: 0 0 14px rgba(255,255,102,0.95), 0 6px 18px rgba(0,0,0,0.85); max-width:260px; text-align:center; white-space:normal; overflow-wrap:break-word; word-break:break-word; }
 .score-pop.animate { animation: scorePop 900ms ease-out forwards; }
 @keyframes scorePop {
   0% { transform: translateX(-50%) translateY(0) scale(0.6); opacity:0; }
@@ -126,7 +139,13 @@
 }
 
 /* Tutoria style */
-.tutorial { font-family: 'Courier New', Courier, monospace; font-weight:bold; color:#FFFFFF; -webkit-text-stroke: 1px #000; text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 3px 6px rgba(0,0,0,0.85); font-size:32px; }
+.tutorial { font-family: 'Courier New', Courier, monospace; font-weight:bold; color:#FFFFFF; -webkit-text-stroke: 1px #000; text-shadow: 0 0 10px rgba(255,255,255,0.9), 0 3px 6px rgba(0,0,0,0.85); font-size:24px; max-width:100%; overflow-wrap:break-word; word-wrap:break-word; word-break:break-word; white-space:normal; }
+
+/* Tutorial film / vintage styling */
+.tutorial-film { display:flex; flex-direction:column; align-items:center; gap:8px; padding:8px; }
+.tutorial-img { max-width:100%; width:260px; height:auto; border:6px solid rgba(0,0,0,0.6); box-shadow: 0 8px 30px rgba(0,0,0,0.8), inset 0 0 40px rgba(255,200,150,0.06); filter: sepia(0.25) contrast(1.05) saturate(0.9); }
+.tutorial-first { font-size:18px; color:#FFF7E0; text-shadow: 0 2px 6px rgba(0,0,0,0.9); max-width:260px; text-align:center; overflow-wrap:break-word; word-wrap:break-word; word-break:break-word; }
+.tutorialboardOn { background: linear-gradient(180deg, rgba(30,20,10,0.95), rgba(10,10,10,0.9)); border-radius:8px; padding:8px; }
 
 .hint-button { display:inline-block; margin-left:6px; padding:2px 6px; font-size:12px; }
 
@@ -159,3 +178,211 @@
   font-family: sans-serif;
 }
 .hint-toggle.disabled { background:#eee; color:#bbb; cursor:default; }
+
+/* 通用样式：增加按钮的厚度感 */
+.letter-up, .letter-down {
+  border: none;
+  /* 增加一个深色的底部阴影，模拟按钮的厚度 */
+  box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+  /* 增加圆角，更像物理按键 */
+  border-radius: 6px; 
+  /* 确保内容居中 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 消除默认点击蓝框 */
+  outline: none; 
+  cursor: pointer;
+  /* 增加轻微过渡 */
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+/* 调整箭头，使其看起来更像嵌入在塑料里 */
+.letter-up i.arrow, .letter-down i.arrow {
+  opacity: 0.9;
+  filter: drop-shadow(0 -1px 0 rgba(0,0,0,0.5));
+}
+
+/* --- 绿色按键（上）--- */
+.letter-up {
+  /* 使用渐变，模拟顶部发光，底部颜色深 */
+  background: linear-gradient(180deg, #66bb6a 0%, #388e3c 100%);
+  /* 在按钮内部加上一个顶部的高光线条 */
+  border-top: 2px solid rgba(255,255,255,0.5);
+}
+
+/* --- 红色按键（下）--- */
+.letter-down {
+  background: linear-gradient(180deg, #ef5350 0%, #c62828 100%);
+  border-top: 2px solid rgba(255,255,255,0.5);
+}
+
+/* --- 按下时的物理反馈（非常重要！） --- */
+.letter-up:active, .letter-down:active {
+  /* 按钮陷下去 */
+  transform: translateY(2px);
+  /* 阴影变短 */
+  box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+/* 按钮容器 */
+.letter-up, .letter-down {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 箭头图形 */
+.arrow {
+  display: inline-block;
+  width: 10px;  /* 宽度 */
+  height: 10px; /* 高度 */
+  border-right: 2px solid white; /* 线条粗细 */
+  border-bottom: 2px solid white;
+  transition: transform 0.2s;
+}
+
+/* 向上：旋转 225 度 */
+.letter-up .arrow {
+  transform: translateY(2px) rotate(225deg);
+}
+
+/* 向下：旋转 45 度 */
+.letter-down .arrow {
+  transform: translateY(-2px) rotate(45deg);
+}
+
+/* 1. 弹窗主背景：模拟厚实的塑料/金属面板 */
+#tutorialboard {
+  /* 采用与按键一致的深色渐变逻辑 */
+  background: linear-gradient(180deg, #3a3635 0%, #1a1817 100%) !important;
+  
+  /* 核心：模拟物理厚度的边框和阴影 */
+  border: 2px solid #4a4645 !important;
+  border-radius: 16px !important;
+  box-shadow: 
+    0 10px 0 rgba(0, 0, 0, 0.4), /* 底部厚度感，呼应按键的阴影 */
+    0 20px 40px rgba(0, 0, 0, 0.6) !important; /* 整体悬浮感 */
+    
+  /* 内部布局微调 */
+  padding: 15px !important;
+  box-sizing: border-box;
+}
+
+/* 2. 标题：呼应黄色字母 A 的发光效果 */
+#tutorialboard h3 {
+  color: #ffcc00;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  /* 霓虹发光文字 */
+  text-shadow: 0 0 8px rgba(255, 204, 0, 0.6), 2px 2px 0px rgba(0,0,0,0.8);
+}
+
+/* 3. 示例图片容器：模拟内嵌式 CRT 屏幕 */
+.tutorial-film {
+  background: #000;
+  border: 4px solid #2a2a2a; /* 模拟屏幕边框 */
+  border-radius: 6px;
+  padding: 5px;
+  display: inline-block;
+  box-shadow: inset 0 0 20px rgba(0,0,0,1); /* 内阴影增加深度 */
+  margin-bottom: 15px;
+}
+
+.tutorial-img {
+  display: block;
+  max-width: 100%;
+  border-radius: 2px;
+  opacity: 0.9; /* 稍微降低亮度，更有老屏幕的感觉 */
+}
+
+/* 4. 说明文本区域：增加层次感 */
+.tutorial-first {
+  background: rgba(0, 0, 0, 0.35); /* 半透明暗色背景 */
+  color: #ccc !important;
+  padding: 15px !important;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: left;
+  /* 左侧金边装饰，呼应整体色调 */
+  border-left: 4px solid #ffcc00;
+  margin: 10px 5px !important;
+  box-shadow: inset 1px 1px 4px rgba(0,0,0,0.5);
+}
+
+/* --- 1. 底部整体对齐与基础样式 --- */
+#tutorial, #dashboard {
+    border-radius: 8px !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    /* 关键：给底部元素增加物理厚度 */
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4) !important;
+    transition: transform 0.1s;
+}
+
+/* --- 2. Stop 按钮：改为红色物理按键 --- */
+#tutorial {
+    background: linear-gradient(180deg, #ef5350 0%, #c62828 100%) !important;
+    border: 2px solid #b71c1c !important;
+    cursor: pointer;
+}
+
+#tutorial .tutorial {
+    color: white !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 18px;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* 模拟按下效果 */
+#tutorial:active {
+    transform: translateY(3px);
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+/* --- 3. Dashboard：改为电子仪表盘风格 --- */
+#dashboard {
+    background: linear-gradient(180deg, #333 0%, #111 100%) !important;
+    border: 2px solid #444 !important;
+    padding: 5px !important;
+}
+
+#dashboard .time, #dashboard .score {
+    font-family: 'Courier New', Courier, monospace; /* 使用等宽字体更有电子感 */
+    margin: 0;
+    line-height: 1.2;
+}
+
+#dashboard .time {
+    color: #ffcc00; /* 与字母 A 颜色统一 */
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#dashboard .score {
+    color: #00ff00; /* 绿色代表分数/生命值 */
+    font-size: 16px;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+/* --- 4. 这里的排行榜也需要微调以适应黑底 --- */
+.leaderboard {
+    display: none; /* 如果不需要一直显示可以隐藏，或调小字体 */
+}
+
+/* --- 5. 调整教程面板的背景，使其不那么沉重 --- */
+#tutorialboard {
+    background: linear-gradient(180deg, #2c2928 0%, #151312 100%) !important;
+    border: 2px solid #3d3938 !important;
+    box-shadow: 0 10px 0 rgba(0, 0, 0, 0.5) !important;
+}
