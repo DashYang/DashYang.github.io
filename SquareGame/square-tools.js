@@ -28,6 +28,8 @@ var gameStarted = false;
 var stage4NextRefreshAt = 0;
 var stage4RemainingMs = 0;
 var stage4Paused = false;
+// suppress stale tutorial clicks for a short window (ms timestamp)
+var tutorialClickSuppressUntil = 0;
 
 function clearStage4RefreshTimer() {
   try {
@@ -141,14 +143,28 @@ function saveScoreWithName(scoreValue, name) {
     var key = "squaregame_leaderboard";
     var list = JSON.parse(localStorage.getItem(key) || "[]");
     var n = (name || "").toString().toUpperCase().substring(0, 3) || "---";
-    list.push({ score: scoreValue, t: new Date().toISOString(), name: n });
+    var now = new Date().toISOString();
+    list.push({ score: scoreValue, t: now, name: n });
     list.sort(function (a, b) {
       return b.score - a.score;
     });
     list = list.slice(0, leaderboardSize);
     localStorage.setItem(key, JSON.stringify(list));
+    var rank = -1;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].score === scoreValue && list[i].name === n && list[i].t === now) {
+        rank = i + 1;
+        break;
+      }
+    }
+    return { rank: rank, name: n, score: scoreValue };
   } catch (e) {
     console.log("saveScore error", e);
+    return {
+      rank: -1,
+      name: (name || "").toString().toUpperCase().substring(0, 3) || "---",
+      score: scoreValue,
+    };
   }
 }
 
@@ -214,6 +230,47 @@ function getResumeLabel() {
     : "Resume";
 }
 
+function showRankFlashAndRestart(rankInfo) {
+  var rankLabel = I18N && I18N.rankLabel ? I18N.rankLabel : "Rank";
+  var notTopText =
+    I18N && I18N.rankNotInTop ? I18N.rankNotInTop : "Out of Top";
+  var savedPrefix =
+    I18N && I18N.rankSavedPrefix ? I18N.rankSavedPrefix : "Saved as";
+  var rankText =
+    rankInfo && rankInfo.rank > 0 ? "#" + rankInfo.rank : notTopText;
+  var html =
+    '<div class="rank-flash-wrap">' +
+    '<div class="rank-flash rank-flash-anim">' +
+    "<h3>" +
+    savedPrefix +
+    " " +
+    (rankInfo && rankInfo.name ? rankInfo.name : "---") +
+    "</h3>" +
+    "<p>" +
+    rankLabel +
+    ": " +
+    rankText +
+    "</p>" +
+    "</div>" +
+    "</div>";
+  try {
+    G.O.viewport.setSrc(html).draw();
+  } catch (e) {}
+  // Do not let inactivity timers run during the rank flash window.
+  try {
+    clearInactivityTimer();
+  } catch (e) {}
+  setTimeout(function () {
+    try {
+      resetGame();
+    } catch (e) {
+      try {
+        G.O.viewport.setSrc(renderLeaderboardHTML()).draw();
+      } catch (err) {}
+    }
+  }, 2000);
+}
+
 function updateStageControl() {
   try {
     if (!G.O || !G.O.tutorial) return;
@@ -261,7 +318,7 @@ function showEndScreen(scoreValue) {
     gamestate = "off";
     isTouched = true;
     var html =
-      '<div style="text-align:center; color:#fff;">' +
+      '<div class="game-over-panel" style="text-align:center; color:#fff;">' +
       '<h1 class="game-over-title">' +
       (I18N && I18N.gameOverTitle ? I18N.gameOverTitle : "Game Over") +
       "</h1>" +
@@ -310,7 +367,7 @@ function showNamePicker(scoreValue) {
 
     // build HTML with visible up/down buttons for each letter column (better for touch)
     var html =
-      '<div style="text-align:center; color:#fff;">' +
+      '<div class="game-over-panel" style="text-align:center; color:#fff;">' +
       '<h1 class="game-over-title">' +
       (I18N && I18N.gameOverTitle ? I18N.gameOverTitle : "Game Over") +
       "</h1>" +
@@ -381,19 +438,16 @@ function showNamePicker(scoreValue) {
     document
       .getElementById("confirmName")
       .addEventListener("click", function () {
+        var rankInfo = null;
         try {
           var name =
             valToChar(vals[0]) + valToChar(vals[1]) + valToChar(vals[2]);
-          saveScoreWithName(scoreValue, name);
+          rankInfo = saveScoreWithName(scoreValue, name);
         } catch (e) {
-          saveScoreWithName(scoreValue, "");
+          rankInfo = saveScoreWithName(scoreValue, "");
         }
-        // restart a new game after confirming name
-        try {
-          resetGame();
-        } catch (e) {
-          G.O.viewport.setSrc(renderLeaderboardHTML()).draw();
-        }
+        // show rank info briefly before starting a new run
+        showRankFlashAndRestart(rankInfo);
       });
 
     document.getElementById("skipName").addEventListener("click", function () {
@@ -852,6 +906,12 @@ function resetGame() {
   // If this is the first run (startFlag true), keep the game paused until the user presses Start
   timer = gametimer;
   score = 0;
+  // Reset game-time baseline so previous run/flash time does not leak into stage2 hint gating.
+  try {
+    if (typeof gameTick !== "undefined") gameTick = 0;
+  } catch (e) {}
+  lastSelectionTick = 0;
+  lastClearTick = 0;
   // reset gameStarted flag; actual timers start only when gameplay officially begins
   gameStarted = false;
   if (startFlag) {
@@ -871,6 +931,9 @@ function resetGame() {
       clearTimeout(selectionTimeoutId);
       selectionTimeoutId = null;
     }
+  } catch (e) {}
+  try {
+    clearInactivityTimer();
   } catch (e) {}
   selectionPending = false;
   stage4NextRefreshAt = 0;
@@ -1354,6 +1417,8 @@ function resumeGame() {
   // startStageCycle will be invoked from resumeGame and Stage4's refresh will begin.
   function showStage4Intro() {
     try {
+      // Prevent stale click in the transition frame from instantly resuming.
+      tutorialClickSuppressUntil = Date.now() + 400;
       // Render a dedicated stageInfo gob into the viewport so it's robust across load orders
       var titleText =
         I18N && I18N.stageTitle ? I18N.stageTitle : "Stage Info";
@@ -1368,9 +1433,6 @@ function resumeGame() {
         '<p class="tutorial-hint">' +
         getStageHintText(4) +
         "</p>" +
-        '<div style="margin-top:10px;"><button id="stage4Resume">' +
-        getResumeLabel() +
-        "</button></div>" +
         "</div></div>";
       try {
         if (G && G.O && G.O.viewport) {
@@ -1382,22 +1444,6 @@ function resumeGame() {
               .turnOn();
           }
           G.O.stageInfo.setSrc(html).draw();
-          // attach handler for resume button; small timeout to ensure DOM exists
-          setTimeout(function () {
-            try {
-              var btn = document.getElementById("stage4Resume");
-              if (btn)
-                btn.addEventListener("click", function () {
-                  try {
-                    resumeGame();
-                  } catch (e) {
-                   console.log("showStage4Intro set stageInfo error", e);
-                  }
-                });
-            } catch (e) {
-               console.log("showStage4Intro set stageInfo error", e);
-	   }
-          }, 20);
         }
       } catch (e) {
         console.log("showStage4Intro set stageInfo error", e);

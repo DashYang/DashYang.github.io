@@ -103,8 +103,19 @@ G.F.mainAI = function () {
         G.O.tutorial.tagContainsMouseClick() &&
         isTouched == false
       ) {
-        if (gamestate == "on") popTutorial();
-        else if (gamestate == "pause") resumeGame();
+        var suppressTutorialClick = false;
+        try {
+          if (
+            typeof tutorialClickSuppressUntil !== "undefined" &&
+            Date.now() < tutorialClickSuppressUntil
+          ) {
+            suppressTutorialClick = true;
+          }
+        } catch (e) {}
+        if (!suppressTutorialClick) {
+          if (gamestate == "on") popTutorial();
+          else if (gamestate == "pause") resumeGame();
+        }
       }
     } catch (e) {}
   } catch (err) {

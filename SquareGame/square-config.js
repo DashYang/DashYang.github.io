@@ -44,6 +44,9 @@ var I18N = {
   leaderboardTitle: "Leaderboard",
   leaderboardEmpty: "(no scores yet)",
   leaderboardAnon: "---",
+  rankLabel: "Rank",
+  rankNotInTop: "Out of Top",
+  rankSavedPrefix: "Saved as",
   // tutorial image alt text
   tutorialImageAlt: "tutorial",
   // stage intro + hint texts
