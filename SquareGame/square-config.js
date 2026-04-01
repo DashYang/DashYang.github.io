@@ -39,7 +39,6 @@ var I18N = {
   stopControl: "Stop",
   // tutorial overlay title and points label
   stageTitle: "Stage Info",
-  tutorialTitle: "Tutorial",
   pointsLabel: "Pts:",
   // leaderboard
   leaderboardTitle: "Leaderboard",
@@ -47,6 +46,21 @@ var I18N = {
   leaderboardAnon: "---",
   // tutorial image alt text
   tutorialImageAlt: "tutorial",
+  // stage intro + hint texts
+  stage1Intro: "Find a rectangle with the same four squares.",
+  stage1Hint: "Tip: Tap Start to begin.",
+  stage2Intro: "Stage 1: You will receive extra time bonuses based on your recent performance.",
+  stage2Hint: "Tip: Clear faster to gain more time.",
+  stage3Intro: "Stage 2: No extra time bonuses will be awarded now.",
+  stage3Hint: "Tip: Focus on accuracy and speed.",
+  stage4Intro: "Final Stage: Everything will change soon, hurry up and good luck!",
+  stage4Hint: "Tip: The board refreshes periodically.",
+  // control labels
+  resumeControl: "Resume",
+  refreshLabel: "Refresh",
+  // bonus labels (use {pts}/{sec} placeholders)
+  ptsBonusLabel: "+{pts} pts",
+  secBonusLabel: "+{sec} sec",
   // share title template
   shareTitle: "I got {score} in Square Game,Can you beat me?",
 };

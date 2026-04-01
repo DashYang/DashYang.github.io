@@ -9,6 +9,7 @@ var stageIndex = 1;
 var stageTimerId = null;
 var stageHintTimerId = null;
 var stage4RefreshTimerId = null;
+var stage4RefreshTimeoutId = null;
 // prevent re-entrant advanceStage calls
 var advanceLocked = false;
 // track last clear in game ticks (not physical time)
@@ -20,9 +21,65 @@ var stageRunning = false;
 // prevent map-regeneration / auto-refresh from interfering while user has a selection
 var selectionPending = false;
 var selectionTimeoutId = null;
-var selectionTimeoutMs = 5000; // ms before auto-clearing selection state
+var selectionTimeoutMs = 2000; // ms before auto-clearing selection state
 // whether the actual gameplay timers/cycles have been started
 var gameStarted = false;
+// stage 4 refresh countdown (ms timestamp)
+var stage4NextRefreshAt = 0;
+var stage4RemainingMs = 0;
+var stage4Paused = false;
+
+function clearStage4RefreshTimer() {
+  try {
+    if (stage4RefreshTimeoutId) {
+      clearTimeout(stage4RefreshTimeoutId);
+      stage4RefreshTimeoutId = null;
+    }
+  } catch (e) {}
+  try {
+    if (stage4RefreshTimerId) {
+      clearInterval(stage4RefreshTimerId);
+      stage4RefreshTimerId = null;
+    }
+  } catch (e) {}
+}
+
+function scheduleStage4Refresh(delayMs) {
+  clearStage4RefreshTimer();
+  stage4Paused = false;
+  stage4RemainingMs = Math.max(0, delayMs || 0);
+  stage4NextRefreshAt = Date.now() + stage4RemainingMs;
+  stage4RefreshTimeoutId = setTimeout(function () {
+    try {
+      if (gamestate !== "on") return;
+      if (selectionPending) {
+        pauseStage4Refresh();
+        return;
+      }
+      var attempts = 0;
+      do {
+        initMap();
+        attempts++;
+      } while (enable() !== 1 && attempts < 30);
+      refreshScreen();
+    } catch (e) {}
+    // schedule next full interval
+    scheduleStage4Refresh((phase3RefreshIntervalSec || 3) * 1000);
+  }, stage4RemainingMs);
+}
+
+function pauseStage4Refresh() {
+  if (stage4Paused) return;
+  if (!stage4NextRefreshAt) return;
+  stage4RemainingMs = Math.max(0, stage4NextRefreshAt - Date.now());
+  stage4Paused = true;
+  clearStage4RefreshTimer();
+}
+
+function resumeStage4Refresh() {
+  if (!stage4Paused) return;
+  scheduleStage4Refresh(stage4RemainingMs);
+}
 
 function initMap() {
   map = Array();
@@ -131,6 +188,56 @@ function renderLeaderboardHTML() {
   }
   html += "</div>";
   return html;
+}
+
+function getStageIntroText(stage) {
+  if (stage === 1) return I18N && I18N.stage1Intro ? I18N.stage1Intro : (typeof tutorialFirstText !== "undefined" ? tutorialFirstText : "");
+  if (stage === 2) return I18N && I18N.stage2Intro ? I18N.stage2Intro : (typeof step1Text !== "undefined" ? step1Text : "");
+  if (stage === 3) return I18N && I18N.stage3Intro ? I18N.stage3Intro : (typeof step2Text !== "undefined" ? step2Text : "");
+  if (stage === 4) return I18N && I18N.stage4Intro ? I18N.stage4Intro : (typeof step3Text !== "undefined" ? step3Text : "");
+  return "";
+}
+
+function getStageHintText(stage) {
+  if (stage === 1) return I18N && I18N.stage1Hint ? I18N.stage1Hint : "";
+  if (stage === 2) return I18N && I18N.stage2Hint ? I18N.stage2Hint : "";
+  if (stage === 3) return I18N && I18N.stage3Hint ? I18N.stage3Hint : "";
+  if (stage === 4) return I18N && I18N.stage4Hint ? I18N.stage4Hint : "";
+  return "";
+}
+
+function getResumeLabel() {
+  return I18N && I18N.resumeControl
+    ? I18N.resumeControl
+    : I18N && I18N.tutorialResume
+    ? I18N.tutorialResume
+    : "Resume";
+}
+
+function updateStageControl() {
+  try {
+    if (!G.O || !G.O.tutorial) return;
+    var label = "";
+    if (!gameStarted && stageIndex === 1) {
+      label = I18N && I18N.startControl ? I18N.startControl : "Start";
+    } else if (stageIndex === 4) {
+      if (gamestate === "on") {
+        var leftMs = stage4Paused
+          ? Math.max(0, stage4RemainingMs || 0)
+          : Math.max(0, (stage4NextRefreshAt || 0) - Date.now());
+        var leftSec = Math.ceil(leftMs / 1000);
+        var refreshLabel = I18N && I18N.refreshLabel ? I18N.refreshLabel : "Refresh";
+        label = "<span class='control-text control-refresh'>" + refreshLabel + ":" + leftSec + "s</span>";
+      } else {
+        label = "<span class='control-text'>" + getResumeLabel() + "</span>";
+      }
+    } else if (gamestate === "pause") {
+      label = "<span class='control-text'>" + getResumeLabel() + "</span>";
+    } else {
+      label = "<span class='control-text'>" + (I18N && I18N.stopControl ? I18N.stopControl : "Stop") + "</span>";
+    }
+    G.O.tutorial.setSrc("<p class='tutorial'>" + label + "</p>").draw();
+  } catch (e) {}
 }
 
 // show end-of-game screen: if score qualifies for leaderboard allow name entry,
@@ -402,13 +509,22 @@ function resetInactivityTimer() {
 // centralized dashboard updater
 function updateDashboard() {
   try {
+    // safety: if paused without overlay (unexpected), resume to avoid stuck state
+    try {
+      if (gamestate === "pause" && stageIndex !== 4) {
+        var tb = document.getElementById("tutorialboard");
+        var cls = tb && tb.className ? tb.className : "";
+        var overlayOn = cls.indexOf("tutorialboardOn") >= 0;
+        if (!overlayOn) gamestate = "on";
+      }
+    } catch (e) {}
     var dash = G.O["dashboard"];
     if (!dash) return;
     var timeText =
       "<p class='time'>" +
       (I18N && I18N.timeLabel ? I18N.timeLabel : "Time") +
       ":" +
-      Math.max(0, Math.ceil((timer + 1) / 25)) +
+      Math.max(0, Math.ceil(timer / 25)) +
       "</p>";
     var scoreText =
       "<p class='score'>" +
@@ -422,9 +538,9 @@ function updateDashboard() {
       "<span class='score'>" +
       pointsLabel +
       score +
-      "</span>" +
-      renderLeaderboardHTML();
+      "</span>";
     dash.setSrc(html).draw();
+    updateStageControl();
     // no manual hint button - auto-hint only
   } catch (e) {
     console.log("updateDashboard error", e);
@@ -541,15 +657,36 @@ function createSquares(y1, x1, y2, x2, pts, secBonus) {
       pop.className = "score-pop";
       document.body.appendChild(pop);
     }
-    // show both pts and sec bonus if available
-    var ptsText = typeof pts === "number" && pts > 0 ? "+" + pts + " pts" : "";
+    // show both pts and sec bonus if available (each on its own line)
+    var ptsLabel =
+      I18N && I18N.ptsBonusLabel
+        ? I18N.ptsBonusLabel
+        : typeof step1PtsLabel !== "undefined"
+        ? step1PtsLabel
+        : "+{pts} pts";
+    var secLabel =
+      I18N && I18N.secBonusLabel
+        ? I18N.secBonusLabel
+        : typeof step1SecLabel !== "undefined"
+        ? step1SecLabel
+        : "+{sec} sec";
+    var ptsText =
+      typeof pts === "number" && pts > 0
+        ? ptsLabel.replace("{pts}", pts)
+        : "";
     var secText =
       typeof secBonus === "number" && secBonus > 0
-        ? "+" + secBonus + " sec"
+        ? secLabel.replace("{sec}", secBonus)
         : "";
-    pop.innerText =
-      ptsText + (ptsText && secText ? "  " : "") + secText ||
-      "+" + (Math.abs(lastx - sx) + 1) * (Math.abs(lasty - sy) + 1);
+    if (ptsText || secText) {
+      var html = "";
+      if (ptsText) html += "<div class='score-pop-line'>" + ptsText + "</div>";
+      if (secText) html += "<div class='score-pop-line'>" + secText + "</div>";
+      pop.innerHTML = html;
+    } else {
+      pop.innerText =
+        "+" + (Math.abs(lastx - sx) + 1) * (Math.abs(lasty - sy) + 1);
+    }
     // compute placement
     if (firstEl && lastEl) {
       var r1 = firstEl.getBoundingClientRect();
@@ -574,6 +711,9 @@ function createSquares(y1, x1, y2, x2, pts, secBonus) {
     pop.classList.add("animate");
   } catch (e) {}
   (lastx = -100), (lasty = -100);
+  if (stageIndex === 4) {
+    try { resumeStage4Refresh(); } catch (e) {}
+  }
 }
 
 function squareHandler(square) {
@@ -683,6 +823,9 @@ function squareHandler(square) {
     }
   } catch (e) {}
   selectionPending = true;
+  if (stageIndex === 4) {
+    try { pauseStage4Refresh(); } catch (e) {}
+  }
   try {
     selectionTimeoutId = setTimeout(function () {
       try {
@@ -694,6 +837,9 @@ function squareHandler(square) {
       lasty = -100;
       selectionPending = false;
       selectionTimeoutId = null;
+      if (stageIndex === 4) {
+        try { resumeStage4Refresh(); } catch (e) {}
+      }
     }, selectionTimeoutMs);
   } catch (e) {}
   try {
@@ -727,6 +873,10 @@ function resetGame() {
     }
   } catch (e) {}
   selectionPending = false;
+  stage4NextRefreshAt = 0;
+  stage4RemainingMs = 0;
+  stage4Paused = false;
+  clearStage4RefreshTimer();
   lastx = -100;
   lasty = -100;
   board = document.getElementById("gameboard");
@@ -771,11 +921,11 @@ function resetGame() {
       h: helpheight,
     })
     .setSrc(
-      "<div class='tutorial'>" +
+      "<p class='tutorial'><span class='control-text'>" +
         (startFlag && I18N && I18N.startControl
           ? I18N.startControl
-          : "Tutoria") +
-        "</div>"
+          : "Start") +
+        "</span></p>"
     )
     .addClass("help")
     .turnOn();
@@ -848,6 +998,10 @@ function startStageCycle() {
         clearInterval(stage4RefreshTimerId);
         stage4RefreshTimerId = null;
       }
+      if (stage4RefreshTimeoutId) {
+        clearTimeout(stage4RefreshTimeoutId);
+        stage4RefreshTimeoutId = null;
+      }
     }
   } catch (e) {}
   // schedule stage advancement
@@ -896,45 +1050,7 @@ function startStageCycle() {
     if (stageIndex === 4) {
       // refresh board every configured seconds ensuring single solution
       try {
-        if (typeof timerSafeguards === "undefined" || timerSafeguards) {
-          if (stage4RefreshTimerId) {
-            clearInterval(stage4RefreshTimerId);
-            stage4RefreshTimerId = null;
-          }
-        }
-        // Debug: log when the stage4 refresh timer is created
-        try {
-          if (typeof debugMode !== "undefined" && debugMode)
-            console.log("[TESTLOG] startStageCycle: scheduling stage4 refresh every ", (phase3RefreshIntervalSec || 3), "s");
-        } catch (e) {}
-        stage4RefreshTimerId = setInterval(function () {
-          try {
-            if (typeof debugMode !== "undefined" && debugMode)
-              console.log("[TESTLOG] stage4RefreshTick: gamestate=", gamestate, " selectionPending=", selectionPending);
-          } catch (e) {}
-          if (gamestate !== "on") {
-            try {
-              if (typeof debugMode !== "undefined" && debugMode)
-                console.log("[TESTLOG] stage4RefreshTick: skipped because gamestate!=on");
-            } catch (e) {}
-            return;
-          }
-          // if player currently has a selection pending, skip auto-refresh to avoid invalidating the pick
-          if (selectionPending) {
-            try {
-              if (typeof debugMode !== "undefined" && debugMode)
-                console.log("[TESTLOG] stage4RefreshTick: skipped because selectionPending");
-            } catch (e) {}
-            return;
-          }
-          // regenerate until exactly one solution exists
-          var attempts = 0;
-          do {
-            initMap();
-            attempts++;
-          } while (enable() !== 1 && attempts < 30);
-          refreshScreen();
-        }, (phase3RefreshIntervalSec || 3) * 1000);
+        scheduleStage4Refresh((phase3RefreshIntervalSec || 3) * 1000);
       } catch (e) {}
     }
 }
@@ -963,6 +1079,12 @@ function advanceStage() {
       if (stage4RefreshTimerId) {
         clearInterval(stage4RefreshTimerId);
         stage4RefreshTimerId = null;
+      }
+    } catch (e) {}
+    try {
+      if (stage4RefreshTimeoutId) {
+        clearTimeout(stage4RefreshTimeoutId);
+        stage4RefreshTimeoutId = null;
       }
     } catch (e) {}
     // if entering stage4, start its refresh timer
@@ -1020,6 +1142,12 @@ function stopStageCycle() {
     if (stage4RefreshTimerId) {
       clearInterval(stage4RefreshTimerId);
       stage4RefreshTimerId = null;
+    }
+  } catch (e) {}
+  try {
+    if (stage4RefreshTimeoutId) {
+      clearTimeout(stage4RefreshTimeoutId);
+      stage4RefreshTimeoutId = null;
     }
   } catch (e) {}
 }
@@ -1083,21 +1211,17 @@ function popTutorial() {
     // first-time tutorial: show the tutorial image + descriptive text
     var imgHtml = "";
     try {
-      imgHtml =
-        "<div class='tutorial-film'><img src='t1.png' alt='" +
-        (I18N && I18N.tutorialImageAlt ? I18N.tutorialImageAlt : "tutorial") +
-        "' class='tutorial-img' /></div>";
+      imgHtml = "<div class='tutorial-film'>" + buildTutorialPreviewHTML() + "</div>";
     } catch (e) {
       imgHtml = "";
     }
     tipInfo =
       imgHtml +
       "<p class='tutorial tutorial-first'>" +
-      (typeof tutorialFirstText !== "undefined"
-        ? tutorialFirstText
-        : I18N && I18N.tutorialStart
-        ? I18N.tutorialStart
-        : "start") +
+      (getStageIntroText(1) || (I18N && I18N.tutorialStart ? I18N.tutorialStart : "start")) +
+      "</p>" +
+      "<p class='tutorial-hint'>" +
+      (getStageHintText(1) || "") +
       "</p>";
     // mark that we've shown the first-run tutorial
     startFlag = false;
@@ -1106,21 +1230,22 @@ function popTutorial() {
     if (stageIndex === 2)
       tipInfo =
         "<p class='tutorial'>" +
-        (typeof step1Text !== "undefined"
-          ? step1Text
-          : "Step 1: You will receive extra time bonuses based on your recent performance.") +
+        getStageIntroText(2) +
+        "</p>" +
+        "<p class='tutorial-hint'>" +
+        getStageHintText(2) +
         "</p>";
     else if (stageIndex === 3)
       tipInfo =
         "<p class='tutorial'>" +
-        (typeof step2Text !== "undefined"
-          ? step2Text
-          : "Step 2: No extra time bonuses will be awarded now.") +
+        getStageIntroText(3) +
+        "</p>" +
+        "<p class='tutorial-hint'>" +
+        getStageHintText(3) +
         "</p>";
   }
   // show tipInfo on the large tutorial board
-  var titleText = I18N && I18N.stageTitle ? I18N.stageTitle : "Tutorial";
-  if (I18N && I18N.tutorialTitle) titleText = I18N.tutorialTitle;
+  var titleText = I18N && I18N.stageTitle ? I18N.stageTitle : "Stage Info";
   try {
     G.O.tutorialboard
       .setSrc("<center><h3>" + titleText + "</h3>" + tipInfo)
@@ -1130,17 +1255,10 @@ function popTutorial() {
   try {
     if (G.O && G.O.tutorial) {
       var ctrl;
-      // For entering stage 4, the overlay should show Resume instead of Stop
-      if (!wasFirst && stageIndex === 4) {
-        ctrl = I18N && I18N.tutorialResume ? I18N.tutorialResume : "Resume";
+      if (wasFirst) {
+        ctrl = "<span class='control-text'>" + (I18N && I18N.startControl ? I18N.startControl : "Start") + "</span>";
       } else {
-        ctrl = wasFirst
-          ? I18N && I18N.startControl
-            ? I18N.startControl
-            : "Start"
-          : I18N && I18N.stopControl
-          ? I18N.stopControl
-          : "Stop";
+        ctrl = "<span class='control-text'>" + getResumeLabel() + "</span>";
       }
       G.O.tutorial.setSrc("<p class='tutorial'>" + ctrl + "</p>").draw();
     }
@@ -1154,11 +1272,7 @@ function resumeGame() {
       .setSrc("")
       .swapClass("tutorialboardOn", "tutorialboardOff")
       .draw();
-    // set the small control label: if this was the first run we had startFlag true before popTutorial; after first run show Stop
-    try {
-      var label = I18N && I18N.stopControl ? I18N.stopControl : "Stop";
-      G.O.tutorial.setSrc("<p class='tutorial'>" + label + "</p>").draw();
-    } catch (e) {}
+    updateStageControl();
     // remove any stageInfo overlay if present (used for Stage4 intro)
     try {
       if (G.O && G.O.stageInfo) {
@@ -1249,12 +1363,13 @@ function resumeGame() {
         titleText +
         "</h3>" +
         '<p class="tutorial">' +
-        (typeof step3Text !== "undefined"
-          ? step3Text
-          : "Final Step: Everything will change soon, hurry up and good luck!") +
+        getStageIntroText(4) +
+        "</p>" +
+        '<p class="tutorial-hint">' +
+        getStageHintText(4) +
         "</p>" +
         '<div style="margin-top:10px;"><button id="stage4Resume">' +
-        (I18N && I18N.tutorialResume ? I18N.tutorialResume : "Resume") +
+        getResumeLabel() +
         "</button></div>" +
         "</div></div>";
       try {
@@ -1307,7 +1422,34 @@ function resumeGame() {
       lasty = -100;
       gamestate = "pause";
       stageRunning = false;
+      stage4Paused = true;
+      stage4RemainingMs = (phase3RefreshIntervalSec || 3) * 1000;
+      stage4NextRefreshAt = 0;
+      clearStage4RefreshTimer();
+      updateStageControl();
     } catch (e) {
       console.log("showStage4Intro error", e);
     }
   }
+
+function buildTutorialPreviewHTML() {
+  // 4x4 fixed preview grid using current tile styles
+  var pattern = [
+    2, 4, 1, 2,
+    3, 5, 0, 4,
+    1, 0, 5, 3,
+    2, 4, 1, 2,
+  ];
+  var cornerIdx = { 0: true, 3: true, 12: true, 15: true };
+  var html = '<div class="tutorial-preview">';
+  for (var i = 0; i < pattern.length; i++) {
+    var cornerClass = cornerIdx[i] ? " tutorial-hint-corner" : "";
+    html +=
+      '<div class="tutorial-tile square' +
+      pattern[i] +
+      cornerClass +
+      '"></div>';
+  }
+  html += "</div>";
+  return html;
+}
