@@ -429,3 +429,33 @@
     border-radius: 10px;
     border: 1px solid rgba(0, 255, 153, 0.2);
 }
+
+.stage-info p.tutorial {
+    /* 1. 提高背景透明度，让底色更深更纯净 */
+    background: rgba(0, 0, 0, 0.6) !important; 
+    
+    /* 2. 将文字改为纯白或极浅的青色，提高明度 */
+    color: #ffffff !important; 
+    
+    /* 3. 核心：增加清晰度阴影和发光感 */
+    /* 第一层黑色投影增加对比，第二层浅色光晕增加电子感 */
+    text-shadow: 
+        1px 1px 2px #000, 
+        0 0 5px rgba(255, 255, 255, 0.2); 
+
+    /* 4. 排版调整 */
+    font-size: 15px !important;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: 0.5px; /* 增加字间距防止笔画粘连 */
+    
+    padding: 15px !important;
+    border-radius: 8px;
+    border-left: 4px solid #ffcc00;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* 针对带有英文单词的样式，建议使用等宽字体更有街机感 */
+.stage-info p.tutorial {
+    font-family: 'Courier New', Courier, monospace; 
+}
