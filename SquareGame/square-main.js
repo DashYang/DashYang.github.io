@@ -64,7 +64,11 @@ G.F.mainAI = function () {
         console.log("showEndScreen error", e);
       }
       gamestate = "off";
-      document.title = "I got " + score + " in Square Game,Can you beat me?";
+      var shareTitle =
+        I18N && I18N.shareTitle
+          ? I18N.shareTitle
+          : "I got {score} in Square Game,Can you beat me?";
+      document.title = shareTitle.replace("{score}", score);
     } else if (timer > 0) {
       // main per-frame logic
       try {

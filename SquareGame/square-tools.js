@@ -107,12 +107,17 @@ function getLeaderboard() {
 
 function renderLeaderboardHTML() {
   var list = getLeaderboard();
-  var html = '<div class="leaderboard"><h4>Leaderboard</h4>';
+  var titleText =
+    I18N && I18N.leaderboardTitle ? I18N.leaderboardTitle : "Leaderboard";
+  var emptyText =
+    I18N && I18N.leaderboardEmpty ? I18N.leaderboardEmpty : "(no scores yet)";
+  var anonText = I18N && I18N.leaderboardAnon ? I18N.leaderboardAnon : "---";
+  var html = '<div class="leaderboard"><h4>' + titleText + "</h4>";
   if (list.length == 0)
-    html += '<div class="leaderboard-item">(no scores yet)</div>';
+    html += '<div class="leaderboard-item">' + emptyText + "</div>";
   for (var i = 0; i < list.length; i++) {
     var it = list[i];
-    var name = it.name && it.name.length > 0 ? it.name : "---";
+    var name = it.name && it.name.length > 0 ? it.name : anonText;
     html +=
       '<div class="leaderboard-item">' +
       (i + 1) +
@@ -1079,7 +1084,9 @@ function popTutorial() {
     var imgHtml = "";
     try {
       imgHtml =
-        "<div class='tutorial-film'><img src='t1.png' alt='tutorial' class='tutorial-img' /></div>";
+        "<div class='tutorial-film'><img src='t1.png' alt='" +
+        (I18N && I18N.tutorialImageAlt ? I18N.tutorialImageAlt : "tutorial") +
+        "' class='tutorial-img' /></div>";
     } catch (e) {
       imgHtml = "";
     }
@@ -1112,7 +1119,8 @@ function popTutorial() {
         "</p>";
   }
   // show tipInfo on the large tutorial board
-  var titleText = I18N && I18N.stageTitle ? I18N.stageInfo : "Tutorial";
+  var titleText = I18N && I18N.stageTitle ? I18N.stageTitle : "Tutorial";
+  if (I18N && I18N.tutorialTitle) titleText = I18N.tutorialTitle;
   try {
     G.O.tutorialboard
       .setSrc("<center><h3>" + titleText + "</h3>" + tipInfo)
@@ -1234,7 +1242,7 @@ function resumeGame() {
     try {
       // Render a dedicated stageInfo gob into the viewport so it's robust across load orders
       var titleText =
-        I18N && I18N.stageInfo ? I18N.stageInfo : "Stage Info";
+        I18N && I18N.stageTitle ? I18N.stageTitle : "Stage Info";
       var html =
         '<div style="text-align:center; color:#fff; padding:16px;">' +
         '<div class="stage-info"><h3>' +

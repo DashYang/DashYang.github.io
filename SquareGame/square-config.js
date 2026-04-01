@@ -39,7 +39,16 @@ var I18N = {
   stopControl: "Stop",
   // tutorial overlay title and points label
   stageTitle: "Stage Info",
+  tutorialTitle: "Tutorial",
   pointsLabel: "Pts:",
+  // leaderboard
+  leaderboardTitle: "Leaderboard",
+  leaderboardEmpty: "(no scores yet)",
+  leaderboardAnon: "---",
+  // tutorial image alt text
+  tutorialImageAlt: "tutorial",
+  // share title template
+  shareTitle: "I got {score} in Square Game,Can you beat me?",
 };
 
 // Debug flag: when true, enables verbose TESTLOG console output
