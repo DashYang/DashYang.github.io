@@ -30,6 +30,91 @@ var stage4RemainingMs = 0;
 var stage4Paused = false;
 // suppress stale tutorial clicks for a short window (ms timestamp)
 var tutorialClickSuppressUntil = 0;
+var responsiveLayoutBound = false;
+var tutorialTouchTs = 0;
+
+function triggerTutorialControl() {
+  isTouched = true;
+  if (gamestate == "on") popTutorial();
+  else if (gamestate == "pause") resumeGame();
+}
+
+function stopEventBubble(e) {
+  try {
+    if (!e) return;
+    if (e.stopPropagation) e.stopPropagation();
+  } catch (err) {}
+}
+
+function eventHitsTutorial(e) {
+  try {
+    var el = document.getElementById("tutorial");
+    if (!el) return false;
+    var r = el.getBoundingClientRect();
+    var x = null;
+    var y = null;
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      x = e.changedTouches[0].clientX;
+      y = e.changedTouches[0].clientY;
+    } else if (e.touches && e.touches.length > 0) {
+      x = e.touches[0].clientX;
+      y = e.touches[0].clientY;
+    } else if (typeof e.clientX === "number") {
+      x = e.clientX;
+      y = e.clientY;
+    }
+    if (x === null || y === null) return false;
+    return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  } catch (err) {
+    return false;
+  }
+}
+
+function applyResponsiveLayout() {
+  try {
+    var board = document.getElementById("gameboard");
+    var vp = document.getElementById("viewport");
+    if (!board || !vp) return;
+    var ww = window.innerWidth || document.documentElement.clientWidth || viewportwidth;
+    var wh = window.innerHeight || document.documentElement.clientHeight || viewportheight;
+    var padding = 8;
+    var sx = (ww - padding * 2) / viewportwidth;
+    var sy = (wh - padding * 2) / viewportheight;
+    var scale = Math.max(0.5, Math.min(sx, sy));
+    var scaledW = viewportwidth * scale;
+    var scaledH = viewportheight * scale;
+    var left = Math.max(0, Math.floor((ww - scaledW) / 2));
+    var top = Math.max(0, Math.floor((wh - scaledH) / 2));
+
+    board.style.position = "relative";
+    board.style.width = ww + "px";
+    board.style.height = wh + "px";
+    board.style.margin = "0";
+    board.style.overflow = "hidden";
+
+    vp.style.position = "absolute";
+    vp.style.transformOrigin = "top left";
+    vp.style.transform = "scale(" + scale + ")";
+    vp.style.left = left + "px";
+    vp.style.top = top + "px";
+  } catch (e) {}
+}
+
+function bindResponsiveLayout() {
+  if (responsiveLayoutBound) return;
+  responsiveLayoutBound = true;
+  var rerender = function () {
+    setTimeout(function () {
+      try {
+        applyResponsiveLayout();
+      } catch (e) {}
+    }, 0);
+  };
+  try {
+    window.addEventListener("resize", rerender, false);
+    window.addEventListener("orientationchange", rerender, false);
+  } catch (e) {}
+}
 
 function clearStage4RefreshTimer() {
   try {
@@ -335,9 +420,17 @@ function showEndScreen(scoreValue) {
       renderLeaderboardHTML() +
       "</div>";
     G.O.viewport.setSrc(html).draw();
+    try {
+      var panel = document.querySelector(".game-over-panel");
+      if (panel) {
+        panel.addEventListener("touchend", stopEventBubble, false);
+        panel.addEventListener("click", stopEventBubble, false);
+      }
+    } catch (e) {}
     var btn = document.getElementById("skipOnly");
     if (btn)
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", function (e) {
+        stopEventBubble(e);
         try {
           resetGame();
         } catch (e) {
@@ -400,6 +493,13 @@ function showNamePicker(scoreValue) {
       "</div>";
 
     G.O.viewport.setSrc(html).draw();
+    try {
+      var panel = document.querySelector(".game-over-panel");
+      if (panel) {
+        panel.addEventListener("touchend", stopEventBubble, false);
+        panel.addEventListener("click", stopEventBubble, false);
+      }
+    } catch (e) {}
 
     // internal state for letter indices
     var vals = [0, 0, 0];
@@ -417,6 +517,7 @@ function showNamePicker(scoreValue) {
     for (var k = 0; k < ups.length; k++) {
       (function (btn) {
         btn.addEventListener("click", function (e) {
+          stopEventBubble(e);
           var idx = parseInt(btn.getAttribute("data-idx"), 10) || 0;
           // pressing up moves to previous letter visually
           vals[idx] = (vals[idx] + 25) % 26;
@@ -428,6 +529,7 @@ function showNamePicker(scoreValue) {
     for (var k = 0; k < downs.length; k++) {
       (function (btn) {
         btn.addEventListener("click", function (e) {
+          stopEventBubble(e);
           var idx = parseInt(btn.getAttribute("data-idx"), 10) || 0;
           vals[idx] = (vals[idx] + 1) % 26;
           updateStrip(idx);
@@ -437,7 +539,8 @@ function showNamePicker(scoreValue) {
 
     document
       .getElementById("confirmName")
-      .addEventListener("click", function () {
+      .addEventListener("click", function (e) {
+        stopEventBubble(e);
         var rankInfo = null;
         try {
           var name =
@@ -450,7 +553,8 @@ function showNamePicker(scoreValue) {
         showRankFlashAndRestart(rankInfo);
       });
 
-    document.getElementById("skipName").addEventListener("click", function () {
+    document.getElementById("skipName").addEventListener("click", function (e) {
+      stopEventBubble(e);
       saveScoreWithName(scoreValue, "");
       try {
         resetGame();
@@ -951,9 +1055,27 @@ function resetGame() {
     })
     .turnOn();
   $("#viewport").on("touchend", function (e) {
-    isTouched = true;
+    if (Date.now() - tutorialTouchTs < 350) return;
+    if (eventHitsTutorial(e)) {
+      tutorialTouchTs = Date.now();
+      triggerTutorialControl();
+      return;
+    }
     if (gamestate == "off") {
-      resetGame();
+      if (!isTouched) resetGame();
+      return;
+    }
+    isTouched = true;
+  });
+  $("#viewport").on("click", function (e) {
+    if (Date.now() - tutorialTouchTs < 350) return;
+    if (eventHitsTutorial(e)) {
+      triggerTutorialControl();
+      return;
+    }
+    if (gamestate == "off") {
+      if (!isTouched) resetGame();
+      return;
     }
   });
   var i, j;
@@ -993,9 +1115,14 @@ function resetGame() {
     .addClass("help")
     .turnOn();
   $("#tutorial").on("touchend", function (e) {
-    isTouched = true;
-    if (gamestate == "on") popTutorial();
-    else if (gamestate == "pause") resumeGame();
+    stopEventBubble(e);
+    tutorialTouchTs = Date.now();
+    triggerTutorialControl();
+  });
+  $("#tutorial").on("click", function (e) {
+    stopEventBubble(e);
+    if (Date.now() - tutorialTouchTs < 350) return;
+    triggerTutorialControl();
   });
 
   G.makeGob("dashboard", G.O.viewport)
@@ -1007,6 +1134,11 @@ function resetGame() {
     })
     .addClass("help")
     .turnOn();
+
+  try {
+    bindResponsiveLayout();
+    applyResponsiveLayout();
+  } catch (e) {}
 
   // Only actually draw the board and start timers if this is not the first-run tutorial.
   if (!startFlag) {
