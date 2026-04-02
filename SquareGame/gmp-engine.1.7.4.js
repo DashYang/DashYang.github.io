@@ -108,7 +108,7 @@ G.deleteGob = function (id) {
     }
 
     // remove the Gob's tag from the DOM
-    try { G.O[id].tag.parentNode.removeChild(G.O[id].tag); } catch(e){} 
+    try { G.O[id].tag.parentNode.removeChild(G.O[id].tag); } catch (e) { console.error("[gmp-engine] caught error", e); } 
     
     // delete standard references to Gobs so that id can be recycled.
     for (i in G.B)  delete G.B[i].O[id];
@@ -653,12 +653,12 @@ G.M.deselect = function () {  // deselect mouse selections inside the game div, 
         if(G.M.deselectGob.tag){
             if(G.M.deselectGob == G || G.M.deselectGob.tagContainsMouse()){
                 if(window.getSelection&&window.getSelection() && window.getSelection().removeAllRanges) window.getSelection().removeAllRanges();
-                else if(document.selection&&document.selection.empty) try{ document.selection.empty()}catch(e){}
+                else if(document.selection&&document.selection.empty) try{ document.selection.empty()}catch (e) { console.error("[gmp-engine] caught error", e); }
             }
         } 
         else{
             if(window.getSelection&&window.getSelection()&&window.getSelection().removeAllRanges)window.getSelection().removeAllRanges();
-            else if(document.selection&&document.selection.empty)try{document.selection.empty()}catch(e){ }
+            else if(document.selection&&document.selection.empty)try{document.selection.empty()}catch (e) { console.error("[gmp-engine] caught error", e); }
         }
     }
 };

@@ -32,6 +32,8 @@ var stage4Paused = false;
 var tutorialClickSuppressUntil = 0;
 var responsiveLayoutBound = false;
 var tutorialTouchTs = 0;
+var squareTouchTs = 0;
+var viewportTouchTs = 0;
 
 function triggerTutorialControl() {
   isTouched = true;
@@ -43,7 +45,31 @@ function stopEventBubble(e) {
   try {
     if (!e) return;
     if (e.stopPropagation) e.stopPropagation();
-  } catch (err) {}
+  } catch (err) { console.error("[square-tools] caught error", err); }
+}
+
+function handleSquareInputById(id, e) {
+  try {
+    if (e && e.stopPropagation) e.stopPropagation();
+  } catch (err) { console.error("[square-tools] caught error", err); }
+  try {
+    // Keep gameplay interaction consistent across mouse/touch and
+    // disallow board interaction when paused/off.
+    if (gamestate !== "on") return;
+    isTouched = true;
+    var square = G.O[id];
+    if (!square) return;
+    squareHandler(square);
+  } catch (e) { console.error("[square-tools] caught error", e); }
+}
+
+function supportsPointerUp() {
+  try {
+    return typeof window !== "undefined" && !!window.PointerEvent;
+  } catch (e) {
+    console.error("[square-tools] caught error", e);
+    return false;
+  }
 }
 
 function eventHitsTutorial(e) {
@@ -97,7 +123,7 @@ function applyResponsiveLayout() {
     vp.style.transform = "scale(" + scale + ")";
     vp.style.left = left + "px";
     vp.style.top = top + "px";
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
 function bindResponsiveLayout() {
@@ -107,13 +133,13 @@ function bindResponsiveLayout() {
     setTimeout(function () {
       try {
         applyResponsiveLayout();
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
     }, 0);
   };
   try {
     window.addEventListener("resize", rerender, false);
     window.addEventListener("orientationchange", rerender, false);
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
 function clearStage4RefreshTimer() {
@@ -122,13 +148,13 @@ function clearStage4RefreshTimer() {
       clearTimeout(stage4RefreshTimeoutId);
       stage4RefreshTimeoutId = null;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   try {
     if (stage4RefreshTimerId) {
       clearInterval(stage4RefreshTimerId);
       stage4RefreshTimerId = null;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
 function scheduleStage4Refresh(delayMs) {
@@ -149,7 +175,7 @@ function scheduleStage4Refresh(delayMs) {
         attempts++;
       } while (enable() !== 1 && attempts < 30);
       refreshScreen();
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     // schedule next full interval
     scheduleStage4Refresh((phase3RefreshIntervalSec || 3) * 1000);
   }, stage4RemainingMs);
@@ -194,12 +220,12 @@ function refreshScreen() {
         try {
           if (typeof debugMode !== "undefined" && debugMode)
             console.log("refreshScreen: missing square", i, j);
-        } catch (e) {}
+        } catch (e) { console.error("[square-tools] caught error", e); }
         continue;
       }
       try {
         square.swapClass(square.tag.className, "square" + map[i][j]).draw();
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
     }
 }
 
@@ -340,18 +366,18 @@ function showRankFlashAndRestart(rankInfo) {
     "</div>";
   try {
     G.O.viewport.setSrc(html).draw();
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   // Do not let inactivity timers run during the rank flash window.
   try {
     clearInactivityTimer();
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   setTimeout(function () {
     try {
       resetGame();
     } catch (e) {
       try {
         G.O.viewport.setSrc(renderLeaderboardHTML()).draw();
-      } catch (err) {}
+      } catch (err) { console.error("[square-tools] caught error", err); }
     }
   }, 2000);
 }
@@ -379,7 +405,7 @@ function updateStageControl() {
       label = "<span class='control-text'>" + (I18N && I18N.stopControl ? I18N.stopControl : "Stop") + "</span>";
     }
     G.O.tutorial.setSrc("<p class='tutorial'>" + label + "</p>").draw();
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
 // show end-of-game screen: if score qualifies for leaderboard allow name entry,
@@ -426,7 +452,7 @@ function showEndScreen(scoreValue) {
         panel.addEventListener("touchend", stopEventBubble, false);
         panel.addEventListener("click", stopEventBubble, false);
       }
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     var btn = document.getElementById("skipOnly");
     if (btn)
       btn.addEventListener("click", function (e) {
@@ -499,7 +525,7 @@ function showNamePicker(scoreValue) {
         panel.addEventListener("touchend", stopEventBubble, false);
         panel.addEventListener("click", stopEventBubble, false);
       }
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
 
     // internal state for letter indices
     var vals = [0, 0, 0];
@@ -588,7 +614,7 @@ function clearInactivityTimer() {
       clearTimeout(window._inactivityTimer);
       window._inactivityTimer = null;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
 function startInactivityTimer() {
@@ -611,7 +637,7 @@ function startInactivityTimer() {
             (lastSelectionTick || 0);
           var elapsedSec = Math.floor(elapsedTicks / 25);
           if (elapsedSec < (phase1HintIntervalSec || 5)) return;
-        } catch (e) {}
+        } catch (e) { console.error("[square-tools] caught error", e); }
         // set LOOK indicator and mark auto-hint active so UI shows LOOK during flash
         try {
           if (G.O && G.O.tutorial)
@@ -622,17 +648,17 @@ function startInactivityTimer() {
                   "</p>"
               )
               .draw();
-        } catch (e) {}
+        } catch (e) { console.error("[square-tools] caught error", e); }
         window._autoHintActive = true;
         if (showHint()) {
           // consume one hint
           window._hintRemaining = Math.max(0, (window._hintRemaining || 0) - 1);
           try {
             updateDashboard();
-          } catch (e) {}
+          } catch (e) { console.error("[square-tools] caught error", e); }
           try {
             pulseHintIcons();
-          } catch (e) {}
+          } catch (e) { console.error("[square-tools] caught error", e); }
         }
         // after the flash duration, revert tutorial text and auto-hint flag
         setTimeout(function () {
@@ -645,7 +671,7 @@ function startInactivityTimer() {
                     "</p>"
                 )
                 .draw();
-          } catch (e) {}
+          } catch (e) { console.error("[square-tools] caught error", e); }
           window._autoHintActive = false;
         }, 1200);
       } catch (e) {
@@ -675,7 +701,7 @@ function updateDashboard() {
         var overlayOn = cls.indexOf("tutorialboardOn") >= 0;
         if (!overlayOn) gamestate = "on";
       }
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     var dash = G.O["dashboard"];
     if (!dash) return;
     var timeText =
@@ -798,10 +824,10 @@ function createSquares(y1, x1, y2, x2, pts, secBonus) {
       if (square) {
         try {
           square.swapClass(oldType, "square" + map[i][j]);
-        } catch (e) {}
+        } catch (e) { console.error("[square-tools] caught error", e); }
         try {
           square.turnOn();
-        } catch (e) {}
+        } catch (e) { console.error("[square-tools] caught error", e); }
       }
     }
   // show pop +delta above the cleared rectangle (or below if would overflow)
@@ -867,10 +893,10 @@ function createSquares(y1, x1, y2, x2, pts, secBonus) {
     pop.classList.remove("animate");
     void pop.offsetWidth;
     pop.classList.add("animate");
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   (lastx = -100), (lasty = -100);
   if (stageIndex === 4) {
-    try { resumeStage4Refresh(); } catch (e) {}
+    try { resumeStage4Refresh(); } catch (e) { console.error("[square-tools] caught error", e); }
   }
 }
 
@@ -883,7 +909,7 @@ function squareHandler(square) {
     if (lastSquare) {
       try {
         lastSquare.removeClass("picked").draw();
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
     }
     if (isAcceptable(lasty, lastx, rowIndex, columnIndex)) {
       var x1 = square.x,
@@ -945,7 +971,7 @@ function squareHandler(square) {
             " newLastClear=",
             lastClearTick
           );
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
       G.O.explosion
         .setVar({ x: sx, y: sy, w: bx - sx + 25, h: by - sy + 25 })
         .AI("reset")
@@ -958,7 +984,7 @@ function squareHandler(square) {
           clearTimeout(selectionTimeoutId);
           selectionTimeoutId = null;
         }
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
       selectionPending = false;
       if (level > 1 && score > (maxLevel - level + 1) * 100) level -= 1;
       while (enable() < level - 1) {
@@ -972,17 +998,17 @@ function squareHandler(square) {
   // record the tick of the user's selection (used to gate auto-hint)
   try {
     lastSelectionTick = typeof gameTick !== "undefined" ? gameTick : 0;
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   // mark that there is a pending selection; start/reset a timeout to clear it
   try {
     if (selectionTimeoutId) {
       clearTimeout(selectionTimeoutId);
       selectionTimeoutId = null;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   selectionPending = true;
   if (stageIndex === 4) {
-    try { pauseStage4Refresh(); } catch (e) {}
+    try { pauseStage4Refresh(); } catch (e) { console.error("[square-tools] caught error", e); }
   }
   try {
     selectionTimeoutId = setTimeout(function () {
@@ -990,19 +1016,19 @@ function squareHandler(square) {
         // remove visual picked marker and clear selection
         var s = G.O["square" + (lasty * column + lastx)];
         if (s) s.removeClass("picked").draw();
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
       lastx = -100;
       lasty = -100;
       selectionPending = false;
       selectionTimeoutId = null;
       if (stageIndex === 4) {
-        try { resumeStage4Refresh(); } catch (e) {}
+        try { resumeStage4Refresh(); } catch (e) { console.error("[square-tools] caught error", e); }
       }
     }, selectionTimeoutMs);
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   try {
     resetInactivityTimer();
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
 function resetGame() {
@@ -1013,7 +1039,7 @@ function resetGame() {
   // Reset game-time baseline so previous run/flash time does not leak into stage2 hint gating.
   try {
     if (typeof gameTick !== "undefined") gameTick = 0;
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   lastSelectionTick = 0;
   lastClearTick = 0;
   // reset gameStarted flag; actual timers start only when gameplay officially begins
@@ -1035,10 +1061,10 @@ function resetGame() {
       clearTimeout(selectionTimeoutId);
       selectionTimeoutId = null;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   try {
     clearInactivityTimer();
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   selectionPending = false;
   stage4NextRefreshAt = 0;
   stage4RemainingMs = 0;
@@ -1054,30 +1080,48 @@ function resetGame() {
       nextStyle: { position: "relative" },
     })
     .turnOn();
-  $("#viewport").on("touchend", function (e) {
-    if (Date.now() - tutorialTouchTs < 350) return;
-    if (eventHitsTutorial(e)) {
-      tutorialTouchTs = Date.now();
-      triggerTutorialControl();
-      return;
-    }
-    if (gamestate == "off") {
-      if (!isTouched) resetGame();
-      return;
-    }
-    isTouched = true;
-  });
-  $("#viewport").on("click", function (e) {
-    if (Date.now() - tutorialTouchTs < 350) return;
-    if (eventHitsTutorial(e)) {
-      triggerTutorialControl();
-      return;
-    }
-    if (gamestate == "off") {
-      if (!isTouched) resetGame();
-      return;
-    }
-  });
+  if (supportsPointerUp()) {
+    $("#viewport").on("pointerup", function (e) {
+      if (Date.now() - tutorialTouchTs < 350) return;
+      if (eventHitsTutorial(e)) {
+        tutorialTouchTs = Date.now();
+        triggerTutorialControl();
+        return;
+      }
+      if (gamestate == "off") {
+        if (!isTouched) resetGame();
+        return;
+      }
+      isTouched = true;
+    });
+  } else {
+    $("#viewport").on("touchend", function (e) {
+      viewportTouchTs = Date.now();
+      if (Date.now() - tutorialTouchTs < 350) return;
+      if (eventHitsTutorial(e)) {
+        tutorialTouchTs = Date.now();
+        triggerTutorialControl();
+        return;
+      }
+      if (gamestate == "off") {
+        if (!isTouched) resetGame();
+        return;
+      }
+      isTouched = true;
+    });
+    $("#viewport").on("click", function (e) {
+      if (Date.now() - viewportTouchTs < 350) return;
+      if (Date.now() - tutorialTouchTs < 350) return;
+      if (eventHitsTutorial(e)) {
+        triggerTutorialControl();
+        return;
+      }
+      if (gamestate == "off") {
+        if (!isTouched) resetGame();
+        return;
+      }
+    });
+  }
   var i, j;
   initMap();
   while (enable() < level - 1) {
@@ -1114,16 +1158,24 @@ function resetGame() {
     )
     .addClass("help")
     .turnOn();
-  $("#tutorial").on("touchend", function (e) {
-    stopEventBubble(e);
-    tutorialTouchTs = Date.now();
-    triggerTutorialControl();
-  });
-  $("#tutorial").on("click", function (e) {
-    stopEventBubble(e);
-    if (Date.now() - tutorialTouchTs < 350) return;
-    triggerTutorialControl();
-  });
+  if (supportsPointerUp()) {
+    $("#tutorial").on("pointerup", function (e) {
+      stopEventBubble(e);
+      tutorialTouchTs = Date.now();
+      triggerTutorialControl();
+    });
+  } else {
+    $("#tutorial").on("touchend", function (e) {
+      stopEventBubble(e);
+      tutorialTouchTs = Date.now();
+      triggerTutorialControl();
+    });
+    $("#tutorial").on("click", function (e) {
+      stopEventBubble(e);
+      if (Date.now() - tutorialTouchTs < 350) return;
+      triggerTutorialControl();
+    });
+  }
 
   G.makeGob("dashboard", G.O.viewport)
     .setVar({
@@ -1138,14 +1190,14 @@ function resetGame() {
   try {
     bindResponsiveLayout();
     applyResponsiveLayout();
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
 
   // Only actually draw the board and start timers if this is not the first-run tutorial.
   if (!startFlag) {
     resumeGame();
     try {
       startInactivityTimer();
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     // initialize phase cycle
     stageIndex = 2; // when starting gameplay, enter stage 2
     // initialize lastClearTick to current gameTick (gameTick may be zero at start)
@@ -1158,10 +1210,10 @@ function resetGame() {
           " gameTick=",
           typeof gameTick !== "undefined" ? gameTick : 0
         );
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     try {
       startStageCycle();
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     gameStarted = true;
   } else {
     // for first run we still initialize lastClearTick but do not start timers
@@ -1198,7 +1250,7 @@ function startStageCycle() {
         stage4RefreshTimeoutId = null;
       }
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   // schedule stage advancement only for stage 2/3.
   // Stage 4 should continue until the main countdown reaches zero.
   if (stageIndex === 2 || stageIndex === 3) {
@@ -1211,11 +1263,11 @@ function startStageCycle() {
             stageTimerId = null;
           }
         }
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
       stageTimerId = setTimeout(function () {
         advanceStage();
       }, (phaseDurationSec || 20) * 1000);
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
   }
   // start stage-specific behaviors
   if (stageIndex === 2) {
@@ -1239,17 +1291,17 @@ function startStageCycle() {
             );
             try {
               updateDashboard();
-            } catch (e) {}
+            } catch (e) { console.error("[square-tools] caught error", e); }
           }
-        } catch (e) {}
+        } catch (e) { console.error("[square-tools] caught error", e); }
       }, 1000); // check every second whether to show the hint (gating logic handles interval)
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
   }
     if (stageIndex === 4) {
       // refresh board every configured seconds ensuring single solution
       try {
         scheduleStage4Refresh((phase3RefreshIntervalSec || 3) * 1000);
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
     }
 }
 
@@ -1263,7 +1315,7 @@ function advanceStage() {
         clearTimeout(stageTimerId);
         stageTimerId = null;
       }
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     // move to next stage in gameplay loop: 2 -> 3 -> 4
     // once in stage 4, stay there until main timer reaches zero.
     stageIndex = Math.min(4, (stageIndex || 1) + 1);
@@ -1273,38 +1325,38 @@ function advanceStage() {
         clearInterval(stageHintTimerId);
         stageHintTimerId = null;
       }
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     try {
       if (stage4RefreshTimerId) {
         clearInterval(stage4RefreshTimerId);
         stage4RefreshTimerId = null;
       }
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     try {
       if (stage4RefreshTimeoutId) {
         clearTimeout(stage4RefreshTimeoutId);
         stage4RefreshTimeoutId = null;
       }
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     // if entering stage4, start its refresh timer
     if (typeof debugMode !== "undefined" && debugMode)
       try {
         console.log("advanceStage -> new stageIndex=", stageIndex);
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
     if (stageIndex === 4) {
       try {
         showStage4Intro();
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
     } else {
       // For stageIndex 2 or 3, start the stage cycle immediately (no intro overlay).
       try {
         stageRunning = false;
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
       try {
         // start stage behaviors for this stage (startStageCycle will schedule advancement)
         try {
           startStageCycle();
-        } catch (e) {}
+        } catch (e) { console.error("[square-tools] caught error", e); }
       } catch (e) {
         console.log("advanceStage startStageCycle error", e);
       }
@@ -1322,25 +1374,25 @@ function stopStageCycle() {
       clearTimeout(stageTimerId);
       stageTimerId = null;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   try {
     if (stageHintTimerId) {
       clearInterval(stageHintTimerId);
       stageHintTimerId = null;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   try {
     if (stage4RefreshTimerId) {
       clearInterval(stage4RefreshTimerId);
       stage4RefreshTimerId = null;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   try {
     if (stage4RefreshTimeoutId) {
       clearTimeout(stage4RefreshTimeoutId);
       stage4RefreshTimeoutId = null;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
 // wire global user interactions to reset inactivity timer so auto-hint doesn't trigger while user is active
@@ -1350,7 +1402,7 @@ try {
     function () {
       try {
         resetInactivityTimer();
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
     },
     false
   );
@@ -1359,7 +1411,7 @@ try {
     function () {
       try {
         resetInactivityTimer();
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
     },
     false
   );
@@ -1368,16 +1420,16 @@ try {
     function () {
       try {
         resetInactivityTimer();
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
     },
     false
   );
-} catch (e) {}
+} catch (e) { console.error("[square-tools] caught error", e); }
 
 // start inactivity timer on load (the timer itself checks gamestate and hint availability)
 try {
   startInactivityTimer();
-} catch (e) {}
+} catch (e) { console.error("[square-tools] caught error", e); }
 
 function popTutorial() {
   // If in stage 4, do not allow pause/tutorial overlay
@@ -1389,7 +1441,7 @@ function popTutorial() {
       clearTimeout(selectionTimeoutId);
       selectionTimeoutId = null;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   selectionPending = false;
   lastx = -100;
   lasty = -100;
@@ -1441,7 +1493,7 @@ function popTutorial() {
     G.O.tutorialboard
       .setSrc("<div class='stage-copy'><h3>" + titleText + "</h3>" + tipInfo + "</div>")
       .draw();
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   // after showing overlay, set the small tutorial control: Start for first-run, Stop otherwise
   try {
     if (G.O && G.O.tutorial) {
@@ -1453,7 +1505,7 @@ function popTutorial() {
       }
       G.O.tutorial.setSrc("<p class='tutorial'>" + ctrl + "</p>").draw();
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
 function resumeGame() {
@@ -1469,22 +1521,22 @@ function resumeGame() {
       if (G.O && G.O.stageInfo) {
         G.O.stageInfo.setSrc("").turnOff();
       }
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
   }
   // if game was not started yet (first-run), start timers and phase cycle now
   if (!gameStarted) {
     try {
       startInactivityTimer();
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     try {
       /* normalize to stage flow */ stageIndex = 2;
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     try {
       lastClearTick = typeof gameTick !== "undefined" ? gameTick : 0;
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     try {
       startStageCycle();
-    } catch (e) {}
+    } catch (e) { console.error("[square-tools] caught error", e); }
     gameStarted = true;
   }
   // If resuming from the Stage4 intro, start the Stage4 running behavior (auto-refresh)
@@ -1493,22 +1545,22 @@ function resumeGame() {
         // don't allow pausing while stage 4 is running
         try {
         	startStageCycle();
-        	try { if (typeof debugMode !== 'undefined' && debugMode) console.log('[TESTLOG] resumeGame: requested startStageCycle for stageIndex=4'); } catch (e) {}
-        } catch (e) {}
+        	try { if (typeof debugMode !== 'undefined' && debugMode) console.log('[TESTLOG] resumeGame: requested startStageCycle for stageIndex=4'); } catch (e) { console.error("[square-tools] caught error", e); }
+        } catch (e) { console.error("[square-tools] caught error", e); }
         stageRunning = true;
         // ensure gamestate is on
         try {
           gamestate = "on";
-        } catch (e) {}
+        } catch (e) { console.error("[square-tools] caught error", e); }
       }
     // If resuming from stage 2 or 3 intro, start that stage's timers/cycle now
     if ((stageIndex === 2 || stageIndex === 3) && !stageTimerId) {
       try {
         startStageCycle();
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
       stageRunning = true;
     }
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
   var bigside = squareside + squaremargin;
   for (i = 0; i < row; i++) {
     for (j = 0; j < column; j++) {
@@ -1521,12 +1573,22 @@ function resumeGame() {
         })
         .addClass("square" + map[i][j])
         .turnOn();
-      $("#square" + (i * column + j)).on("touchend", function (e) {
-        isTouched = true;
-        var id = $(this).attr("id");
-        var square = G.O[id];
-        squareHandler(square);
-      });
+      if (supportsPointerUp()) {
+        $("#square" + (i * column + j)).on("pointerup", function (e) {
+          squareTouchTs = Date.now();
+          handleSquareInputById($(this).attr("id"), e);
+        });
+      } else {
+        $("#square" + (i * column + j)).on("touchend", function (e) {
+          squareTouchTs = Date.now();
+          handleSquareInputById($(this).attr("id"), e);
+        });
+        $("#square" + (i * column + j)).on("click", function (e) {
+          // Ignore synthetic click generated right after touch on mobile.
+          if (Date.now() - squareTouchTs < 350) return;
+          handleSquareInputById($(this).attr("id"), e);
+        });
+      }
     }
 
     // update dashboard using centralized updater
@@ -1539,7 +1601,7 @@ function resumeGame() {
     // When the tutorial small control is clicked and the current overlay label is Resume and we're on stageIndex===4,
     // resumeGame will be called via existing handlers. We need to ensure Stage4 actually starts running after resume.
     var originalTutorialOnClick = null; // placeholder (we don't override engine internals)
-  } catch (e) {}
+  } catch (e) { console.error("[square-tools] caught error", e); }
 
   // show the Stage 4 intro overlay (special Resume control). When user resumes,
   // startStageCycle will be invoked from resumeGame and Stage4's refresh will begin.
@@ -1583,14 +1645,14 @@ function resumeGame() {
           clearTimeout(selectionTimeoutId);
           selectionTimeoutId = null;
         }
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
       // clear any pending selection so Stage4 auto-refresh can run once resumed
       try {
         if (lastx != -100 && lasty != -100) {
           var lastSq = G.O["square" + (lasty * column + lastx)];
           if (lastSq) lastSq.removeClass("picked").draw();
         }
-      } catch (e) {}
+      } catch (e) { console.error("[square-tools] caught error", e); }
       selectionPending = false;
       lastx = -100;
       lasty = -100;

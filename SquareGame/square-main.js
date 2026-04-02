@@ -17,7 +17,7 @@ G.F.loadMain = function () {
     resetGame();
     try {
       popTutorial();
-    } catch (e) {}
+    } catch (e) { console.error("[square-main] caught error", e); }
   } else {
     var _attempts = 0;
     var _waiter = setInterval(function () {
@@ -31,7 +31,7 @@ G.F.loadMain = function () {
         }
         try {
           popTutorial();
-        } catch (e) {}
+        } catch (e) { console.error("[square-main] caught error", e); }
       } else if (_attempts > 60) {
         // ~3s
         clearInterval(_waiter);
@@ -54,7 +54,7 @@ G.F.mainAI = function () {
     try {
       if (G.O && G.O.explosion && typeof G.O.explosion.AI === "function")
         G.O.explosion.AI();
-    } catch (e) {}
+    } catch (e) { console.error("[square-main] caught error", e); }
     if (timer <= 0 && gamestate == "on") {
       timer = 0;
       clearSquares(0, 0, row, column);
@@ -95,7 +95,7 @@ G.F.mainAI = function () {
       ) {
         resetGame();
       }
-    } catch (e) {}
+    } catch (e) { console.error("[square-main] caught error", e); }
 
     try {
       if (
@@ -112,22 +112,22 @@ G.F.mainAI = function () {
           ) {
             suppressTutorialClick = true;
           }
-        } catch (e) {}
+        } catch (e) { console.error("[square-main] caught error", e); }
         if (!suppressTutorialClick) {
           if (gamestate == "on") popTutorial();
           else if (gamestate == "pause") resumeGame();
         }
       }
-    } catch (e) {}
+    } catch (e) { console.error("[square-main] caught error", e); }
   } catch (err) {
     // Catch any unexpected error to avoid bubbling into the engine master loop
     console.log("G.F.mainAI uncaught error", err);
     try {
       gamestate = "off";
-    } catch (e) {}
+    } catch (e) { console.error("[square-main] caught error", e); }
     try {
       showEndScreen(score);
-    } catch (e) {}
+    } catch (e) { console.error("[square-main] caught error", e); }
   }
 };
 

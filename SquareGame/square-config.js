@@ -102,7 +102,7 @@ function detectLanguage() {
   try {
     var m = window.location.search.match(/[?&]lang=(zh|en)\b/i);
     if (m && m[1]) return m[1].toLowerCase();
-  } catch (e) {}
+  } catch (e) { console.error("[square-config] caught error", e); }
   // Default to Chinese when no explicit query param is provided.
   return "zh";
 }
