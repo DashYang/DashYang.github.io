@@ -147,6 +147,13 @@ body {
   color: var(--text);
 }
 
+.combo-text {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #ffef99;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
+}
+
 /* tutorial overlay */
 .tutorialboardOff {
   background-color: #000;
@@ -257,9 +264,22 @@ body {
 
 /* stage 4 intro overlay */
 .stage-info-gob {
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(2px);
+  /* Keep top readable, but preserve bottom controls visibility. */
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.62) 54%,
+    rgba(0, 0, 0, 0.25) 78%,
+    rgba(0, 0, 0, 0.02) 100%
+  );
   pointer-events: none;
+  z-index: 40 !important;
+}
+
+.stage4-intro-wrap {
+  box-sizing: border-box;
+  height: 100%;
+  padding-bottom: 76px !important; /* keep tutorial/resume button unobstructed */
 }
 
 .stage-info {
@@ -267,6 +287,8 @@ body {
   text-align: left;
   max-width: 280px;
   margin: 0 auto;
+  max-height: calc(100% - 76px);
+  overflow: auto;
 }
 
 .stage-info h3,
@@ -284,6 +306,40 @@ body {
 .stage-info .tutorial-hint {
   margin-left: 0;
   margin-right: 0;
+}
+
+.stage4-cta {
+  margin-top: 10px !important;
+  border-left-color: var(--neon-2);
+  color: #ffe082;
+  font-style: normal;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+#tutorial.stage4-resume-focus {
+  z-index: 60 !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 230, 90, 0.9),
+    0 0 18px rgba(255, 190, 0, 0.85),
+    0 6px 0 rgba(0, 0, 0, 0.38) !important;
+  animation: resumePulse 900ms ease-in-out infinite;
+}
+
+@keyframes resumePulse {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.03);
+    filter: brightness(1.15);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
 }
 
 .game-over-title,
@@ -392,12 +448,16 @@ body {
 .name-picker .letter .strip {
   display: block;
   transition: transform 260ms cubic-bezier(0.2, 0.9, 0.3, 1);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 .name-picker .letter .strip span {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 48px;
-  line-height: 48px;
+  line-height: 1;
   font-size: 28px;
   font-weight: bold;
   color: var(--neon-2);
@@ -514,6 +574,11 @@ body {
   line-height: 1.15;
 }
 
+.score-pop-combo {
+  color: #9dff8d;
+  text-shadow: 0 0 10px rgba(109, 255, 122, 0.95);
+}
+
 .score-pop.animate {
   animation: scorePop 900ms ease-out forwards;
 }
@@ -522,6 +587,50 @@ body {
   0% { transform: translateX(-50%) translateY(0) scale(0.6); opacity: 0; }
   50% { transform: translateX(-50%) translateY(-20px) scale(1.15); opacity: 1; }
   100% { transform: translateX(-50%) translateY(-40px) scale(1); opacity: 0; }
+}
+
+.viewport-clear-flash {
+  animation: viewportClearFlash 160ms ease-out;
+}
+
+@keyframes viewportClearFlash {
+  0% {
+    box-shadow: var(--shadow), inset 0 0 30px rgba(0, 245, 255, 0.06);
+    filter: brightness(1);
+  }
+  40% {
+    box-shadow: var(--shadow), inset 0 0 34px rgba(255, 240, 120, 0.24);
+    filter: brightness(1.08);
+  }
+  100% {
+    box-shadow: var(--shadow), inset 0 0 30px rgba(0, 245, 255, 0.06);
+    filter: brightness(1);
+  }
+}
+
+.stage-toast {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 193, 7, 0.95), rgba(255, 152, 0, 0.95));
+  color: #111;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  animation: stageToastInOut 1.8s ease both;
+  pointer-events: none;
+}
+
+@keyframes stageToastInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(0.96); }
+  12% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  84% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(0.98); }
 }
 
 /* hint icons area */
@@ -614,7 +723,7 @@ body {
   }
   .name-picker .letter .strip span {
     height: 44px;
-    line-height: 44px;
+    line-height: 1;
     font-size: 24px;
   }
 }

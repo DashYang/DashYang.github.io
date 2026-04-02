@@ -10,6 +10,7 @@ var stageTimerId = null;
 var stageHintTimerId = null;
 var stage4RefreshTimerId = null;
 var stage4RefreshTimeoutId = null;
+var stage3PreviewTimerId = null;
 // prevent re-entrant advanceStage calls
 var advanceLocked = false;
 // track last clear in game ticks (not physical time)
@@ -34,11 +35,29 @@ var responsiveLayoutBound = false;
 var tutorialTouchTs = 0;
 var squareTouchTs = 0;
 var viewportTouchTs = 0;
+var comboStreak = 0;
+var clearAudioCtx = null;
 
 function triggerTutorialControl() {
+  try {
+    if (
+      typeof tutorialClickSuppressUntil !== "undefined" &&
+      Date.now() < tutorialClickSuppressUntil
+    )
+      return;
+  } catch (e) { console.error("[square-tools] caught error", e); }
   isTouched = true;
   if (gamestate == "on") popTutorial();
   else if (gamestate == "pause") resumeGame();
+}
+
+function setStage4ResumeFocus(on) {
+  try {
+    var t = document.getElementById("tutorial");
+    if (!t) return;
+    if (on) t.classList.add("stage4-resume-focus");
+    else t.classList.remove("stage4-resume-focus");
+  } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
 function stopEventBubble(e) {
@@ -70,6 +89,95 @@ function supportsPointerUp() {
     console.error("[square-tools] caught error", e);
     return false;
   }
+}
+
+function bindTap(selector, handlers) {
+  try {
+    if (!selector || !handlers || typeof handlers.onTap !== "function") return;
+    if (supportsPointerUp()) {
+      $(selector).on("pointerup", function (e) {
+        handlers.onTap.call(this, e, "pointer");
+      });
+      return;
+    }
+    $(selector).on("touchend", function (e) {
+      if (typeof handlers.onTouch === "function") {
+        handlers.onTouch.call(this, e);
+      }
+      handlers.onTap.call(this, e, "touch");
+    });
+    $(selector).on("click", function (e) {
+      if (typeof handlers.onClick === "function") {
+        handlers.onClick.call(this, e);
+      }
+      handlers.onTap.call(this, e, "click");
+    });
+  } catch (e) { console.error("[square-tools] caught error", e); }
+}
+
+function showStageToast(text, durationMs) {
+  try {
+    if (!text) return;
+    var vp = document.getElementById("viewport");
+    if (!vp) return;
+    var old = document.getElementById("stageToast");
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    var toast = document.createElement("div");
+    toast.id = "stageToast";
+    toast.className = "stage-toast";
+    toast.innerText = text;
+    vp.appendChild(toast);
+    setTimeout(function () {
+      try {
+        if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+      } catch (e) { console.error("[square-tools] caught error", e); }
+    }, durationMs || 1800);
+  } catch (e) { console.error("[square-tools] caught error", e); }
+}
+
+function flashViewportClear() {
+  try {
+    var vp = document.getElementById("viewport");
+    if (!vp) return;
+    vp.classList.remove("viewport-clear-flash");
+    void vp.offsetWidth;
+    vp.classList.add("viewport-clear-flash");
+  } catch (e) { console.error("[square-tools] caught error", e); }
+}
+
+function playClearSfx(combo) {
+  try {
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    if (!clearAudioCtx) clearAudioCtx = new Ctx();
+    if (clearAudioCtx.state === "suspended") {
+      clearAudioCtx.resume();
+    }
+    var now = clearAudioCtx.currentTime || 0;
+    var osc = clearAudioCtx.createOscillator();
+    var gain = clearAudioCtx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(combo >= 3 ? 880 : 720, now);
+    osc.frequency.exponentialRampToValueAtTime(combo >= 3 ? 1080 : 880, now + 0.08);
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.05, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+    osc.connect(gain);
+    gain.connect(clearAudioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.1);
+  } catch (e) { console.error("[square-tools] caught error", e); }
+}
+
+function triggerClearFeedback(combo) {
+  try {
+    flashViewportClear();
+    playClearSfx(combo || 1);
+    if (navigator && navigator.vibrate) {
+      if (combo >= 3) navigator.vibrate([18, 24, 18]);
+      else navigator.vibrate(12);
+    }
+  } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
 function eventHitsTutorial(e) {
@@ -529,14 +637,41 @@ function showNamePicker(scoreValue) {
 
     // internal state for letter indices
     var vals = [0, 0, 0];
+    function getLetterStepPx(letterEl) {
+      try {
+        if (!letterEl) return 48;
+        var strip = letterEl.querySelector(".strip");
+        var row = strip ? strip.querySelector("span") : null;
+        // Use real row height instead of container height to avoid border/padding drift.
+        var h = row ? row.offsetHeight : 0;
+        if (!h || h <= 0) h = row ? row.clientHeight : 0;
+        if (!h || h <= 0) {
+          var cs = row ? window.getComputedStyle(row) : null;
+          h = parseFloat(cs && cs.height ? cs.height : "48");
+        }
+        h = Math.round(h || 48);
+        return h > 0 ? h : 48;
+      } catch (e) {
+        console.error("[square-tools] caught error", e);
+        return 48;
+      }
+    }
     function updateStrip(idx) {
       var l = document.getElementById("letter" + idx);
       if (!l) return;
       var strip = l.querySelector(".strip");
-      if (strip)
-        strip.style.transform = "translateY(" + -vals[idx] * 48 + "px)";
+      if (strip) {
+        var stepPx = getLetterStepPx(l);
+        strip.style.transform = "translate3d(0," + -vals[idx] * stepPx + "px,0)";
+      }
     }
     for (var i = 0; i < 3; i++) updateStrip(i);
+    // Re-apply once after layout settles to avoid occasional first-frame misalignment.
+    setTimeout(function () {
+      try {
+        for (var t = 0; t < 3; t++) updateStrip(t);
+      } catch (e) { console.error("[square-tools] caught error", e); }
+    }, 60);
 
     // attach up/down handlers
     var ups = document.querySelectorAll(".letter-up");
@@ -717,12 +852,22 @@ function updateDashboard() {
       score +
       "</p>";
     var pointsLabel = I18N && I18N.pointsLabel ? I18N.pointsLabel + " " : "";
+    var comboText =
+      comboStreak >= 2
+        ? "<p class='combo-text'>" +
+          ((I18N && I18N.comboLabel ? I18N.comboLabel : "COMBO x{n}").replace(
+            "{n}",
+            comboStreak
+          )) +
+          "</p>"
+        : "";
     var html =
       timeText +
       "<span class='score'>" +
       pointsLabel +
       score +
-      "</span>";
+      "</span>" +
+      comboText;
     dash.setSrc(html).draw();
     updateStageControl();
     // no manual hint button - auto-hint only
@@ -809,7 +954,7 @@ function clearSquares(y1, x1, y2, x2) {
     }
 }
 
-function createSquares(y1, x1, y2, x2, pts, secBonus) {
+function createSquares(y1, x1, y2, x2, pts, secBonus, combo) {
   var sx = x1,
     sy = y1,
     bx = x2,
@@ -862,10 +1007,19 @@ function createSquares(y1, x1, y2, x2, pts, secBonus) {
       typeof secBonus === "number" && secBonus > 0
         ? secLabel.replace("{sec}", secBonus)
         : "";
-    if (ptsText || secText) {
+    var comboText =
+      typeof combo === "number" && combo >= 2
+        ? (I18N && I18N.comboLabel ? I18N.comboLabel : "COMBO x{n}").replace(
+            "{n}",
+            combo
+          )
+        : "";
+    if (ptsText || secText || comboText) {
       var html = "";
       if (ptsText) html += "<div class='score-pop-line'>" + ptsText + "</div>";
       if (secText) html += "<div class='score-pop-line'>" + secText + "</div>";
+      if (comboText)
+        html += "<div class='score-pop-line score-pop-combo'>" + comboText + "</div>";
       pop.innerHTML = html;
     } else {
       pop.innerText =
@@ -947,6 +1101,19 @@ function squareHandler(square) {
       }
       // record last clear in game ticks
       var prevLastClear = lastClearTick;
+      var sinceLastClearSec = 999;
+      try {
+        sinceLastClearSec = Math.floor(
+          ((typeof gameTick !== "undefined" ? gameTick : 0) -
+            (prevLastClear || 0)) /
+            25
+        );
+      } catch (e) { console.error("[square-tools] caught error", e); }
+      if (prevLastClear > 0 && sinceLastClearSec <= (comboWindowSec || 4)) {
+        comboStreak += 1;
+      } else {
+        comboStreak = 1;
+      }
       lastClearTick = typeof gameTick !== "undefined" ? gameTick : 0;
       try {
         if (typeof debugMode !== "undefined" && debugMode)
@@ -963,21 +1130,20 @@ function squareHandler(square) {
             (typeof gameTick !== "undefined" ? gameTick : 0) -
               (prevLastClear || 0),
             " elapsedSec=",
-            Math.floor(
-              ((typeof gameTick !== "undefined" ? gameTick : 0) -
-                (prevLastClear || 0)) /
-                25
-            ),
+            sinceLastClearSec,
+            " comboStreak=",
+            comboStreak,
             " newLastClear=",
             lastClearTick
           );
       } catch (e) { console.error("[square-tools] caught error", e); }
+      triggerClearFeedback(comboStreak);
       G.O.explosion
         .setVar({ x: sx, y: sy, w: bx - sx + 25, h: by - sy + 25 })
         .AI("reset")
         .turnOn();
       clearSquares(lasty, lastx, rowIndex, columnIndex);
-      createSquares(lasty, lastx, rowIndex, columnIndex, pts, secBonus);
+      createSquares(lasty, lastx, rowIndex, columnIndex, pts, secBonus, comboStreak);
       // successful clear: cancel pending selection timeout and clear selectionPending
       try {
         if (selectionTimeoutId) {
@@ -1032,10 +1198,20 @@ function squareHandler(square) {
 }
 
 function resetGame() {
+  try {
+    setStage4ResumeFocus(false);
+  } catch (e) { console.error("[square-tools] caught error", e); }
+  try {
+    if (G && G.O && G.O.stageInfo) {
+      G.O.stageInfo.setSrc("").turnOff();
+      delete G.O.stageInfo;
+    }
+  } catch (e) { console.error("[square-tools] caught error", e); }
   $("#viewport").remove();
   // If this is the first run (startFlag true), keep the game paused until the user presses Start
   timer = gametimer;
   score = 0;
+  comboStreak = 0;
   // Reset game-time baseline so previous run/flash time does not leak into stage2 hint gating.
   try {
     if (typeof gameTick !== "undefined") gameTick = 0;
@@ -1080,23 +1256,13 @@ function resetGame() {
       nextStyle: { position: "relative" },
     })
     .turnOn();
-  if (supportsPointerUp()) {
-    $("#viewport").on("pointerup", function (e) {
-      if (Date.now() - tutorialTouchTs < 350) return;
-      if (eventHitsTutorial(e)) {
-        tutorialTouchTs = Date.now();
-        triggerTutorialControl();
-        return;
-      }
-      if (gamestate == "off") {
-        if (!isTouched) resetGame();
-        return;
-      }
-      isTouched = true;
-    });
-  } else {
-    $("#viewport").on("touchend", function (e) {
+  bindTap("#viewport", {
+    onTouch: function () {
       viewportTouchTs = Date.now();
+    },
+    onTap: function (e, source) {
+      if (source === "click" && Date.now() - viewportTouchTs < 350) return;
+      if (Date.now() < tutorialClickSuppressUntil) return;
       if (Date.now() - tutorialTouchTs < 350) return;
       if (eventHitsTutorial(e)) {
         tutorialTouchTs = Date.now();
@@ -1108,20 +1274,8 @@ function resetGame() {
         return;
       }
       isTouched = true;
-    });
-    $("#viewport").on("click", function (e) {
-      if (Date.now() - viewportTouchTs < 350) return;
-      if (Date.now() - tutorialTouchTs < 350) return;
-      if (eventHitsTutorial(e)) {
-        triggerTutorialControl();
-        return;
-      }
-      if (gamestate == "off") {
-        if (!isTouched) resetGame();
-        return;
-      }
-    });
-  }
+    },
+  });
   var i, j;
   initMap();
   while (enable() < level - 1) {
@@ -1158,24 +1312,18 @@ function resetGame() {
     )
     .addClass("help")
     .turnOn();
-  if (supportsPointerUp()) {
-    $("#tutorial").on("pointerup", function (e) {
+  bindTap("#tutorial", {
+    onTouch: function () {
+      tutorialTouchTs = Date.now();
+    },
+    onTap: function (e, source) {
       stopEventBubble(e);
+      if (Date.now() < tutorialClickSuppressUntil) return;
+      if (source === "click" && Date.now() - tutorialTouchTs < 350) return;
       tutorialTouchTs = Date.now();
       triggerTutorialControl();
-    });
-  } else {
-    $("#tutorial").on("touchend", function (e) {
-      stopEventBubble(e);
-      tutorialTouchTs = Date.now();
-      triggerTutorialControl();
-    });
-    $("#tutorial").on("click", function (e) {
-      stopEventBubble(e);
-      if (Date.now() - tutorialTouchTs < 350) return;
-      triggerTutorialControl();
-    });
-  }
+    },
+  });
 
   G.makeGob("dashboard", G.O.viewport)
     .setVar({
@@ -1249,6 +1397,10 @@ function startStageCycle() {
         clearTimeout(stage4RefreshTimeoutId);
         stage4RefreshTimeoutId = null;
       }
+      if (stage3PreviewTimerId) {
+        clearTimeout(stage3PreviewTimerId);
+        stage3PreviewTimerId = null;
+      }
     }
   } catch (e) { console.error("[square-tools] caught error", e); }
   // schedule stage advancement only for stage 2/3.
@@ -1267,6 +1419,23 @@ function startStageCycle() {
       stageTimerId = setTimeout(function () {
         advanceStage();
       }, (phaseDurationSec || 20) * 1000);
+    } catch (e) { console.error("[square-tools] caught error", e); }
+  }
+  if (stageIndex === 3) {
+    try {
+      var leadSec = Math.max(0, stage4PreviewLeadSec || 5);
+      var delaySec = Math.max(0, (phaseDurationSec || 20) - leadSec);
+      stage3PreviewTimerId = setTimeout(function () {
+        try {
+          if (gamestate !== "on") return;
+          showStageToast(
+            I18N && I18N.stage3TransitionToast
+              ? I18N.stage3TransitionToast
+              : "Final stage starts soon.",
+            1600
+          );
+        } catch (e) { console.error("[square-tools] caught error", e); }
+      }, delaySec * 1000);
     } catch (e) { console.error("[square-tools] caught error", e); }
   }
   // start stage-specific behaviors
@@ -1297,12 +1466,17 @@ function startStageCycle() {
       }, 1000); // check every second whether to show the hint (gating logic handles interval)
     } catch (e) { console.error("[square-tools] caught error", e); }
   }
-    if (stageIndex === 4) {
-      // refresh board every configured seconds ensuring single solution
-      try {
-        scheduleStage4Refresh((phase3RefreshIntervalSec || 3) * 1000);
-      } catch (e) { console.error("[square-tools] caught error", e); }
-    }
+  if (stageIndex === 4) {
+    // refresh board every configured seconds ensuring single solution.
+    // Keep the first refresh a bit slower after stage transition.
+    try {
+      var delayMs =
+        stage4RemainingMs && stage4RemainingMs > 0
+          ? stage4RemainingMs
+          : (phase3RefreshIntervalSec || 3) * 1000;
+      scheduleStage4Refresh(delayMs);
+    } catch (e) { console.error("[square-tools] caught error", e); }
+  }
 }
 
 function advanceStage() {
@@ -1336,6 +1510,12 @@ function advanceStage() {
       if (stage4RefreshTimeoutId) {
         clearTimeout(stage4RefreshTimeoutId);
         stage4RefreshTimeoutId = null;
+      }
+    } catch (e) { console.error("[square-tools] caught error", e); }
+    try {
+      if (stage3PreviewTimerId) {
+        clearTimeout(stage3PreviewTimerId);
+        stage3PreviewTimerId = null;
       }
     } catch (e) { console.error("[square-tools] caught error", e); }
     // if entering stage4, start its refresh timer
@@ -1391,6 +1571,12 @@ function stopStageCycle() {
     if (stage4RefreshTimeoutId) {
       clearTimeout(stage4RefreshTimeoutId);
       stage4RefreshTimeoutId = null;
+    }
+  } catch (e) { console.error("[square-tools] caught error", e); }
+  try {
+    if (stage3PreviewTimerId) {
+      clearTimeout(stage3PreviewTimerId);
+      stage3PreviewTimerId = null;
     }
   } catch (e) { console.error("[square-tools] caught error", e); }
 }
@@ -1510,6 +1696,9 @@ function popTutorial() {
 
 function resumeGame() {
   if (gamestate == "pause") {
+    try {
+      setStage4ResumeFocus(false);
+    } catch (e) { console.error("[square-tools] caught error", e); }
     gamestate = "on";
     G.O.tutorialboard
       .setSrc("")
@@ -1573,22 +1762,16 @@ function resumeGame() {
         })
         .addClass("square" + map[i][j])
         .turnOn();
-      if (supportsPointerUp()) {
-        $("#square" + (i * column + j)).on("pointerup", function (e) {
+      bindTap("#square" + (i * column + j), {
+        onTouch: function () {
+          squareTouchTs = Date.now();
+        },
+        onTap: function (e, source) {
+          if (source === "click" && Date.now() - squareTouchTs < 350) return;
           squareTouchTs = Date.now();
           handleSquareInputById($(this).attr("id"), e);
-        });
-      } else {
-        $("#square" + (i * column + j)).on("touchend", function (e) {
-          squareTouchTs = Date.now();
-          handleSquareInputById($(this).attr("id"), e);
-        });
-        $("#square" + (i * column + j)).on("click", function (e) {
-          // Ignore synthetic click generated right after touch on mobile.
-          if (Date.now() - squareTouchTs < 350) return;
-          handleSquareInputById($(this).attr("id"), e);
-        });
-      }
+        },
+      });
     }
 
     // update dashboard using centralized updater
@@ -1613,7 +1796,7 @@ function resumeGame() {
       var titleText =
         I18N && I18N.stageTitle ? I18N.stageTitle : "Stage Info";
       var html =
-        '<div style="color:#fff; padding:16px;">' +
+        '<div class="stage4-intro-wrap" style="color:#fff; padding:16px;">' +
         '<div class="stage-info"><h3>' +
         titleText +
         "</h3>" +
@@ -1623,22 +1806,46 @@ function resumeGame() {
         '<p class="tutorial-hint">' +
         getStageHintText(4) +
         "</p>" +
+        '<p class="tutorial-hint stage4-cta">' +
+        (I18N && I18N.stage4ResumeHint
+          ? I18N.stage4ResumeHint
+          : "Tap the bottom-left button to continue.") +
+        "</p>" +
         "</div></div>";
       try {
         if (G && G.O && G.O.viewport) {
-          // create or reuse a dedicated stageInfo gob so other overlays (tutorialboard) are not required
-          if (!G.O.stageInfo) {
-            G.makeGob("stageInfo", G.O.viewport)
-              .setVar({ x: 0, y: 0, w: viewportwidth, h: viewportheight })
-              .addClass("stage-info-gob")
-              .turnOn();
-          }
-          G.O.stageInfo.setSrc(html).draw();
+          // Always recreate stageInfo here to avoid stale/detached gob instances.
+          try {
+            if (G.O.stageInfo) {
+              G.O.stageInfo.setSrc("").turnOff();
+              delete G.O.stageInfo;
+            }
+          } catch (e) { console.error("[square-tools] caught error", e); }
+          G.makeGob("stageInfo", G.O.viewport)
+            .setVar({ x: 0, y: 0, w: viewportwidth, h: viewportheight })
+            .addClass("stage-info-gob")
+            .turnOn();
+          G.O.stageInfo.turnOn().setSrc(html).draw();
+          try {
+            var stageInfoEl = document.getElementById("stageInfo");
+            if (!stageInfoEl) {
+              // Fallback: use tutorialboard if stageInfo element was not mounted.
+              G.O.tutorialboard
+                .swapClass("tutorialboardOff", "tutorialboardOn")
+                .setSrc("<div class='stage-copy'><h3>" + titleText + "</h3>" +
+                  '<p class="tutorial">' + getStageIntroText(4) + "</p>" +
+                  '<p class="tutorial-hint">' + getStageHintText(4) + "</p></div>")
+                .draw();
+            }
+          } catch (e) { console.error("[square-tools] caught error", e); }
         }
       } catch (e) {
         console.log("showStage4Intro set stageInfo error", e);
       }
       console.log("showStage4Intro")
+      try {
+        setStage4ResumeFocus(true);
+      } catch (e) { console.error("[square-tools] caught error", e); }
       // pause gameplay until user presses Resume
       try {
         if (selectionTimeoutId) {
@@ -1659,7 +1866,7 @@ function resumeGame() {
       gamestate = "pause";
       stageRunning = false;
       stage4Paused = true;
-      stage4RemainingMs = (phase3RefreshIntervalSec || 3) * 1000;
+      stage4RemainingMs = (stage4WarmupSec || 5) * 1000;
       stage4NextRefreshAt = 0;
       clearStage4RefreshTimer();
       updateStageControl();

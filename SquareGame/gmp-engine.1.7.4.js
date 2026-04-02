@@ -107,8 +107,11 @@ G.deleteGob = function (id) {
         return G;
     }
 
-    // remove the Gob's tag from the DOM
-    try { G.O[id].tag.parentNode.removeChild(G.O[id].tag); } catch (e) { console.error("[gmp-engine] caught error", e); } 
+    // remove the Gob's tag from the DOM (guard detached/null nodes)
+    try {
+        var _tag = G.O[id] && G.O[id].tag ? G.O[id].tag : null;
+        if (_tag && _tag.parentNode) _tag.parentNode.removeChild(_tag);
+    } catch (e) { console.error("[gmp-engine] caught error", e); } 
     
     // delete standard references to Gobs so that id can be recycled.
     for (i in G.B)  delete G.B[i].O[id];
@@ -843,4 +846,3 @@ window.onfocus = function () {
         G.KB.keys[key].shiftKey = 0;
     }
 };
-
