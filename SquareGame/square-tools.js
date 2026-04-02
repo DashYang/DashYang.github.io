@@ -4,7 +4,7 @@ function getSquareType() {
 
 // Stage control variables
 // stageIndex: 1 = Tutorial, 2 = Stage2 (hints & time bonus), 3 = Stage3 (no hints/time bonus),
-// 4 = Stage4 (auto-refresh single-solution), 5 = Stage5 (end/score input)
+// 4 = Stage4 (auto-refresh single-solution until main timer ends)
 var stageIndex = 1;
 var stageTimerId = null;
 var stageHintTimerId = null;
@@ -292,10 +292,10 @@ function renderLeaderboardHTML() {
 }
 
 function getStageIntroText(stage) {
-  if (stage === 1) return I18N && I18N.stage1Intro ? I18N.stage1Intro : (typeof tutorialFirstText !== "undefined" ? tutorialFirstText : "");
-  if (stage === 2) return I18N && I18N.stage2Intro ? I18N.stage2Intro : (typeof step1Text !== "undefined" ? step1Text : "");
-  if (stage === 3) return I18N && I18N.stage3Intro ? I18N.stage3Intro : (typeof step2Text !== "undefined" ? step2Text : "");
-  if (stage === 4) return I18N && I18N.stage4Intro ? I18N.stage4Intro : (typeof step3Text !== "undefined" ? step3Text : "");
+  if (stage === 1) return I18N && I18N.stage1Intro ? I18N.stage1Intro : "";
+  if (stage === 2) return I18N && I18N.stage2Intro ? I18N.stage2Intro : "";
+  if (stage === 3) return I18N && I18N.stage3Intro ? I18N.stage3Intro : "";
+  if (stage === 4) return I18N && I18N.stage4Intro ? I18N.stage4Intro : "";
   return "";
 }
 
@@ -1199,21 +1199,24 @@ function startStageCycle() {
       }
     }
   } catch (e) {}
-  // schedule stage advancement
-  try {
-    // ensure no duplicate timer exists when configured
+  // schedule stage advancement only for stage 2/3.
+  // Stage 4 should continue until the main countdown reaches zero.
+  if (stageIndex === 2 || stageIndex === 3) {
     try {
-      if (typeof timerSafeguards === "undefined" || timerSafeguards) {
-        if (stageTimerId) {
-          clearTimeout(stageTimerId);
-          stageTimerId = null;
+      // ensure no duplicate timer exists when configured
+      try {
+        if (typeof timerSafeguards === "undefined" || timerSafeguards) {
+          if (stageTimerId) {
+            clearTimeout(stageTimerId);
+            stageTimerId = null;
+          }
         }
-      }
+      } catch (e) {}
+      stageTimerId = setTimeout(function () {
+        advanceStage();
+      }, (phaseDurationSec || 20) * 1000);
     } catch (e) {}
-    stageTimerId = setTimeout(function () {
-      advanceStage();
-    }, (phaseDurationSec || 20) * 1000);
-  } catch (e) {}
+  }
   // start stage-specific behaviors
   if (stageIndex === 2) {
     // periodic hints every configured seconds
@@ -1261,8 +1264,9 @@ function advanceStage() {
         stageTimerId = null;
       }
     } catch (e) {}
-    // move to next stage: 2->3->4->5 then wrap to 2
-    stageIndex = Math.min(5, (stageIndex || 1) + 1);
+    // move to next stage in gameplay loop: 2 -> 3 -> 4
+    // once in stage 4, stay there until main timer reaches zero.
+    stageIndex = Math.min(4, (stageIndex || 1) + 1);
     // restart stage cycle behaviors
     try {
       if (stageHintTimerId) {
@@ -1291,14 +1295,6 @@ function advanceStage() {
       try {
         showStage4Intro();
       } catch (e) {}
-    } else if (stageIndex === 5) {
-      // end stage: show score input / leaderboard flow
-      stageRunning = false;
-      try {
-        showEndScreen(score);
-      } catch (e) {
-        console.log("showEndScreen error", e);
-      }
     } else {
       // For stageIndex 2 or 3, start the stage cycle immediately (no intro overlay).
       try {
@@ -1443,7 +1439,7 @@ function popTutorial() {
   var titleText = I18N && I18N.stageTitle ? I18N.stageTitle : "Stage Info";
   try {
     G.O.tutorialboard
-      .setSrc("<center><h3>" + titleText + "</h3>" + tipInfo)
+      .setSrc("<div class='stage-copy'><h3>" + titleText + "</h3>" + tipInfo + "</div>")
       .draw();
   } catch (e) {}
   // after showing overlay, set the small tutorial control: Start for first-run, Stop otherwise
@@ -1555,7 +1551,7 @@ function resumeGame() {
       var titleText =
         I18N && I18N.stageTitle ? I18N.stageTitle : "Stage Info";
       var html =
-        '<div style="text-align:center; color:#fff; padding:16px;">' +
+        '<div style="color:#fff; padding:16px;">' +
         '<div class="stage-info"><h3>' +
         titleText +
         "</h3>" +

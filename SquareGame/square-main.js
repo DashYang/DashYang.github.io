@@ -56,6 +56,7 @@ G.F.mainAI = function () {
         G.O.explosion.AI();
     } catch (e) {}
     if (timer <= 0 && gamestate == "on") {
+      timer = 0;
       clearSquares(0, 0, row, column);
       // show end-of-game screen (may allow name entry if score qualifies)
       try {

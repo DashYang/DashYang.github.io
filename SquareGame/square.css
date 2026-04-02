@@ -264,9 +264,26 @@ body {
 
 .stage-info {
   color: var(--text);
-  text-align: center;
+  text-align: left;
   max-width: 280px;
   margin: 0 auto;
+}
+
+.stage-info h3,
+#tutorialboard h3 {
+  text-align: center;
+}
+
+.stage-copy .tutorial,
+.stage-info .tutorial {
+  text-align: left;
+  line-height: 1.45;
+}
+
+.stage-copy .tutorial-hint,
+.stage-info .tutorial-hint {
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .game-over-title,
