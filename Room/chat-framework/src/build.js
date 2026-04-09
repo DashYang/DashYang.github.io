@@ -1,0 +1,48 @@
+import fs from "fs";
+import path from "path";
+import { loadConversationFromMarkdown } from "./load-conversation.js";
+import { renderHtml } from "./renderer.js";
+
+/**
+ * Build one chat markdown into one HTML page.
+ *
+ * @param {string} inputMd - Chat markdown file path.
+ * @param {string} outputHtml - Output HTML path.
+ * @returns {void}
+ *
+ * @example
+ * buildSingle('examples/chat.md', 'dist/index.html')
+ */
+function buildSingle(inputMd, outputHtml) {
+  const conv = loadConversationFromMarkdown(inputMd);
+
+  const html = renderHtml({
+    frontmatter: conv.frontmatter,
+    profiles: conv.profiles,
+    chat: conv.chat,
+    messages: conv.messages
+  });
+
+  fs.mkdirSync(path.dirname(outputHtml), { recursive: true });
+  fs.writeFileSync(outputHtml, html, "utf-8");
+  console.log(`Built: ${outputHtml}`);
+}
+
+/**
+ * CLI entry for single-file build.
+ *
+ * @returns {void}
+ *
+ * @example
+ * node src/build.js examples/chat.md dist/index.html
+ */
+function main() {
+  const [inputMd, outputHtml] = process.argv.slice(2);
+  if (!inputMd || !outputHtml) {
+    console.error("Usage: node src/build.js <input.md> <output.html>");
+    process.exit(1);
+  }
+  buildSingle(inputMd, outputHtml);
+}
+
+main();

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>项目讨论</title>
+  <style>
+:root { --bg:#fbf7ef; --ink:#2f2a24; --muted:#7c6f62; --incoming:#fffaf2; --outgoing:#efe3cf; }
+body { margin:0; font-family:"Source Han Serif SC","Noto Serif SC",serif; background: radial-gradient(circle at top,#fff,#f3e8d7); color:var(--ink); }
+.chat { max-width: 860px; margin:0 auto; min-height:100vh; background: var(--bg); border-left:1px solid #e7dcc9; border-right:1px solid #e7dcc9; }
+.header { padding:14px 18px; border-bottom:1px solid #e7dcc9; }
+.timeline { padding:18px; }
+.msg{display:grid;grid-template-columns:44px 1fr;gap:10px;margin-bottom:14px}.msg.self{grid-template-columns:1fr 44px}
+.msg-main{max-width:78%}.msg.self .msg-main{margin-left:auto}.meta{font-size:12px;color:var(--muted)}.msg.self .meta{text-align:right}
+.bubble{padding:10px 12px;border-radius:4px;background:var(--incoming);border:1px solid #e4d7c1}.msg.self .bubble{background:var(--outgoing)}
+.quote{padding:6px 8px;margin-bottom:8px;border-left:2px solid #a48a6f;background:#f8efdf;font-size:12px}
+.avatar{width:44px;height:44px;border-radius:2px;object-fit:cover;background:#ddd}
+.img{max-width:min(320px,100%);display:block;border:1px solid #dac8ac}
+.card{display:block;padding:8px;border:1px solid #dac8ac;background:#fff4e3;text-decoration:none;color:inherit}
+.card-title{font-weight:700}.card-desc,.card-footer{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+  <main class="chat">
+    <header class="header">
+      <h1>项目讨论</h1>
+      <p>群聊 · Room MVP 群</p>
+    </header>
+    <section class="timeline">
+      <article class="msg self"><div class="msg-main"><p class="meta">Alice · 2026-04-09 10:00</p><div class="bubble"><div>Paper 主题用于展示可扩展样式能力。</div></div></div><img class="avatar" src="https://picsum.photos/seed/alice/100/100" alt="Alice"/></article>
+<article class="msg"><img class="avatar" src="https://picsum.photos/seed/bob/100/100" alt="Bob"/><div class="msg-main"><p class="meta">Bob · 2026-04-09 10:02</p><div class="bubble"><a class="card" href="https://example.com/spec" target="_blank" rel="noreferrer">
+      <div class="card-title">example.com</div>
+      <div class="card-desc">https://example.com/spec</div>
+      <div class="card-footer"><span>example.com</span><span>链接卡片</span></div>
+    </a></div></div></article>
+<article class="msg"><img class="avatar" src="https://picsum.photos/seed/clara/100/100" alt="Clara"/><div class="msg-main"><p class="meta">Clara · 2026-04-09 10:03</p><div class="bubble"><div class="quote"><div>Bob · 2026-04-09 10:02</div><div>[链接] example.com</div></div><div>这条是引用效果，主题切换后结构不变。</div></div></div></article>
+    </section>
+  </main>
+</body>
+</html>

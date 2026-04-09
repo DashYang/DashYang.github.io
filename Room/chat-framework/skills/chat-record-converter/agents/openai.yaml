@@ -1,0 +1,5 @@
+version: 1
+display_name: Chat Record Converter
+short_description: 把原始聊天内容转换成 chat-framework 的 md/yaml 输入文件
+default_prompt: |
+  请将我提供的聊天记录整理为 chat-framework 可用的 chat.md、profiles.yml、chat.yml（必要时含 ui.yml），并做一致性校验。

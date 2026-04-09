@@ -1,0 +1,5 @@
+version: 1
+display_name: MR Workflow
+short_description: 提交前强制文档同步与增量需求文档生成的 MR 流程 Skill
+default_prompt: |
+  请按 MR Workflow Skill 执行提交流程：先同步 docs、生成增量需求文档、通过校验后再提交并准备推送。

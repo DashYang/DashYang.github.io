@@ -1,0 +1,5 @@
+chat:
+  type: "single"
+  title: "Bob"
+  self: "alice"
+  peer: "bob"

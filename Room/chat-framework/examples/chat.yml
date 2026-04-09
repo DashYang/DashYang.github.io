@@ -1,0 +1,10 @@
+chat:
+  type: "group"
+  title: "项目讨论"
+  self: "alice"
+  peer: "bob"
+  groupInfo:
+    name: "Room MVP 群"
+    avatar: "https://picsum.photos/seed/group/100/100"
+    notice: "本周五前完成初版"
+    members: ["alice", "bob", "clara"]

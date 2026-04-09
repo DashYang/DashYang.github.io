@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Require commit message to include requirement summary line:
+#   Req: ...
+
+MSG_FILE="$1"
+
+if ! grep -Eq '^Req:\s.+' "$MSG_FILE"; then
+  echo "[commit-msg] Missing requirement summary line."
+  echo "[commit-msg] Please add a line like:"
+  echo "Req: <incremental requirement summary>"
+  exit 1
+fi

@@ -1,0 +1,13 @@
+users:
+  alice:
+    name: "Alice"
+    avatar: "https://picsum.photos/seed/alice/100/100"
+    bio: "产品经理"
+  bob:
+    name: "Bob"
+    avatar: "https://picsum.photos/seed/bob/100/100"
+    bio: "前端工程师"
+  clara:
+    name: "Clara"
+    avatar: "https://picsum.photos/seed/clara/100/100"
+    bio: "设计师"
