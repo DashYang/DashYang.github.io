@@ -1,0 +1,5 @@
+chat:
+  type: "single"
+  title: "姐姐"
+  self: "protagonist"
+  peer: sister 

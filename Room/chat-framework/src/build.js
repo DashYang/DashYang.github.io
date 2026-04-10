@@ -13,7 +13,7 @@ import { renderHtml } from "./renderer.js";
  * @example
  * buildSingle('examples/chat.md', 'dist/index.html')
  */
-function buildSingle(inputMd, outputHtml) {
+export function buildSingle(inputMd, outputHtml) {
   const conv = loadConversationFromMarkdown(inputMd);
 
   const html = renderHtml({
@@ -45,4 +45,9 @@ function main() {
   buildSingle(inputMd, outputHtml);
 }
 
-main();
+// Support being imported as a module without executing CLI.
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
+  main();
+}

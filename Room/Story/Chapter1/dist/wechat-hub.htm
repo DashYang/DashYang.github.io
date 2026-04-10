@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter1</title>
+  <style>
+    :root {
+      --bg: #efefef;
+      --panel: #f7f7f7;
+      --text: #1f1f1f;
+      --muted: #8c8c8c;
+      --line: #e3e3e3;
+      --incoming: #ffffff;
+      --outgoing: #95ec69;
+      --green: #07c160;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #d9d9d9;
+      font-family: "PingFang SC", "Helvetica Neue", sans-serif;
+      color: var(--text);
+    }
+    .phone {
+      max-width: 390px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #cfcfcf;
+      border-right: 1px solid #cfcfcf;
+    }
+    .status-bar {
+      height: 26px;
+      padding: 3px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      background: var(--panel);
+    }
+    .top-nav {
+      height: 46px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      align-items: center;
+      grid-template-columns: 1fr auto 1fr;
+      padding: 0 12px;
+      background: var(--panel);
+      font-weight: 600;
+    }
+    .top-nav .center-title {
+      justify-self: center;
+      font-size: 20px;
+      letter-spacing: 0.5px;
+    }
+    .top-nav .plus {
+      justify-self: end;
+      font-size: 22px;
+      color: #444;
+    }
+    .search-wrap {
+      padding: 9px 12px 10px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .search {
+      height: 34px;
+      border-radius: 6px;
+      border: 1px solid #ededed;
+      background: #fff;
+      color: #a3a3a3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      gap: 6px;
+    }
+    .list-view {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+    .list-scroll {
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      background: #fff;
+    }
+    .list-item {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid #efefef;
+      background: #fff;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 50px 1fr auto;
+      column-gap: 10px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .list-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #ddd;
+    }
+    .list-main {
+      min-width: 0;
+    }
+    .list-title {
+      font-size: 18px;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+    .list-preview {
+      margin-top: 4px;
+      font-size: 16px;
+      color: #a0a0a0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .list-time {
+      font-size: 14px;
+      color: #b0b0b0;
+      margin-top: 4px;
+      padding-left: 6px;
+    }
+    .tabbar {
+      height: 54px;
+      border-top: 1px solid var(--line);
+      background: var(--panel);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      align-items: center;
+      text-align: center;
+      font-size: 12px;
+      color: #8f8f8f;
+    }
+    .tabbar .active {
+      color: var(--green);
+      font-weight: 600;
+    }
+    .detail-view {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+    .chat-top {
+      height: 46px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      background: var(--panel);
+      padding: 0 8px;
+      gap: 8px;
+    }
+    .back-btn {
+      border: none;
+      background: transparent;
+      color: #4f4f4f;
+      font-size: 15px;
+      cursor: pointer;
+      padding: 6px 8px;
+    }
+    .chat-title {
+      font-size: 17px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .timeline {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 12px;
+    }
+    .msg { display: grid; grid-template-columns: 42px 1fr; gap: 10px; margin-bottom: 14px; }
+    .msg.self { grid-template-columns: 1fr 42px; }
+    .avatar { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; background: #ddd; }
+    .msg-main { max-width: 80%; }
+    .msg.self .msg-main { margin-left: auto; }
+    .meta { font-size: 12px; color: var(--muted); margin: 0 0 4px; }
+    .msg.self .meta { text-align: right; }
+    .bubble { border-radius: 10px; padding: 10px 12px; background: var(--incoming); word-break: break-word; line-height: 1.45; }
+    .msg.self .bubble { background: var(--outgoing); }
+    .quote { margin-bottom: 8px; background: rgba(0,0,0,0.06); border-left: 3px solid rgba(0,0,0,0.18); border-radius: 6px; padding: 6px 8px; font-size: 12px; color: #333; }
+    .img { max-width: min(320px, 100%); border-radius: 8px; display: block; }
+    .card { display: block; border-radius: 8px; background: #f8f8f8; padding: 9px; text-decoration: none; color: inherit; }
+    .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .card-desc { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .card-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+    .inline-link { color: #576b95; }
+    .end-tip { font-size: 12px; color: var(--muted); text-align: center; margin: 16px 0 4px; }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <div class="status-bar">
+      <div id="status-carrier">一点就通</div>
+      <div id="status-time">22:30</div>
+      <div id="status-battery">81%</div>
+    </div>
+
+    <section id="list-view" class="list-view">
+      <header class="top-nav">
+        <div></div>
+        <div class="center-title">巨信</div>
+        <div class="plus">＋</div>
+      </header>
+      <div class="search-wrap">
+        <div class="search">🔍 查询</div>
+      </div>
+      <div id="list-scroll" class="list-scroll"></div>
+      <footer class="tabbar">
+        <div class="active">微信</div>
+        <div>通讯录</div>
+        <div>发现</div>
+        <div>我</div>
+      </footer>
+    </section>
+
+    <section id="detail-view" class="detail-view">
+      <header class="chat-top">
+        <button id="back-btn" class="back-btn">返回</button>
+        <div class="chat-title" id="chat-title"></div>
+      </header>
+      <div class="timeline" id="timeline"></div>
+    </section>
+  </main>
+
+  <script id="chat-data" type="application/json">{"title":"Chapter1","conversations":[{"id":"conv-1","title":"姐姐","subtitle":"sister","avatar":"https://picsum.photos/seed/sister/100/100","self":"protagonist","replayIntervalMs":900,"preview":"弟，最近还好吧","listTime":"22:13","startIndex":0,"profiles":{"users":{"protagonist":{"name":"奋斗的西瓜","avatar":"https://picsum.photos/seed/protagonist/100/100","bio":"新人独立恐怖游戏开发者，求关注!"},"sister":{"name":"姐姐","avatar":"https://picsum.photos/seed/sister/100/100","bio":"无"},"zhou_police":{"name":"周警官","avatar":"https://picsum.photos/seed/policeman/100/100","bio":"无"},"coat_man":{"name":"风衣男","avatar":"https://picsum.photos/seed/weiredpoliceman/100/100","bio":"无"},"neighbour1":{"name":"803","avatar":"https://picsum.photos/seed/neighbour1/100/100","bio":"living the moment"},"neighbour2":{"name":"603","avatar":"https://picsum.photos/seed/neighbour2/100/100","bio":"不服就干"},"neighbour3":{"name":"904","avatar":"https://picsum.photos/seed/neighbour3/100/100","bio":"喜欢清晨的阳光啊"},"admin":{"name":"物业管家","avatar":"https://picsum.photos/seed/admin/100/100","bio":"竭诚为您服务"}}},"messages":[{"id":"m1","senderId":"sister","timeRaw":"2026-04-10 22:00:12","kind":"text","text":"弟，最近还好吧","index":0,"timestamp":"2026-04-10T14:00:12.000Z","timeText":"2026-04-10 22:00"},{"id":"m2","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"不太好,跟你吐槽一下今天大早遇到的怪事,气死我勒！","index":1,"timestamp":"2026-04-10T14:01:12.000Z","timeText":"2026-04-10 22:01"},{"id":"m3","senderId":"sister","timeRaw":"+1m","kind":"text","text":"什么怪事能把你气成这样","index":2,"timestamp":"2026-04-10T14:02:12.000Z","timeText":"2026-04-10 22:02"},{"id":"m4","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"我之前不是花了十多天做了一个消除类的小游戏，昨晚半夜兴奋地发到了小红簿上，结果早上起来一看，一个点赞都没有。什么垃圾推流算法啊！","index":3,"timestamp":"2026-04-10T14:03:12.000Z","timeText":"2026-04-10 22:03"},{"id":"m5","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"正蛋疼呢，结果突然听到门铃响。然后我就打算去去开门，结果透过监控一看，发现是两个警察。","index":4,"timestamp":"2026-04-10T14:04:12.000Z","timeText":"2026-04-10 22:04"},{"id":"m6","senderId":"protagonist","timeRaw":"+10s","kind":"text","text":"最奇怪的是其中一个的打扮，我发你看一下。","index":5,"timestamp":"2026-04-10T14:04:22.000Z","timeText":"2026-04-10 22:04"},{"id":"m7","senderId":"protagonist","timeRaw":"+30s","kind":"image","imageUrl":"./visiting.png","index":6,"timestamp":"2026-04-10T14:04:52.000Z","timeText":"2026-04-10 22:04"},{"id":"m8","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"那个风衣男是不是很诡异？虽然现在也是算不上热，但是他穿的也太多了吧，而且不知道为啥今天雾气那么大","index":7,"timestamp":"2026-04-10T14:05:22.000Z","timeText":"2026-04-10 22:05"},{"id":"m9","senderId":"sister","timeRaw":"+10s","kind":"text","text":"是挺怪的，那么他们找你什么事呢","index":8,"timestamp":"2026-04-10T14:05:32.000Z","timeText":"2026-04-10 22:05"},{"id":"m10","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"我也纳闷。后面了解到那个在前面的看着正常的警察姓周，个子不高，气色不错，看着挺靠谱的,给人感觉也不错。但另一个警察……真的很怪。不说他穿了一件巨厚的旧风衣，还远远的站着，连个正脸都看不清。就算离得那么远，还感觉从他那边传来闻股发臭的味道，不知道是不是很久没洗澡了。","index":9,"timestamp":"2026-04-10T14:06:02.000Z","timeText":"2026-04-10 22:06"},{"id":"m11","senderId":"sister","timeRaw":"+10s","kind":"text","text":"。。。","index":10,"timestamp":"2026-04-10T14:06:12.000Z","timeText":"2026-04-10 22:06"},{"id":"m12","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"然后感觉就是例行的文化吧，周警官问我在这里住了多久，做什么职业，是不是一个人住。我说住了五年，职业是独立游戏开发人，目前一个人住。","index":11,"timestamp":"2026-04-10T14:06:42.000Z","timeText":"2026-04-10 22:06"},{"id":"m13","senderId":"protagonist","timeRaw":"+45s","kind":"text","text":"结果那个周警官听完，似乎有点吃惊，盯着我看了半天。最可气的是那个站在远处的大哥，居然在那儿笑，甚至笑的有点咳嗽。不过他那个咳嗽的声音感觉病的有点严重，这还能当警察么?","index":12,"timestamp":"2026-04-10T14:07:27.000Z","timeText":"2026-04-10 22:07"},{"id":"m14","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"我当时就有点生气，问他们到底是什么事来找我，我很忙的。结果这个时候周警官才问我：最近有没有发生什么奇怪的事？","index":13,"timestamp":"2026-04-10T14:07:57.000Z","timeText":"2026-04-10 22:07"},{"id":"m15","senderId":"protagonist","timeRaw":"+35s","kind":"text","text":"这个问题是不是莫名其妙，能发生什么奇怪的事","index":14,"timestamp":"2026-04-10T14:08:32.000Z","timeText":"2026-04-10 22:08"},{"id":"m16","senderId":"sister","timeRaw":"+10s","kind":"text","text":"确实，感觉在绕圈子，他们真的是警察么","index":15,"timestamp":"2026-04-10T14:08:42.000Z","timeText":"2026-04-10 22:08"},{"id":"m17","senderId":"protagonist","timeRaw":"+12s","kind":"text","text":"盲生你发现了华点！不过我当时没想那么多，可能第一次有点毛吧，所以就说没遇到，想赶快结束，结果周警官又说，有没有听到什么奇怪的声音","index":16,"timestamp":"2026-04-10T14:08:54.000Z","timeText":"2026-04-10 22:08"},{"id":"m18","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"这时候我想起业主群里最近抱怨的事——似乎是装修的噪音，咚咚的。还有半夜持续不断的冲马桶的声音。最离谱的是有小孩哭，一哭就是半个多小时，于是就说了这件事。","index":17,"timestamp":"2026-04-10T14:09:24.000Z","timeText":"2026-04-10 22:09"},{"id":"m19","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"结果周警官眼睛瞪的更大了，然后说他们走访了上下楼住户说这栋楼最近根本没人装修，而且楼里最年轻的孩子都七八岁了，哪来的半夜哭半小时的婴儿？","index":18,"timestamp":"2026-04-10T14:10:24.000Z","timeText":"2026-04-10 22:10"},{"id":"m20","senderId":"sister","timeRaw":"+30s","kind":"text","text":"你是不是最近熬夜太多熬出幻觉了","index":19,"timestamp":"2026-04-10T14:10:54.000Z","timeText":"2026-04-10 22:10"},{"id":"m21","senderId":"protagonist","timeRaw":"+40s","kind":"text","text":"聊天记录可查好吧！结果最可气的是那个风衣男突然用沙哑的声音凶狠地叫我别骗他们。瞬间气氛怪怪的，周警官看不对就结束问话走了，临走给了我他的微信让我有什么发现可以联系他。","index":20,"timestamp":"2026-04-10T14:11:34.000Z","timeText":"2026-04-10 22:11"},{"id":"m22","senderId":"sister","timeRaw":"+1m","kind":"text","text":"那就多配合配合人家吧，可能有啥隐秘之事","index":21,"timestamp":"2026-04-10T14:12:34.000Z","timeText":"2026-04-10 22:12"},{"id":"m23","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"到时候再说吧，我再看看怎么改进改进我的游戏","index":22,"timestamp":"2026-04-10T14:13:04.000Z","timeText":"2026-04-10 22:13"},{"id":"m24","senderId":"sister","timeRaw":"+20s","kind":"text","text":"对了，经济上没遇到什么困难吧？","index":23,"timestamp":"2026-04-10T14:13:24.000Z","timeText":"2026-04-10 22:13"},{"id":"m25","senderId":"protagonist","timeRaw":"+10s","kind":"text","text":"没有，先这样，我去忙了","index":24,"timestamp":"2026-04-10T14:13:34.000Z","timeText":"2026-04-10 22:13"}]},{"id":"conv-2","title":"4幢一家人","subtitle":"4幢一家人","avatar":"https://picsum.photos/seed/group/100/100","self":"protagnist","replayIntervalMs":1000,"preview":"邻居们，最近装修注意一下时间吧，咚咚咚的，有时候晚上还在咚咚咚的","listTime":"09:37","startIndex":0,"profiles":{"users":{"protagonist":{"name":"奋斗的西瓜","avatar":"https://picsum.photos/seed/protagonist/100/100","bio":"新人独立恐怖游戏开发者，求关注!"},"sister":{"name":"姐姐","avatar":"https://picsum.photos/seed/sister/100/100","bio":"无"},"zhou_police":{"name":"周警官","avatar":"https://picsum.photos/seed/policeman/100/100","bio":"无"},"coat_man":{"name":"风衣男","avatar":"https://picsum.photos/seed/weiredpoliceman/100/100","bio":"无"},"neighbour1":{"name":"803","avatar":"https://picsum.photos/seed/neighbour1/100/100","bio":"living the moment"},"neighbour2":{"name":"603","avatar":"https://picsum.photos/seed/neighbour2/100/100","bio":"不服就干"},"neighbour3":{"name":"904","avatar":"https://picsum.photos/seed/neighbour3/100/100","bio":"喜欢清晨的阳光啊"},"admin":{"name":"物业管家","avatar":"https://picsum.photos/seed/admin/100/100","bio":"竭诚为您服务"}}},"messages":[{"id":"g1","senderId":"neighbour1","timeRaw":"2026-04-10 09:30:00","kind":"text","text":"邻居们，最近装修注意一下时间吧，咚咚咚的，有时候晚上还在咚咚咚的","index":0,"timestamp":"2026-04-10T01:30:00.000Z","timeText":"2026-04-10 09:30"},{"id":"g2","senderId":"neighbour2","timeRaw":"+1m","kind":"text","text":"+1 是谁这么没公德心 物业也不管管 说好的非装修时段不能装修呢","quote":{"messageId":"g1","senderId":"neighbour1","timeText":"2026-04-10 09:30","snippet":"邻居们，最近装修注意一下时间吧，咚咚咚的，有时候晚上还在咚咚咚的"},"index":1,"timestamp":"2026-04-10T01:31:00.000Z","timeText":"2026-04-10 09:31"},{"id":"g3","senderId":"neighbour3","timeRaw":"+1m","kind":"text","text":"谁半夜1 2点还在洗澡的，水声哗啦啦的，注意一下时间吧，老房子隔音不好","quote":{"messageId":"g2","senderId":"neighbour2","timeText":"2026-04-10 09:31","snippet":"+1 是谁这么没公德心 物业也不管管 说好的非装修时段不能装修呢"},"index":2,"timestamp":"2026-04-10T01:32:00.000Z","timeText":"2026-04-10 09:32"},{"id":"g4","senderId":"neighbour1","timeRaw":"+2m","kind":"text","text":"这些也都算了，有时候还有小孩的哭声，哭声持续时间也太久了，也不哄哄，对小孩身体也不好吧","index":3,"timestamp":"2026-04-10T01:34:00.000Z","timeText":"2026-04-10 09:34"},{"id":"g5","senderId":"neighbour2","timeRaw":"+1m","kind":"text","text":"物业出来管管，这么多人都在反应问题，别装死了@物业","index":4,"timestamp":"2026-04-10T01:35:00.000Z","timeText":"2026-04-10 09:35"},{"id":"g6","senderId":"admin","timeRaw":"+1m","kind":"text","text":"收到，下次再出现的时候群里说一下，我们会让保安来巡查一下的","index":5,"timestamp":"2026-04-10T01:36:00.000Z","timeText":"2026-04-10 09:36"},{"id":"g7","senderId":"neighbour3","timeRaw":"+20s","kind":"text","text":"你们说，婴儿真的能哭30min么","index":6,"timestamp":"2026-04-10T01:36:20.000Z","timeText":"2026-04-10 09:36"},{"id":"g8","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"卧槽，我心里有点发毛了","quote":{"messageId":"g7","senderId":"neighbour3","timeText":"2026-04-10 09:36","snippet":"你们说，婴儿真的能哭30min么"},"index":7,"timestamp":"2026-04-10T01:37:20.000Z","timeText":"2026-04-10 09:37"}]}],"ui":{"statusBar":{"carrier":"一点就通","time":"22:30","battery":"81%"},"topTitle":"巨信","searchPlaceholder":"查询","persistKey":"room_wechat_seen_chapter1"}}</script>
+  <script>
+    const payload = JSON.parse(document.getElementById('chat-data').textContent);
+    const listView = document.getElementById('list-view');
+    const detailView = document.getElementById('detail-view');
+    const listScroll = document.getElementById('list-scroll');
+    const backBtn = document.getElementById('back-btn');
+    const timeline = document.getElementById('timeline');
+    const chatTitle = document.getElementById('chat-title');
+
+    const persistKey = payload.ui?.persistKey || 'chat_framework_seen_v1';
+    let timer = null;
+    let seenMap = {};
+
+    function loadSeen() {
+      try {
+        const raw = localStorage.getItem(persistKey);
+        seenMap = raw ? JSON.parse(raw) : {};
+      } catch (_) {
+        seenMap = {};
+      }
+    }
+
+    function saveSeen() {
+      try {
+        localStorage.setItem(persistKey, JSON.stringify(seenMap));
+      } catch (_) {
+        // Ignore storage failures.
+      }
+    }
+
+    function esc(s) {
+      return String(s || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function linkify(text) {
+      const escaped = esc(text || '');
+      return escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a class="inline-link" href="$1" target="_blank" rel="noreferrer">$1</a>');
+    }
+
+    function renderQuote(quote, profiles) {
+      if (!quote) return '';
+      const sender = profiles.users?.[quote.senderId]?.name || quote.senderId || '';
+      return '<div class="quote"><div>' + esc(sender) + ' · ' + esc(quote.timeText || '') + '</div><div>' + esc(quote.snippet || '') + '</div></div>';
+    }
+
+    function renderContent(msg) {
+      if (msg.kind === 'image') {
+        return '<img class="img" src="' + esc(msg.imageUrl || '') + '" alt="image"/>';
+      }
+      if (msg.kind === 'link-card') {
+        const c = msg.linkCard || {};
+        return '<a class="card" href="' + esc(c.url || '#') + '" target="_blank" rel="noreferrer">'
+          + '<div class="card-title">' + esc(c.title || c.url || '链接') + '</div>'
+          + '<div class="card-desc">' + esc(c.desc || '') + '</div>'
+          + '<div class="card-footer"><span>' + esc(c.site || '') + '</span><span>链接卡片</span></div>'
+          + '</a>';
+      }
+      return '<div>' + linkify(msg.text || '') + '</div>';
+    }
+
+    function renderMessage(msg, conv) {
+      const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId, avatar: '' };
+      const self = conv.self;
+      const selfCls = msg.senderId === self ? 'msg self' : 'msg';
+      const avatar = '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>';
+      const main = '<div class="msg-main">'
+        + '<p class="meta">' + esc(user.name || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p>'
+        + '<div class="bubble">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg) + '</div>'
+        + '</div>';
+      const html = msg.senderId === self ? main + avatar : avatar + main;
+      return '<article class="' + selfCls + '">' + html + '</article>';
+    }
+
+    function clearTimer() {
+      if (timer) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function markSeen(conversationId) {
+      seenMap[conversationId] = true;
+      saveSeen();
+    }
+
+    function finishConversation(conversationId) {
+      timeline.insertAdjacentHTML('beforeend', '<div class="end-tip">当前聊天已结束</div>');
+      timeline.scrollTop = timeline.scrollHeight;
+      markSeen(conversationId);
+    }
+
+    function renderList() {
+      listScroll.innerHTML = payload.conversations.map((c) => {
+        return '<button class="list-item" data-id="' + esc(c.id) + '">'
+          + '<img class="list-avatar" src="' + esc(c.avatar || '') + '" alt="avatar"/>'
+          + '<div class="list-main">'
+          + '<div class="list-title">' + esc(c.title || '') + '</div>'
+          + '<div class="list-preview">' + esc(c.preview || '') + '</div>'
+          + '</div>'
+          + '<div class="list-time">' + esc(c.listTime || '') + '</div>'
+          + '</button>';
+      }).join('');
+
+      listScroll.querySelectorAll('.list-item').forEach((item) => {
+        item.addEventListener('click', () => openConversation(item.dataset.id));
+      });
+    }
+
+    function openConversation(conversationId) {
+      clearTimer();
+      const conv = payload.conversations.find((x) => x.id === conversationId);
+      if (!conv) return;
+
+      listView.style.display = 'none';
+      detailView.style.display = 'flex';
+      chatTitle.textContent = conv.title || '';
+      timeline.innerHTML = '';
+
+      if (!conv.messages.length) {
+        finishConversation(conversationId);
+        return;
+      }
+
+      if (seenMap[conversationId]) {
+        const full = conv.messages.map((msg) => renderMessage(msg, conv)).join('');
+        timeline.innerHTML = full + '<div class="end-tip">当前聊天已结束</div>';
+        timeline.scrollTop = timeline.scrollHeight;
+        return;
+      }
+
+      let current = Math.max(0, Number(conv.startIndex || 0));
+      timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv));
+      timeline.scrollTop = timeline.scrollHeight;
+      current += 1;
+
+      const step = Math.max(100, Number(conv.replayIntervalMs || 1000));
+      timer = window.setInterval(() => {
+        if (current >= conv.messages.length) {
+          clearTimer();
+          finishConversation(conversationId);
+          return;
+        }
+        timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv));
+        timeline.scrollTop = timeline.scrollHeight;
+        current += 1;
+      }, step);
+    }
+
+    backBtn.addEventListener('click', () => {
+      clearTimer();
+      detailView.style.display = 'none';
+      listView.style.display = 'flex';
+    });
+
+    loadSeen();
+    renderList();
+  </script>
+</body>
+</html>

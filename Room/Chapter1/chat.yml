@@ -1,8 +1,0 @@
-chat:
-  type: "group"
-  title: "凌晨对话：业主群与警察"
-  self: "protagonist"
-  groupInfo:
-    name: "业主群"
-    avatar: "https://picsum.photos/seed/group/100/100"
-    members: ["protagonist","sister","zhou_police","coat_man"]

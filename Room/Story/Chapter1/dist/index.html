@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>姐姐</title>
+  <style>
+:root {
+  --bg: #ececec;
+  --header-bg: #f6f6f6;
+  --text: #222;
+  --muted: #7a7a7a;
+  --incoming: #ffffff;
+  --outgoing: #95ec69;
+  --card-bg: #f8f8f8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: linear-gradient(180deg,#f7f7f7,#e9e9e9); color: var(--text); font-family: "PingFang SC", "Helvetica Neue", sans-serif; }
+.chat { max-width: 840px; margin: 0 auto; min-height: 100vh; background: var(--bg); }
+.header { position: sticky; top: 0; z-index: 2; padding: 12px 16px; background: var(--header-bg); border-bottom: 1px solid #ddd; }
+.header h1 { font-size: 16px; margin: 0; }
+.header p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.timeline { padding: 18px 14px 30px; }
+.msg { display: grid; grid-template-columns: 42px 1fr; gap: 10px; margin-bottom: 14px; }
+.msg.self { grid-template-columns: 1fr 42px; }
+.avatar { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; background: #ddd; }
+.msg-main { max-width: 76%; }
+.msg.self .msg-main { margin-left: auto; }
+.meta { font-size: 12px; color: var(--muted); margin: 0 0 4px; }
+.msg.self .meta { text-align: right; }
+.bubble { border-radius: 10px; padding: 10px 12px; background: var(--incoming); box-shadow: 0 1px 1px rgba(0,0,0,.04); line-height: 1.45; word-break: break-word; }
+.msg.self .bubble { background: var(--outgoing); }
+.quote { margin-bottom: 8px; background: rgba(0,0,0,0.06); border-left: 3px solid rgba(0,0,0,0.18); border-radius: 6px; padding: 6px 8px; font-size: 12px; color: #333; }
+.img { max-width: min(320px, 100%); border-radius: 8px; display: block; }
+.card { display: block; border-radius: 8px; background: var(--card-bg); padding: 9px; text-decoration: none; color: inherit; }
+.card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.card-desc { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.card-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+a.inline-link { color: #576b95; }
+</style>
+</head>
+<body>
+  <main class="chat">
+    <header class="header">
+      <h1>姐姐</h1>
+      <p>单聊 · sister</p>
+    </header>
+    <section class="timeline">
+      <article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:00</p><div class="bubble"><div>跟你吐槽一下今天大早遇到的怪事,气死我勒！</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg"><img class="avatar" src="https://picsum.photos/seed/sister/100/100" alt="姐姐"/><div class="msg-main"><p class="meta">姐姐 · 2026-04-10 22:01</p><div class="bubble"><div>什么怪事能把你气成这样</div></div></div></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:02</p><div class="bubble"><div>我之前不是花了十多天做了一个消除类的小游戏，昨晚半夜兴奋地发到了小红簿上，结果早上起来一看，一个点赞都没有。什么垃圾推流算法啊！</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:03</p><div class="bubble"><div>正蛋疼呢，结果突然听到门铃响。然后我就打算去去开门，结果透过监控一看，发现是两个警察。</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:03</p><div class="bubble"><div>最奇怪的是其中一个的打扮，我发你看一下。</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:03</p><div class="bubble"><img class="img" src="./visiting.png" alt="image"/></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:04</p><div class="bubble"><div>那个风衣男是不是很诡异？虽然现在也是算不上热，但是他穿的也太多了吧，而且不知道为啥今天雾气那么大</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg"><img class="avatar" src="https://picsum.photos/seed/sister/100/100" alt="姐姐"/><div class="msg-main"><p class="meta">姐姐 · 2026-04-10 22:04</p><div class="bubble"><div>是挺怪的，那么他们找你什么事呢</div></div></div></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:05</p><div class="bubble"><div>我也纳闷。后面了解到那个在前面的看着正常的警察姓周，个子不高，气色不错，看着挺靠谱的,给人感觉也不错。但另一个警察……真的很怪。不说他穿了一件巨厚的旧风衣，还远远的站着，连个正脸都看不清。就算离得那么远，还感觉从他那边传来闻股发臭的味道，不知道是不是很久没洗澡了。</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg"><img class="avatar" src="https://picsum.photos/seed/sister/100/100" alt="姐姐"/><div class="msg-main"><p class="meta">姐姐 · 2026-04-10 22:05</p><div class="bubble"><div>。。。</div></div></div></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:05</p><div class="bubble"><div>然后感觉就是例行的文化吧，周警官问我在这里住了多久，做什么职业，是不是一个人住。我说住了五年，职业是独立游戏开发人，目前一个人住。</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:06</p><div class="bubble"><div>结果那个周警官听完，似乎有点吃惊，盯着我看了半天。最可气的是那个站在远处的大哥，居然在那儿笑，甚至笑的有点咳嗽。不过他那个咳嗽的声音感觉病的有点严重，这还能当警察么?</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:06</p><div class="bubble"><div>我当时就有点生气，问他们到底是什么事来找我，我很忙的。结果这个时候周警官才问我：最近有没有发生什么奇怪的事？</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:07</p><div class="bubble"><div>这个问题是不是莫名其妙，能发生什么奇怪的事</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg"><img class="avatar" src="https://picsum.photos/seed/sister/100/100" alt="姐姐"/><div class="msg-main"><p class="meta">姐姐 · 2026-04-10 22:07</p><div class="bubble"><div>确实，感觉在绕圈子，他们真的是警察么</div></div></div></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:07</p><div class="bubble"><div>盲生你发现了华点！不过我当时没想那么多，可能第一次有点毛吧，所以就说没遇到，想赶快结束，结果周警官又说，有没有听到什么奇怪的声音</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:08</p><div class="bubble"><div>这时候我想起业主群里最近抱怨的事——似乎是装修的噪音，咚咚的。还有半夜持续不断的冲马桶的声音。最离谱的是有小孩哭，一哭就是半个多小时，于是就说了这件事。</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:09</p><div class="bubble"><div>结果周警官眼睛瞪的更大了，然后说他们走访了上下楼住户说这栋楼最近根本没人装修，而且楼里最年轻的孩子都七八岁了，哪来的半夜哭半小时的婴儿？</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg"><img class="avatar" src="https://picsum.photos/seed/sister/100/100" alt="姐姐"/><div class="msg-main"><p class="meta">姐姐 · 2026-04-10 22:09</p><div class="bubble"><div>你是不是最近熬夜太多熬出幻觉了</div></div></div></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:10</p><div class="bubble"><div>聊天记录可查好吧！结果最可气的是那个风衣男突然用沙哑的声音凶狠地叫我别骗他们。瞬间气氛怪怪的，周警官看不对就结束问话走了，临走给了我他的微信让我有什么发现可以联系他。</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg"><img class="avatar" src="https://picsum.photos/seed/sister/100/100" alt="姐姐"/><div class="msg-main"><p class="meta">姐姐 · 2026-04-10 22:11</p><div class="bubble"><div>那就多配合配合人家吧，可能有啥隐秘之事</div></div></div></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:12</p><div class="bubble"><div>到时候再说吧，我再看看怎么改进改进我的游戏</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+<article class="msg"><img class="avatar" src="https://picsum.photos/seed/sister/100/100" alt="姐姐"/><div class="msg-main"><p class="meta">姐姐 · 2026-04-10 22:12</p><div class="bubble"><div>对了，经济上没遇到什么困难吧？</div></div></div></article>
+<article class="msg self"><div class="msg-main"><p class="meta">主角 · 2026-04-10 22:12</p><div class="bubble"><div>没有，先这样，我去忙了</div></div></div><img class="avatar" src="https://picsum.photos/seed/protagonist/100/100" alt="主角"/></article>
+    </section>
+  </main>
+</body>
+</html>

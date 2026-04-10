@@ -31,7 +31,7 @@ function listMarkdownFiles(inputDir) {
  * @example
  * buildFolder('examples/multi', 'dist/wechat-hub.html')
  */
-function buildFolder(inputDir, outputHtml) {
+export function buildFolder(inputDir, outputHtml) {
   const mdFiles = listMarkdownFiles(inputDir);
   if (mdFiles.length === 0) {
     throw new Error(`No markdown files found in folder: ${inputDir}`);
@@ -84,4 +84,9 @@ function main() {
   buildFolder(inputDir, outputHtml);
 }
 
-main();
+// Only run main when this file is executed directly (not when imported).
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
+  main();
+}

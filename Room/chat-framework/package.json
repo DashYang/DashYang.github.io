@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "chat-framework": "src/cli.js"
+  },
   "scripts": {
     "build": "node src/build.js examples/chat.md dist/index.html",
     "build:paper": "node src/build.js examples/chat-paper.md dist/paper.html",
