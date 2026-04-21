@@ -55,26 +55,31 @@ export function validateMessages(messages, profiles) {
  * const conv = loadConversationFromMarkdown('examples/chat.md')
  */
 export function loadConversationFromMarkdown(markdownPath) {
-  const rootDir = path.dirname(markdownPath);
-  const md = readText(markdownPath);
-  const parsed = parseChatMarkdown(md);
+  try {
+    const rootDir = path.dirname(markdownPath);
+    const md = readText(markdownPath);
+    const parsed = parseChatMarkdown(md);
 
-  const profilePath = path.resolve(rootDir, parsed.frontmatter.profiles || "profiles.yml");
-  const chatPath = path.resolve(rootDir, parsed.frontmatter.chat || "chat.yml");
+    const profilePath = path.resolve(rootDir, parsed.frontmatter.profiles || "profiles.yml");
+    const chatPath = path.resolve(rootDir, parsed.frontmatter.chat || "chat.yml");
 
-  const profiles = parseSimpleYaml(readText(profilePath));
-  const chatWrap = parseSimpleYaml(readText(chatPath));
-  const chat = chatWrap.chat || {};
+    const profiles = parseSimpleYaml(readText(profilePath));
+    const chatWrap = parseSimpleYaml(readText(chatPath));
+    const chat = chatWrap.chat || {};
 
-  validateMessages(parsed.messages, profiles);
-  const withTime = resolveTimes(parsed.messages);
-  const messages = resolveQuotes(withTime);
+    validateMessages(parsed.messages, profiles);
+    const withTime = resolveTimes(parsed.messages);
+    const messages = resolveQuotes(withTime);
 
-  return {
-    sourceFile: markdownPath,
-    frontmatter: parsed.frontmatter,
-    profiles,
-    chat,
-    messages
-  };
+    return {
+      sourceFile: markdownPath,
+      frontmatter: parsed.frontmatter,
+      profiles,
+      chat,
+      messages
+    };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`[${markdownPath}] ${reason}`);
+  }
 }

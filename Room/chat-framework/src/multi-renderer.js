@@ -27,7 +27,9 @@ function escapeHtml(s = "") {
  */
 function toSnippet(message) {
   if (!message) return "";
+  if (message.recall) return "[消息已撤回]";
   if (message.kind === "image") return "[图片]";
+  if (message.kind === "voice") return `[语音] ${message.durationSec ? `${message.durationSec}"` : ""}`.trim();
   if (message.kind === "link-card") {
     const title = message.linkCard?.title || message.linkCard?.url || "链接";
     return `[链接] ${title}`;
@@ -360,21 +362,38 @@ export function renderWechatHubHtml(input) {
     }
     .msg { display: grid; grid-template-columns: 42px 1fr; gap: 10px; margin-bottom: 14px; }
     .msg.self { grid-template-columns: 1fr 42px; }
+    .avatar-btn { border:none; padding:0; background:transparent; cursor:pointer; width:42px; height:42px; border-radius:8px; }
     .avatar { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; background: #ddd; }
-    .msg-main { max-width: 80%; }
+    .msg-main { width: fit-content; max-width: 80%; }
     .msg.self .msg-main { margin-left: auto; }
     .meta { font-size: 12px; color: var(--muted); margin: 0 0 4px; }
     .msg.self .meta { text-align: right; }
-    .bubble { border-radius: 10px; padding: 10px 12px; background: var(--incoming); word-break: break-word; line-height: 1.45; }
+    .bubble { display: inline-block; max-width: 100%; border-radius: 10px; padding: 10px 12px; background: var(--incoming); word-break: break-word; line-height: 1.45; white-space: pre-wrap; }
     .msg.self .bubble { background: var(--outgoing); }
+    .bubble.media { padding: 4px; background: transparent; }
+    .recall-tip { font-size:12px; color:var(--muted); text-align:center; padding:4px 0; }
     .quote { margin-bottom: 8px; background: rgba(0,0,0,0.06); border-left: 3px solid rgba(0,0,0,0.18); border-radius: 6px; padding: 6px 8px; font-size: 12px; color: #333; }
     .img { max-width: min(320px, 100%); border-radius: 8px; display: block; }
+    .img-caption { margin-top: 6px; font-size: 13px; line-height: 1.4; }
+    .voice-btn { border:none; background:transparent; padding:0; font:inherit; color:inherit; cursor:pointer; display:flex; align-items:center; gap:8px; }
+    .voice-icon { font-size:12px; color:#3b3b3b; }
+    .voice-duration { font-size:13px; color:#3b3b3b; min-width:26px; text-align:left; }
+    .voice-btn.playing .voice-icon { color:#07c160; }
     .card { display: block; border-radius: 8px; background: #f8f8f8; padding: 9px; text-decoration: none; color: inherit; }
     .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
     .card-desc { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
     .card-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
     .inline-link { color: #576b95; }
+    .mention { color: #576b95; font-weight: 600; }
     .end-tip { font-size: 12px; color: var(--muted); text-align: center; margin: 16px 0 4px; }
+    .profile-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.35); z-index: 20; }
+    .profile-modal.show { display: flex; }
+    .profile-card { width: min(320px, 100%); background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 12px 30px rgba(0,0,0,.2); }
+    .profile-head { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+    .profile-avatar { width:50px; height:50px; border-radius:8px; object-fit:cover; background:#ddd; }
+    .profile-name { font-size:16px; font-weight:600; }
+    .profile-item { font-size:13px; color:#444; line-height:1.45; margin-top:4px; word-break:break-word; }
+    .profile-close { margin-top:12px; width:100%; border:none; border-radius:8px; background:#f2f2f2; padding:8px 0; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -411,6 +430,17 @@ export function renderWechatHubHtml(input) {
       <div class="timeline" id="timeline"></div>
     </section>
   </main>
+  <aside id="profile-modal" class="profile-modal" aria-hidden="true">
+    <div class="profile-card">
+      <div class="profile-head">
+        <img id="profile-avatar" class="profile-avatar" src="" alt="avatar"/>
+        <div id="profile-name" class="profile-name"></div>
+      </div>
+      <div id="profile-wechat" class="profile-item"></div>
+      <div id="profile-bio" class="profile-item"></div>
+      <button id="profile-close" class="profile-close" type="button">关闭</button>
+    </div>
+  </aside>
 
   <script id="chat-data" type="application/json">${payload}</script>
   <script>
@@ -421,10 +451,19 @@ export function renderWechatHubHtml(input) {
     const backBtn = document.getElementById('back-btn');
     const timeline = document.getElementById('timeline');
     const chatTitle = document.getElementById('chat-title');
+    const profileModal = document.getElementById('profile-modal');
+    const profileAvatar = document.getElementById('profile-avatar');
+    const profileName = document.getElementById('profile-name');
+    const profileWechat = document.getElementById('profile-wechat');
+    const profileBio = document.getElementById('profile-bio');
+    const profileClose = document.getElementById('profile-close');
 
     const persistKey = payload.ui?.persistKey || 'chat_framework_seen_v1';
     let timer = null;
+    let recallTimers = [];
     let seenMap = {};
+    let activeAudio = null;
+    let activeVoiceBtn = null;
 
     function loadSeen() {
       try {
@@ -452,11 +491,64 @@ export function renderWechatHubHtml(input) {
         .replaceAll("'", '&#39;');
     }
 
+    const emojiMap = {
+      "微笑":"🙂","撇嘴":"😒","色":"😍","发呆":"😳","得意":"😎","流泪":"😢","害羞":"☺️","闭嘴":"🤐","睡":"😴","大哭":"😭",
+      "尴尬":"😅","发怒":"😠","调皮":"😜","呲牙":"😁","惊讶":"😮","难过":"😞","酷":"😎","冷汗":"😓","抓狂":"😫","吐":"🤮",
+      "偷笑":"🤭","愉快":"😄","白眼":"🙄","傲慢":"😤","困":"🥱","惊恐":"😱","憨笑":"😄","悠闲":"😌","咒骂":"🤬","疑问":"❓",
+      "嘘":"🤫","晕":"😵","衰":"🥴","骷髅":"💀","敲打":"👊","再见":"👋","擦汗":"😓","抠鼻":"👃","鼓掌":"👏","坏笑":"😏",
+      "左哼哼":"😤","右哼哼":"😤","哈欠":"🥱","鄙视":"😒","委屈":"🥺","快哭了":"🥹","阴险":"😈","亲亲":"😘","吓":"😨","可怜":"🥺",
+      "菜刀":"🔪","西瓜":"🍉","啤酒":"🍺","咖啡":"☕","蛋糕":"🍰","玫瑰":"🌹","凋谢":"🥀","爱心":"❤️","心碎":"💔","强":"👍",
+      "弱":"👎","握手":"🤝","胜利":"✌️","抱拳":"🙏","勾引":"👉","拳头":"👊","OK":"👌","跳跳":"💃","发抖":"🫨","怄火":"😤",
+      "转圈":"🌀","捂脸":"🤦","奸笑":"😏","机智":"🧠","皱眉":"😣","耶":"✌️","旺柴":"🐶","社会社会":"😎","吃瓜":"🍉","加油":"💪",
+      "汗":"😓","天啊":"😱","Emm":"😶","让我看看":"👀","叹气":"😮‍💨","苦涩":"😖","裂开":"🫠"
+    };
+
     function linkify(text) {
       const escaped = esc(text || '');
       return escaped.replace(/(https?:\\/\\/[^\\s<]+)/g, '<a class="inline-link" href="$1" target="_blank" rel="noreferrer">$1</a>');
     }
-
+    function emojify(text) {
+      return String(text || '').replace(/\\[([^\\[\\]]+)\\]/g, (m, key) => emojiMap[key] || m);
+    }
+    function mentionify(htmlText) {
+      return htmlText.replace(/(^|[\\s>])@([A-Za-z0-9_\\-\\u4e00-\\u9fa5]+)/g, '$1<span class="mention">@$2</span>');
+    }
+    function formatText(text) {
+      return mentionify(linkify(emojify(text || '')));
+    }
+    function formatVoiceDuration(sec) {
+      const n = Number(sec || 0);
+      return n > 0 ? n + '"' : '语音';
+    }
+    function setVoiceState(btn, playing) {
+      if (!btn) return;
+      const icon = btn.querySelector('.voice-icon');
+      btn.classList.toggle('playing', !!playing);
+      if (icon) icon.textContent = playing ? '▮▮' : '▶';
+    }
+    function stopActiveAudio() {
+      if (activeAudio) {
+        activeAudio.pause();
+        activeAudio = null;
+      }
+      setVoiceState(activeVoiceBtn, false);
+      activeVoiceBtn = null;
+    }
+    function openProfileByDataset(data) {
+      profileAvatar.src = data.avatar || '';
+      profileName.textContent = data.name || '';
+      profileWechat.textContent = '微信号：' + (data.wechatId || '未设置');
+      profileBio.textContent = '简介：' + (data.bio || '无');
+      profileModal.classList.add('show');
+      profileModal.setAttribute('aria-hidden', 'false');
+    }
+    function closeProfile() {
+      profileModal.classList.remove('show');
+      profileModal.setAttribute('aria-hidden', 'true');
+    }
+    function recallText(msg, conv, user) {
+      return msg.senderId === conv.self ? '你撤回了一条消息' : (user.name || msg.senderId) + ' 撤回了一条消息';
+    }
     function renderQuote(quote, profiles) {
       if (!quote) return '';
       const sender = profiles.users?.[quote.senderId]?.name || quote.senderId || '';
@@ -465,7 +557,15 @@ export function renderWechatHubHtml(input) {
 
     function renderContent(msg) {
       if (msg.kind === 'image') {
-        return '<img class="img" src="' + esc(msg.imageUrl || '') + '" alt="image"/>';
+        const caption = msg.text ? '<div class="img-caption">' + formatText(msg.text) + '</div>' : '';
+        return '<img class="img" src="' + esc(msg.imageUrl || '') + '" alt="image"/>' + caption;
+      }
+      if (msg.kind === 'voice') {
+        const caption = msg.text ? '<div class="img-caption">' + formatText(msg.text) + '</div>' : '';
+        return '<button class="voice-btn" type="button" data-audio-url="' + esc(msg.audioUrl || '') + '">'
+          + '<span class="voice-icon">▶</span>'
+          + '<span class="voice-duration">' + esc(formatVoiceDuration(msg.durationSec)) + '</span>'
+          + '</button>' + caption;
       }
       if (msg.kind === 'link-card') {
         const c = msg.linkCard || {};
@@ -475,23 +575,57 @@ export function renderWechatHubHtml(input) {
           + '<div class="card-footer"><span>' + esc(c.site || '') + '</span><span>链接卡片</span></div>'
           + '</a>';
       }
-      return '<div>' + linkify(msg.text || '') + '</div>';
+      return '<div>' + formatText(msg.text || '') + '</div>';
     }
 
-    function renderMessage(msg, conv) {
+    function renderMessage(msg, conv, options) {
+      const opts = options || {};
       const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId, avatar: '' };
       const self = conv.self;
       const selfCls = msg.senderId === self ? 'msg self' : 'msg';
-      const avatar = '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>';
+      const avatar = '<button class="avatar-btn" type="button"'
+        + ' data-name="' + esc(user.name || msg.senderId) + '"'
+        + ' data-wechat-id="' + esc(user.wechatId || '') + '"'
+        + ' data-bio="' + esc(user.bio || '') + '"'
+        + ' data-avatar="' + esc(user.avatar || '') + '">'
+        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>'
+        + '</button>';
+      const bubbleCls = (msg.kind === 'image' || msg.kind === 'voice') ? 'bubble media' : 'bubble';
+      const body = (opts.forceRecalled && msg.recall)
+        ? '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>'
+        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg) + '</div>';
       const main = '<div class="msg-main">'
         + '<p class="meta">' + esc(user.name || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p>'
-        + '<div class="bubble">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg) + '</div>'
+        + '<div class="msg-body">' + body + '</div>'
         + '</div>';
       const html = msg.senderId === self ? main + avatar : avatar + main;
-      return '<article class="' + selfCls + '">' + html + '</article>';
+      return '<article class="' + selfCls + '" data-cid="' + esc(opts.conversationId || '') + '" data-mid="' + esc(msg.id || '') + '">' + html + '</article>';
+    }
+
+    function applyRecall(conversationId, msg, conv) {
+      const node = timeline.querySelector('article[data-cid="' + conversationId + '"][data-mid="' + msg.id + '"] .msg-body');
+      if (!node) return;
+      const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId };
+      node.innerHTML = '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>';
+    }
+
+    function queueRecall(conversationId, msg, conv) {
+      if (!msg.recall) return;
+      const delay = Math.max(0, Number(msg.recallDelayMs ?? msg.recall?.delayMs ?? 0));
+      const t = window.setTimeout(() => applyRecall(conversationId, msg, conv), delay);
+      recallTimers.push(t);
     }
 
     function clearTimer() {
+      if (timer) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+      recallTimers.forEach((t) => window.clearTimeout(t));
+      recallTimers = [];
+      stopActiveAudio();
+    }
+    function stopPlaybackTimer() {
       if (timer) {
         window.clearInterval(timer);
         timer = null;
@@ -542,25 +676,27 @@ export function renderWechatHubHtml(input) {
       }
 
       if (seenMap[conversationId]) {
-        const full = conv.messages.map((msg) => renderMessage(msg, conv)).join('');
+        const full = conv.messages.map((msg) => renderMessage(msg, conv, { conversationId, forceRecalled: true })).join('');
         timeline.innerHTML = full + '<div class="end-tip">当前聊天已结束</div>';
         timeline.scrollTop = timeline.scrollHeight;
         return;
       }
 
       let current = Math.max(0, Number(conv.startIndex || 0));
-      timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv));
+      timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
+      queueRecall(conversationId, conv.messages[current], conv);
       timeline.scrollTop = timeline.scrollHeight;
       current += 1;
 
       const step = Math.max(100, Number(conv.replayIntervalMs || 1000));
       timer = window.setInterval(() => {
         if (current >= conv.messages.length) {
-          clearTimer();
+          stopPlaybackTimer();
           finishConversation(conversationId);
           return;
         }
-        timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv));
+        timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
+        queueRecall(conversationId, conv.messages[current], conv);
         timeline.scrollTop = timeline.scrollHeight;
         current += 1;
       }, step);
@@ -570,6 +706,34 @@ export function renderWechatHubHtml(input) {
       clearTimer();
       detailView.style.display = 'none';
       listView.style.display = 'flex';
+    });
+
+    profileClose.addEventListener('click', closeProfile);
+    profileModal.addEventListener('click', (e) => {
+      if (e.target === profileModal) closeProfile();
+    });
+    timeline.addEventListener('click', (e) => {
+      const avatarBtn = e.target.closest('.avatar-btn');
+      if (avatarBtn) {
+        openProfileByDataset(avatarBtn.dataset);
+        return;
+      }
+      const voiceBtn = e.target.closest('.voice-btn');
+      if (!voiceBtn) return;
+      const src = voiceBtn.dataset.audioUrl || '';
+      if (!src) return;
+
+      if (activeVoiceBtn === voiceBtn && activeAudio && !activeAudio.paused) {
+        stopActiveAudio();
+        return;
+      }
+
+      stopActiveAudio();
+      activeAudio = new Audio(src);
+      activeVoiceBtn = voiceBtn;
+      setVoiceState(voiceBtn, true);
+      activeAudio.addEventListener('ended', stopActiveAudio);
+      activeAudio.play().catch(() => stopActiveAudio());
     });
 
     loadSeen();
@@ -646,19 +810,36 @@ export function renderWechatStoryHtml(input) {
     .timeline { flex:1; min-height:0; overflow-y:auto; padding:12px; }
     .msg { display:grid; grid-template-columns:42px 1fr; gap:10px; margin-bottom:14px; }
     .msg.self { grid-template-columns:1fr 42px; }
+    .avatar-btn { border:none; padding:0; background:transparent; cursor:pointer; width:42px; height:42px; border-radius:8px; }
     .avatar { width:42px; height:42px; border-radius:8px; object-fit:cover; background:#ddd; }
-    .msg-main { max-width:80%; } .msg.self .msg-main { margin-left:auto; }
+    .msg-main { width:fit-content; max-width:80%; } .msg.self .msg-main { margin-left:auto; }
     .meta { font-size:12px; color:var(--muted); margin:0 0 4px; } .msg.self .meta { text-align:right; }
-    .bubble { border-radius:10px; padding:10px 12px; background:var(--incoming); word-break:break-word; line-height:1.45; }
+    .bubble { display:inline-block; max-width:100%; border-radius:10px; padding:10px 12px; background:var(--incoming); word-break:break-word; line-height:1.45; white-space:pre-wrap; }
     .msg.self .bubble { background:var(--outgoing); }
+    .bubble.media { padding:4px; background:transparent; }
+    .recall-tip { font-size:12px; color:var(--muted); text-align:center; padding:4px 0; }
     .quote { margin-bottom:8px; background:rgba(0,0,0,.06); border-left:3px solid rgba(0,0,0,.18); border-radius:6px; padding:6px 8px; font-size:12px; color:#333; }
     .img { max-width:min(320px,100%); border-radius:8px; display:block; }
+    .img-caption { margin-top:6px; font-size:13px; line-height:1.4; }
+    .voice-btn { border:none; background:transparent; padding:0; font:inherit; color:inherit; cursor:pointer; display:flex; align-items:center; gap:8px; }
+    .voice-icon { font-size:12px; color:#3b3b3b; }
+    .voice-duration { font-size:13px; color:#3b3b3b; min-width:26px; text-align:left; }
+    .voice-btn.playing .voice-icon { color:#07c160; }
     .card { display:block; border-radius:8px; background:#f8f8f8; padding:9px; text-decoration:none; color:inherit; }
     .card-title { font-size:14px; font-weight:600; margin-bottom:4px; }
     .card-desc { font-size:12px; color:var(--muted); margin-bottom:8px; }
     .card-footer { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); }
     .inline-link { color:#576b95; }
+    .mention { color:#576b95; font-weight:600; }
     .end-tip { font-size:12px; color:var(--muted); text-align:center; margin:16px 0 4px; }
+    .profile-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.35); z-index: 20; }
+    .profile-modal.show { display: flex; }
+    .profile-card { width: min(320px, 100%); background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 12px 30px rgba(0,0,0,.2); }
+    .profile-head { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+    .profile-avatar { width:50px; height:50px; border-radius:8px; object-fit:cover; background:#ddd; }
+    .profile-name { font-size:16px; font-weight:600; }
+    .profile-item { font-size:13px; color:#444; line-height:1.45; margin-top:4px; word-break:break-word; }
+    .profile-close { margin-top:12px; width:100%; border:none; border-radius:8px; background:#f2f2f2; padding:8px 0; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -692,6 +873,17 @@ export function renderWechatStoryHtml(input) {
       <div class="timeline" id="timeline"></div>
     </section>
   </main>
+  <aside id="profile-modal" class="profile-modal" aria-hidden="true">
+    <div class="profile-card">
+      <div class="profile-head">
+        <img id="profile-avatar" class="profile-avatar" src="" alt="avatar"/>
+        <div id="profile-name" class="profile-name"></div>
+      </div>
+      <div id="profile-wechat" class="profile-item"></div>
+      <div id="profile-bio" class="profile-item"></div>
+      <button id="profile-close" class="profile-close" type="button">关闭</button>
+    </div>
+  </aside>
 
   <script id="story-data" type="application/json">${payload}</script>
   <script>
@@ -711,9 +903,18 @@ export function renderWechatStoryHtml(input) {
     const searchText = document.getElementById('search-text');
     const sceneTip = document.getElementById('scene-tip');
     const nextSceneBtn = document.getElementById('next-scene-btn');
+    const profileModal = document.getElementById('profile-modal');
+    const profileAvatar = document.getElementById('profile-avatar');
+    const profileName = document.getElementById('profile-name');
+    const profileWechat = document.getElementById('profile-wechat');
+    const profileBio = document.getElementById('profile-bio');
+    const profileClose = document.getElementById('profile-close');
 
     const persistKey = payload.persistKey || 'chat_story_seen_v1';
     let timer = null;
+    let recallTimers = [];
+    let activeAudio = null;
+    let activeVoiceBtn = null;
     let storyState = { currentScene: 0, seen: {} };
     let touchStartX = 0;
     let touchStartY = 0;
@@ -721,9 +922,62 @@ export function renderWechatStoryHtml(input) {
     function esc(s) {
       return String(s || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
     }
+    const emojiMap = {
+      "微笑":"🙂","撇嘴":"😒","色":"😍","发呆":"😳","得意":"😎","流泪":"😢","害羞":"☺️","闭嘴":"🤐","睡":"😴","大哭":"😭",
+      "尴尬":"😅","发怒":"😠","调皮":"😜","呲牙":"😁","惊讶":"😮","难过":"😞","酷":"😎","冷汗":"😓","抓狂":"😫","吐":"🤮",
+      "偷笑":"🤭","愉快":"😄","白眼":"🙄","傲慢":"😤","困":"🥱","惊恐":"😱","憨笑":"😄","悠闲":"😌","咒骂":"🤬","疑问":"❓",
+      "嘘":"🤫","晕":"😵","衰":"🥴","骷髅":"💀","敲打":"👊","再见":"👋","擦汗":"😓","抠鼻":"👃","鼓掌":"👏","坏笑":"😏",
+      "左哼哼":"😤","右哼哼":"😤","哈欠":"🥱","鄙视":"😒","委屈":"🥺","快哭了":"🥹","阴险":"😈","亲亲":"😘","吓":"😨","可怜":"🥺",
+      "菜刀":"🔪","西瓜":"🍉","啤酒":"🍺","咖啡":"☕","蛋糕":"🍰","玫瑰":"🌹","凋谢":"🥀","爱心":"❤️","心碎":"💔","强":"👍",
+      "弱":"👎","握手":"🤝","胜利":"✌️","抱拳":"🙏","勾引":"👉","拳头":"👊","OK":"👌","跳跳":"💃","发抖":"🫨","怄火":"😤",
+      "转圈":"🌀","捂脸":"🤦","奸笑":"😏","机智":"🧠","皱眉":"😣","耶":"✌️","旺柴":"🐶","社会社会":"😎","吃瓜":"🍉","加油":"💪",
+      "汗":"😓","天啊":"😱","Emm":"😶","让我看看":"👀","叹气":"😮‍💨","苦涩":"😖","裂开":"🫠"
+    };
     function linkify(text) {
       const escaped = esc(text || '');
       return escaped.replace(/(https?:\\/\\/[^\\s<]+)/g, '<a class="inline-link" href="$1" target="_blank" rel="noreferrer">$1</a>');
+    }
+    function emojify(text) {
+      return String(text || '').replace(/\\[([^\\[\\]]+)\\]/g, (m, key) => emojiMap[key] || m);
+    }
+    function mentionify(htmlText) {
+      return htmlText.replace(/(^|[\\s>])@([A-Za-z0-9_\\-\\u4e00-\\u9fa5]+)/g, '$1<span class="mention">@$2</span>');
+    }
+    function formatText(text) {
+      return mentionify(linkify(emojify(text || '')));
+    }
+    function formatVoiceDuration(sec) {
+      const n = Number(sec || 0);
+      return n > 0 ? n + '"' : '语音';
+    }
+    function setVoiceState(btn, playing) {
+      if (!btn) return;
+      const icon = btn.querySelector('.voice-icon');
+      btn.classList.toggle('playing', !!playing);
+      if (icon) icon.textContent = playing ? '▮▮' : '▶';
+    }
+    function stopActiveAudio() {
+      if (activeAudio) {
+        activeAudio.pause();
+        activeAudio = null;
+      }
+      setVoiceState(activeVoiceBtn, false);
+      activeVoiceBtn = null;
+    }
+    function openProfileByDataset(data) {
+      profileAvatar.src = data.avatar || '';
+      profileName.textContent = data.name || '';
+      profileWechat.textContent = '微信号：' + (data.wechatId || '未设置');
+      profileBio.textContent = '简介：' + (data.bio || '无');
+      profileModal.classList.add('show');
+      profileModal.setAttribute('aria-hidden', 'false');
+    }
+    function closeProfile() {
+      profileModal.classList.remove('show');
+      profileModal.setAttribute('aria-hidden', 'true');
+    }
+    function recallText(msg, conv, user) {
+      return msg.senderId === conv.self ? '你撤回了一条消息' : (user.name || msg.senderId) + ' 撤回了一条消息';
     }
     function loadState() {
       try {
@@ -756,6 +1010,12 @@ export function renderWechatStoryHtml(input) {
     }
     function clearTimer() {
       if (timer) { window.clearInterval(timer); timer = null; }
+      recallTimers.forEach((t) => window.clearTimeout(t));
+      recallTimers = [];
+      stopActiveAudio();
+    }
+    function stopPlaybackTimer() {
+      if (timer) { window.clearInterval(timer); timer = null; }
     }
     function applySceneUi(scene) {
       const ui = scene.ui || {};
@@ -772,7 +1032,17 @@ export function renderWechatStoryHtml(input) {
       return '<div class="quote"><div>' + esc(sender) + ' · ' + esc(quote.timeText || '') + '</div><div>' + esc(quote.snippet || '') + '</div></div>';
     }
     function renderContent(msg) {
-      if (msg.kind === 'image') return '<img class="img" src="' + esc(msg.imageUrl || '') + '" alt="image"/>';
+      if (msg.kind === 'image') {
+        const caption = msg.text ? '<div class="img-caption">' + formatText(msg.text) + '</div>' : '';
+        return '<img class="img" src="' + esc(msg.imageUrl || '') + '" alt="image"/>' + caption;
+      }
+      if (msg.kind === 'voice') {
+        const caption = msg.text ? '<div class="img-caption">' + formatText(msg.text) + '</div>' : '';
+        return '<button class="voice-btn" type="button" data-audio-url="' + esc(msg.audioUrl || '') + '">'
+          + '<span class="voice-icon">▶</span>'
+          + '<span class="voice-duration">' + esc(formatVoiceDuration(msg.durationSec)) + '</span>'
+          + '</button>' + caption;
+      }
       if (msg.kind === 'link-card') {
         const c = msg.linkCard || {};
         return '<a class="card" href="' + esc(c.url || '#') + '" target="_blank" rel="noreferrer">'
@@ -780,16 +1050,39 @@ export function renderWechatStoryHtml(input) {
           + '<div class="card-desc">' + esc(c.desc || '') + '</div>'
           + '<div class="card-footer"><span>' + esc(c.site || '') + '</span><span>链接卡片</span></div></a>';
       }
-      return '<div>' + linkify(msg.text || '') + '</div>';
+      return '<div>' + formatText(msg.text || '') + '</div>';
     }
-    function renderMessage(msg, conv) {
+    function renderMessage(msg, conv, options) {
+      const opts = options || {};
       const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId, avatar: '' };
       const self = conv.self;
       const selfCls = msg.senderId === self ? 'msg self' : 'msg';
-      const avatar = '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>';
-      const main = '<div class="msg-main"><p class="meta">' + esc(user.name || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p><div class="bubble">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg) + '</div></div>';
+      const avatar = '<button class="avatar-btn" type="button"'
+        + ' data-name="' + esc(user.name || msg.senderId) + '"'
+        + ' data-wechat-id="' + esc(user.wechatId || '') + '"'
+        + ' data-bio="' + esc(user.bio || '') + '"'
+        + ' data-avatar="' + esc(user.avatar || '') + '">'
+        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>'
+        + '</button>';
+      const bubbleCls = (msg.kind === 'image' || msg.kind === 'voice') ? 'bubble media' : 'bubble';
+      const body = (opts.forceRecalled && msg.recall)
+        ? '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>'
+        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg) + '</div>';
+      const main = '<div class="msg-main"><p class="meta">' + esc(user.name || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p><div class="msg-body">' + body + '</div></div>';
       const html = msg.senderId === self ? main + avatar : avatar + main;
-      return '<article class="' + selfCls + '">' + html + '</article>';
+      return '<article class="' + selfCls + '" data-cid="' + esc(opts.conversationId || '') + '" data-mid="' + esc(msg.id || '') + '">' + html + '</article>';
+    }
+    function applyRecall(conversationId, msg, conv) {
+      const node = timeline.querySelector('article[data-cid="' + conversationId + '"][data-mid="' + msg.id + '"] .msg-body');
+      if (!node) return;
+      const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId };
+      node.innerHTML = '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>';
+    }
+    function queueRecall(conversationId, msg, conv) {
+      if (!msg.recall) return;
+      const delay = Math.max(0, Number(msg.recallDelayMs ?? msg.recall?.delayMs ?? 0));
+      const t = window.setTimeout(() => applyRecall(conversationId, msg, conv), delay);
+      recallTimers.push(t);
     }
     function renderSceneTip(scene) {
       const show = isSceneCompleted(scene) && hasNextScene();
@@ -833,22 +1126,24 @@ export function renderWechatStoryHtml(input) {
       const seen = sceneSeenMap(scene.id);
       if (!conv.messages.length) { finishConversation(scene, conversationId); return; }
       if (seen[conversationId]) {
-        timeline.innerHTML = conv.messages.map((msg) => renderMessage(msg, conv)).join('') + '<div class="end-tip">当前聊天已结束</div>';
+        timeline.innerHTML = conv.messages.map((msg) => renderMessage(msg, conv, { conversationId, forceRecalled: true })).join('') + '<div class="end-tip">当前聊天已结束</div>';
         timeline.scrollTop = timeline.scrollHeight;
         return;
       }
       let current = Math.max(0, Number(conv.startIndex || 0));
-      timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv));
+      timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
+      queueRecall(conversationId, conv.messages[current], conv);
       timeline.scrollTop = timeline.scrollHeight;
       current += 1;
       const step = Math.max(100, Number(conv.replayIntervalMs || 1000));
       timer = window.setInterval(() => {
         if (current >= conv.messages.length) {
-          clearTimer();
+          stopPlaybackTimer();
           finishConversation(scene, conversationId);
           return;
         }
-        timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv));
+        timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
+        queueRecall(conversationId, conv.messages[current], conv);
         timeline.scrollTop = timeline.scrollHeight;
         current += 1;
       }, step);
@@ -884,6 +1179,33 @@ export function renderWechatStoryHtml(input) {
       detailView.style.display = 'none';
       listView.style.display = 'flex';
       renderSceneTip(currentScene());
+    });
+    profileClose.addEventListener('click', closeProfile);
+    profileModal.addEventListener('click', (e) => {
+      if (e.target === profileModal) closeProfile();
+    });
+    timeline.addEventListener('click', (e) => {
+      const avatarBtn = e.target.closest('.avatar-btn');
+      if (avatarBtn) {
+        openProfileByDataset(avatarBtn.dataset);
+        return;
+      }
+      const voiceBtn = e.target.closest('.voice-btn');
+      if (!voiceBtn) return;
+      const src = voiceBtn.dataset.audioUrl || '';
+      if (!src) return;
+
+      if (activeVoiceBtn === voiceBtn && activeAudio && !activeAudio.paused) {
+        stopActiveAudio();
+        return;
+      }
+
+      stopActiveAudio();
+      activeAudio = new Audio(src);
+      activeVoiceBtn = voiceBtn;
+      setVoiceState(voiceBtn, true);
+      activeAudio.addEventListener('ended', stopActiveAudio);
+      activeAudio.play().catch(() => stopActiveAudio());
     });
     nextSceneBtn.addEventListener('click', goNextScene);
     phone.addEventListener('touchstart', handleSwipeStart, { passive: true });

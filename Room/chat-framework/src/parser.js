@@ -1,6 +1,44 @@
 import { parseSimpleYaml } from "./yaml.js";
 
-const HEADER_RE = /^@([\w-]+)\s+#([\w-]+)\s+\[([^\]]+)\](.*)$/;
+const HEADER_PREFIX_RE = /^@([\w-]+)(?:\s+#([\w-]+))?(.*)$/;
+const ABS_TIME_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(:\d{2})?$/;
+const REL_TIME_RE = /^\+\d+[smhd]$/;
+
+/**
+ * Parse one message header line.
+ *
+ * Supported forms:
+ * - @u #m1 [2026-01-01 10:00:00] [quote:m0]
+ * - @u [2026-01-01 10:00:00]
+ * - @u #m2 [quote:m1]
+ * - @u
+ *
+ * @param {string} line - Trimmed line text.
+ * @returns {{ senderId: string, idRaw?: string, timeRaw?: string, tags: string[] } | null}
+ */
+function parseHeaderLine(line) {
+  const m = line.match(HEADER_PREFIX_RE);
+  if (!m) return null;
+
+  const [, senderId, idRaw, restRaw] = m;
+  const rest = restRaw || "";
+
+  const tags = [];
+  const re = /\[([^\]]+)\]/g;
+  let hit;
+  while ((hit = re.exec(rest))) tags.push(hit[1].trim());
+
+  // Header suffix only allows bracket blocks and spaces.
+  const residue = rest.replace(/\[[^\]]+\]/g, "").trim();
+  if (residue) return null;
+
+  const first = tags[0];
+  const hasTime = first && (ABS_TIME_RE.test(first) || REL_TIME_RE.test(first));
+  const timeRaw = hasTime ? first : undefined;
+  const pureTags = hasTime ? tags.slice(1) : tags;
+
+  return { senderId, idRaw, timeRaw, tags: pureTags };
+}
 
 /**
  * Parse YAML frontmatter from markdown text.
@@ -19,23 +57,6 @@ function parseFrontmatter(raw) {
   const fm = raw.slice(4, end);
   const body = raw.slice(end + 5);
   return { frontmatter: parseSimpleYaml(fm), body };
-}
-
-/**
- * Parse trailing bracket tags from a message header.
- *
- * @param {string} rest - Header suffix like "[image] [quote:m1]".
- * @returns {string[]} Tag list.
- *
- * @example
- * parseTags(' [image] [quote:m1]') // => ['image', 'quote:m1']
- */
-function parseTags(rest) {
-  const tags = [];
-  const re = /\[([^\]]+)\]/g;
-  let m;
-  while ((m = re.exec(rest))) tags.push(m[1].trim());
-  return tags;
 }
 
 /**
@@ -60,6 +81,88 @@ function toLinkCard(body) {
   }
   if (!card.url) throw new Error("[link-card] message requires url");
   return card;
+}
+
+/**
+ * Parse duration text to seconds.
+ *
+ * @param {string} raw - Duration text like "12", "12s", "+12s".
+ * @returns {number | null} Seconds or null when invalid.
+ */
+function parseSeconds(raw) {
+  const m = String(raw || "").trim().match(/^\+?(\d+)(s)?$/i);
+  if (!m) return null;
+  return Number(m[1]);
+}
+
+/**
+ * Parse voice message body.
+ *
+ * Supported forms:
+ * - first line is URL/path, optional later `duration: 8`
+ * - yaml-like:
+ *   url: ./a.mp3
+ *   duration: 8
+ *   text: 语音转写
+ *
+ * @param {string} bodyText - Message body.
+ * @returns {{ audioUrl: string, durationSec?: number, text?: string }}
+ */
+function toVoice(bodyText) {
+  const lines = bodyText.split("\n").map((x) => x.trim()).filter(Boolean);
+  if (!lines.length) throw new Error("[voice] message requires audio url/path");
+
+  let audioUrl = "";
+  let durationSec;
+  const textLines = [];
+
+  if (/^url\s*:/i.test(lines[0])) {
+    audioUrl = lines[0].slice(lines[0].indexOf(":") + 1).trim();
+  } else {
+    audioUrl = lines[0];
+  }
+  if (!audioUrl) throw new Error("[voice] message requires audio url/path");
+
+  for (let i = 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    const durationMatch = line.match(/^duration\s*:\s*(.+)$/i);
+    if (durationMatch) {
+      const sec = parseSeconds(durationMatch[1]);
+      if (sec === null) throw new Error(`[voice] invalid duration: ${durationMatch[1]}`);
+      durationSec = sec;
+      continue;
+    }
+    const textMatch = line.match(/^text\s*:\s*(.+)$/i);
+    if (textMatch) {
+      textLines.push(textMatch[1].trim());
+      continue;
+    }
+    textLines.push(line);
+  }
+
+  return {
+    audioUrl,
+    durationSec,
+    text: textLines.length ? textLines.join("\n").trim() : undefined
+  };
+}
+
+/**
+ * Parse recall delay from tag text.
+ *
+ * @param {string} tag - Tag like "recall" or "recall:+10s".
+ * @returns {number} Delay milliseconds.
+ */
+function parseRecallDelayMs(tag) {
+  if (tag === "recall") return 0;
+  const raw = tag.slice("recall:".length).trim();
+  if (!raw) return 0;
+  const m = raw.match(/^\+?(\d+)(ms|s|m|h)?$/i);
+  if (!m) throw new Error(`[recall] invalid delay: ${raw}`);
+  const n = Number(m[1]);
+  const unit = (m[2] || "s").toLowerCase();
+  const mul = { ms: 1, s: 1000, m: 60_000, h: 3_600_000 };
+  return n * mul[unit];
 }
 
 /**
@@ -90,7 +193,7 @@ function enrichAutoLinkCard(msg) {
  * Parse chat markdown into frontmatter + message drafts.
  *
  * Message header format:
- * `@sender #messageId [time] [optional-tags...]`
+ * `@sender #messageId [optional-time] [optional-tags...]`
  *
  * @param {string} raw - Full markdown content.
  * @returns {{ frontmatter: Record<string, unknown>, messages: Array<Record<string, unknown>> }}
@@ -104,6 +207,8 @@ export function parseChatMarkdown(raw) {
   const { frontmatter, body } = parseFrontmatter(raw);
   const lines = body.replace(/\r\n/g, "\n").split("\n");
   const drafts = [];
+  const usedIds = new Set();
+  let autoId = 1;
 
   let i = 0;
   while (i < lines.length) {
@@ -113,31 +218,54 @@ export function parseChatMarkdown(raw) {
       continue;
     }
 
-    const h = line.match(HEADER_RE);
-    if (!h) throw new Error(`Invalid message header at line ${i + 1}: ${line}`);
+    const header = parseHeaderLine(line);
+    if (!header) throw new Error(`Invalid message header at line ${i + 1}: ${line}`);
 
-    const [, senderId, id, timeRaw, rest] = h;
-    const tags = parseTags(rest);
+    const { senderId, idRaw, timeRaw, tags } = header;
     i += 1;
 
     const bodyLines = [];
-    while (i < lines.length && !lines[i].trim().match(HEADER_RE)) {
+    while (i < lines.length) {
+      const nextTrimmed = lines[i].trim();
+      if (nextTrimmed && parseHeaderLine(nextTrimmed)) break;
       bodyLines.push(lines[i]);
       i += 1;
     }
 
     const bodyText = bodyLines.join("\n").trim();
 
+    let id = idRaw;
+    if (!id) {
+      while (usedIds.has(`m${autoId}`)) autoId += 1;
+      id = `m${autoId}`;
+      autoId += 1;
+    }
+    if (usedIds.has(id)) {
+      throw new Error(`Duplicate message id in markdown parse stage: ${id}`);
+    }
+    usedIds.add(id);
+
     let msg = { id, senderId, timeRaw, kind: "text", text: bodyText };
     if (tags.includes("image")) {
-      msg = { ...msg, kind: "image", imageUrl: bodyText, text: undefined };
+      const imgLines = bodyText.split("\n").map((x) => x.trim()).filter(Boolean);
+      const imageUrl = imgLines[0] || "";
+      const imageText = imgLines.slice(1).join("\n").trim();
+      msg = { ...msg, kind: "image", imageUrl, text: imageText || undefined };
     }
     if (tags.includes("link-card")) {
       msg = { ...msg, kind: "link-card", linkCard: toLinkCard(bodyText), text: undefined };
     }
+    if (tags.includes("voice")) {
+      const voice = toVoice(bodyText);
+      msg = { ...msg, kind: "voice", audioUrl: voice.audioUrl, durationSec: voice.durationSec, text: voice.text };
+    }
     const quoteTag = tags.find((t) => t.startsWith("quote:"));
     if (quoteTag) {
       msg.quote = { messageId: quoteTag.slice("quote:".length) };
+    }
+    const recallTag = tags.find((t) => t === "recall" || t.startsWith("recall:"));
+    if (recallTag) {
+      msg.recall = { delayMs: parseRecallDelayMs(recallTag) };
     }
 
     drafts.push(enrichAutoLinkCard(msg));

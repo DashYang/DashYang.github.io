@@ -37,12 +37,18 @@ export function buildSingle(inputMd, outputHtml) {
  * node src/build.js examples/chat.md dist/index.html
  */
 function main() {
-  const [inputMd, outputHtml] = process.argv.slice(2);
-  if (!inputMd || !outputHtml) {
-    console.error("Usage: node src/build.js <input.md> <output.html>");
+  try {
+    const [inputMd, outputHtml] = process.argv.slice(2);
+    if (!inputMd || !outputHtml) {
+      console.error("Usage: node src/build.js <input.md> <output.html>");
+      process.exit(1);
+    }
+    buildSingle(inputMd, outputHtml);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    console.error(`[build-error] ${reason}`);
     process.exit(1);
   }
-  buildSingle(inputMd, outputHtml);
 }
 
 // Support being imported as a module without executing CLI.

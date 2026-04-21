@@ -1,0 +1,5 @@
+chat:
+  type: "single"
+  title: "周警官"
+  self: "protagonist"
+  peer: zhou_police

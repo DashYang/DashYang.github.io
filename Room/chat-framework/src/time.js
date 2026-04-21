@@ -44,6 +44,20 @@ function parseRel(raw) {
 }
 
 /**
+ * Infer relative delay from message text length.
+ * Rule: N non-whitespace chars => +Ns (minimum 1s).
+ *
+ * @param {Record<string, unknown>} m - Message draft.
+ * @returns {number} Milliseconds offset.
+ */
+function inferDelayMs(m) {
+  const source = String(m.text || "");
+  const chars = source.replace(/\s/g, "").length;
+  const seconds = Math.max(1, chars);
+  return seconds * 1000;
+}
+
+/**
  * Format Date to readable local text.
  *
  * @param {Date} d - Date object.
@@ -70,14 +84,18 @@ function fmt(d) {
  */
 export function resolveTimes(messages) {
   if (messages.length === 0) return [];
-  if (!isAbs(messages[0].timeRaw)) {
+  if (!messages[0].timeRaw || !isAbs(messages[0].timeRaw)) {
     throw new Error("First message time must be absolute, e.g. [2026-04-09 10:00:00]");
   }
 
   let prev = null;
   return messages.map((m, idx) => {
     let d;
-    if (isAbs(m.timeRaw)) {
+    if (!m.timeRaw) {
+      const ms = inferDelayMs(m);
+      if (!prev) throw new Error("Relative time cannot be used before first absolute message");
+      d = new Date(prev.getTime() + ms);
+    } else if (isAbs(m.timeRaw)) {
       d = parseAbs(m.timeRaw);
     } else {
       const ms = parseRel(m.timeRaw);
@@ -86,7 +104,16 @@ export function resolveTimes(messages) {
       d = new Date(prev.getTime() + ms);
     }
     prev = d;
-    return { ...m, index: idx, timestamp: d.toISOString(), timeText: fmt(d) };
+    const delayMs = Number(m.recall?.delayMs || 0);
+    const recallAt = m.recall ? new Date(d.getTime() + Math.max(0, delayMs)).toISOString() : undefined;
+    return {
+      ...m,
+      index: idx,
+      timestamp: d.toISOString(),
+      timeText: fmt(d),
+      recallDelayMs: m.recall ? Math.max(0, delayMs) : undefined,
+      recallAt
+    };
   });
 }
 
@@ -110,8 +137,11 @@ export function resolveQuotes(messages) {
 
     let snippet = "";
     if (target.kind === "text") snippet = (target.text || "").slice(0, 80);
-    if (target.kind === "image") snippet = "[图片]";
+    if (target.kind === "image") {
+      snippet = target.text ? `[图片] ${target.text.slice(0, 40)}` : "[图片]";
+    }
     if (target.kind === "link-card") snippet = `[链接] ${target.linkCard?.title || target.linkCard?.url || ""}`;
+    if (target.kind === "voice") snippet = `[语音] ${target.durationSec ? `${target.durationSec}秒` : ""}`;
 
     return {
       ...m,

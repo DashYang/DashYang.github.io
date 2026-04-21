@@ -1,5 +1,95 @@
 import { themes } from "./themes.js";
 
+const WECHAT_EMOJI_MAP = {
+  微笑: "🙂",
+  撇嘴: "😒",
+  色: "😍",
+  发呆: "😳",
+  得意: "😎",
+  流泪: "😢",
+  害羞: "☺️",
+  闭嘴: "🤐",
+  睡: "😴",
+  大哭: "😭",
+  尴尬: "😅",
+  发怒: "😠",
+  调皮: "😜",
+  呲牙: "😁",
+  惊讶: "😮",
+  难过: "😞",
+  酷: "😎",
+  冷汗: "😓",
+  抓狂: "😫",
+  吐: "🤮",
+  偷笑: "🤭",
+  愉快: "😄",
+  白眼: "🙄",
+  傲慢: "😤",
+  困: "🥱",
+  惊恐: "😱",
+  憨笑: "😄",
+  悠闲: "😌",
+  咒骂: "🤬",
+  疑问: "❓",
+  嘘: "🤫",
+  晕: "😵",
+  衰: "🥴",
+  骷髅: "💀",
+  敲打: "👊",
+  再见: "👋",
+  擦汗: "😓",
+  抠鼻: "👃",
+  鼓掌: "👏",
+  坏笑: "😏",
+  左哼哼: "😤",
+  右哼哼: "😤",
+  哈欠: "🥱",
+  鄙视: "😒",
+  委屈: "🥺",
+  快哭了: "🥹",
+  阴险: "😈",
+  亲亲: "😘",
+  吓: "😨",
+  可怜: "🥺",
+  菜刀: "🔪",
+  西瓜: "🍉",
+  啤酒: "🍺",
+  咖啡: "☕",
+  蛋糕: "🍰",
+  玫瑰: "🌹",
+  凋谢: "🥀",
+  爱心: "❤️",
+  心碎: "💔",
+  强: "👍",
+  弱: "👎",
+  握手: "🤝",
+  胜利: "✌️",
+  抱拳: "🙏",
+  勾引: "👉",
+  拳头: "👊",
+  OK: "👌",
+  跳跳: "💃",
+  发抖: "🫨",
+  怄火: "😤",
+  转圈: "🌀",
+  捂脸: "🤦",
+  奸笑: "😏",
+  机智: "🧠",
+  皱眉: "😣",
+  耶: "✌️",
+  旺柴: "🐶",
+  社会社会: "😎",
+  吃瓜: "🍉",
+  加油: "💪",
+  汗: "😓",
+  天啊: "😱",
+  Emm: "😶",
+  让我看看: "👀",
+  叹气: "😮‍💨",
+  苦涩: "😖",
+  裂开: "🫠"
+};
+
 /**
  * Escape HTML special chars to prevent markup injection.
  *
@@ -33,6 +123,47 @@ function linkify(text) {
 }
 
 /**
+ * Highlight @mentions in text.
+ *
+ * @param {string} htmlText - Text (possibly after linkify).
+ * @returns {string} HTML with mention spans.
+ */
+function mentionify(htmlText) {
+  return htmlText.replace(/(^|[\s>])@([A-Za-z0-9_\-\u4e00-\u9fa5]+)/g, '$1<span class="mention">@$2</span>');
+}
+
+/**
+ * Convert WeChat emoji aliases like [微笑] into Unicode emoji.
+ *
+ * @param {string} text - Plain text content.
+ * @returns {string} Text with converted emoji.
+ */
+function emojify(text) {
+  return String(text || "").replace(/\[([^\[\]]+)\]/g, (m, key) => WECHAT_EMOJI_MAP[key] || m);
+}
+
+/**
+ * Format plain message text to final HTML.
+ *
+ * @param {string} text - Plain text.
+ * @returns {string} HTML fragment.
+ */
+function formatText(text) {
+  return mentionify(linkify(emojify(text || "")));
+}
+
+/**
+ * Format duration seconds for voice bubble label.
+ *
+ * @param {number | undefined} sec - Seconds.
+ * @returns {string} Label text.
+ */
+function formatVoiceDuration(sec) {
+  const n = Number(sec || 0);
+  return n > 0 ? `${n}"` : "语音";
+}
+
+/**
  * Render quote block HTML.
  *
  * @param {{ senderId?: string, timeText?: string, snippet?: string }} q - Quote metadata.
@@ -58,7 +189,15 @@ function renderQuote(q, profiles) {
  */
 function renderContent(m) {
   if (m.kind === "image") {
-    return `<img class="img" src="${escapeHtml(m.imageUrl || "")}" alt="image"/>`;
+    const caption = m.text ? `<div class="img-caption">${formatText(m.text)}</div>` : "";
+    return `<img class="img" src="${escapeHtml(m.imageUrl || "")}" alt="image"/>${caption}`;
+  }
+  if (m.kind === "voice") {
+    const caption = m.text ? `<div class="img-caption">${formatText(m.text)}</div>` : "";
+    return `<button class="voice-btn" type="button" data-audio-url="${escapeHtml(m.audioUrl || "")}">
+      <span class="voice-icon">▶</span>
+      <span class="voice-duration">${escapeHtml(formatVoiceDuration(m.durationSec))}</span>
+    </button>${caption}`;
   }
   if (m.kind === "link-card") {
     const c = m.linkCard || {};
@@ -68,7 +207,7 @@ function renderContent(m) {
       <div class="card-footer"><span>${escapeHtml(c.site || "")}</span><span>链接卡片</span></div>
     </a>`;
   }
-  return `<div>${linkify(m.text || "")}</div>`;
+  return `<div>${formatText(m.text || "")}</div>`;
 }
 
 /**
@@ -85,10 +224,20 @@ function renderMessage(m, ctx) {
   const u = ctx.profiles.users[m.senderId] || { name: m.senderId, avatar: "" };
   const selfId = ctx.chat.self;
   const cls = m.senderId === selfId ? "msg self" : "msg";
-  const avatar = `<img class="avatar" src="${escapeHtml(u.avatar || "")}" alt="${escapeHtml(u.name || m.senderId)}"/>`;
+  const avatar = `<button class="avatar-btn" type="button"
+      data-name="${escapeHtml(u.name || m.senderId)}"
+      data-wechat-id="${escapeHtml(u.wechatId || "")}"
+      data-bio="${escapeHtml(u.bio || "")}"
+      data-avatar="${escapeHtml(u.avatar || "")}">
+      <img class="avatar" src="${escapeHtml(u.avatar || "")}" alt="${escapeHtml(u.name || m.senderId)}"/>
+    </button>`;
   const quote = m.quote ? renderQuote(m.quote, ctx.profiles) : "";
-  const bubble = `<div class="bubble">${quote}${renderContent(m)}</div>`;
-  const main = `<div class="msg-main"><p class="meta">${escapeHtml(u.name || m.senderId)} · ${escapeHtml(m.timeText)}</p>${bubble}</div>`;
+  const bubbleClass = (m.kind === "image" || m.kind === "voice") ? "bubble media" : "bubble";
+  const recallText = m.senderId === selfId ? "你撤回了一条消息" : `${u.name || m.senderId} 撤回了一条消息`;
+  const body = m.recall
+    ? `<div class="recall-tip">${escapeHtml(recallText)}</div>`
+    : `<div class="${bubbleClass}">${quote}${renderContent(m)}</div>`;
+  const main = `<div class="msg-main"><p class="meta">${escapeHtml(u.name || m.senderId)} · ${escapeHtml(m.timeText)}</p>${body}</div>`;
   return `<article class="${cls}">${m.senderId === selfId ? `${main}${avatar}` : `${avatar}${main}`}</article>`;
 }
 
@@ -135,6 +284,91 @@ export function renderHtml(ctx) {
       ${messages}
     </section>
   </main>
+  <aside id="profile-modal" class="profile-modal" aria-hidden="true">
+    <div class="profile-card">
+      <div class="profile-head">
+        <img id="profile-avatar" class="profile-avatar" src="" alt="avatar" />
+        <div id="profile-name" class="profile-name"></div>
+      </div>
+      <div id="profile-wechat" class="profile-item"></div>
+      <div id="profile-bio" class="profile-item"></div>
+      <button id="profile-close" class="profile-close" type="button">关闭</button>
+    </div>
+  </aside>
+  <script>
+    (() => {
+      const modal = document.getElementById('profile-modal');
+      const avatar = document.getElementById('profile-avatar');
+      const nameEl = document.getElementById('profile-name');
+      const wechatEl = document.getElementById('profile-wechat');
+      const bioEl = document.getElementById('profile-bio');
+      const closeBtn = document.getElementById('profile-close');
+      const avatarBtns = Array.from(document.querySelectorAll('.avatar-btn'));
+      const voiceBtns = Array.from(document.querySelectorAll('.voice-btn'));
+
+      function openProfile(btn) {
+        avatar.src = btn.dataset.avatar || '';
+        nameEl.textContent = btn.dataset.name || '';
+        wechatEl.textContent = '微信号：' + (btn.dataset.wechatId || '未设置');
+        bioEl.textContent = '简介：' + (btn.dataset.bio || '无');
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+      function closeProfile() {
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+
+      avatarBtns.forEach((btn) => {
+        btn.addEventListener('click', () => openProfile(btn));
+      });
+      closeBtn.addEventListener('click', closeProfile);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeProfile();
+      });
+
+      let activeAudio = null;
+      let activeBtn = null;
+
+      function setVoiceBtnState(btn, playing) {
+        if (!btn) return;
+        const icon = btn.querySelector('.voice-icon');
+        btn.classList.toggle('playing', !!playing);
+        if (icon) icon.textContent = playing ? '▮▮' : '▶';
+      }
+      function clearAudioState() {
+        if (activeAudio) {
+          activeAudio.pause();
+          activeAudio = null;
+        }
+        setVoiceBtnState(activeBtn, false);
+        activeBtn = null;
+      }
+
+      voiceBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const src = btn.dataset.audioUrl || '';
+          if (!src) return;
+
+          if (activeBtn === btn && activeAudio && !activeAudio.paused) {
+            clearAudioState();
+            return;
+          }
+
+          clearAudioState();
+          const audio = new Audio(src);
+          activeAudio = audio;
+          activeBtn = btn;
+          setVoiceBtnState(btn, true);
+
+          audio.addEventListener('ended', clearAudioState);
+          audio.play().catch(() => {
+            clearAudioState();
+          });
+        });
+      });
+    })();
+  </script>
 </body>
 </html>`;
 }

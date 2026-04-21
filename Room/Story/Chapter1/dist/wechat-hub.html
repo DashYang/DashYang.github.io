@@ -188,39 +188,56 @@
     }
     .msg { display: grid; grid-template-columns: 42px 1fr; gap: 10px; margin-bottom: 14px; }
     .msg.self { grid-template-columns: 1fr 42px; }
+    .avatar-btn { border:none; padding:0; background:transparent; cursor:pointer; width:42px; height:42px; border-radius:8px; }
     .avatar { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; background: #ddd; }
-    .msg-main { max-width: 80%; }
+    .msg-main { width: fit-content; max-width: 80%; }
     .msg.self .msg-main { margin-left: auto; }
     .meta { font-size: 12px; color: var(--muted); margin: 0 0 4px; }
     .msg.self .meta { text-align: right; }
-    .bubble { border-radius: 10px; padding: 10px 12px; background: var(--incoming); word-break: break-word; line-height: 1.45; }
+    .bubble { display: inline-block; max-width: 100%; border-radius: 10px; padding: 10px 12px; background: var(--incoming); word-break: break-word; line-height: 1.45; white-space: pre-wrap; }
     .msg.self .bubble { background: var(--outgoing); }
+    .bubble.media { padding: 4px; background: transparent; }
+    .recall-tip { font-size:12px; color:var(--muted); text-align:center; padding:4px 0; }
     .quote { margin-bottom: 8px; background: rgba(0,0,0,0.06); border-left: 3px solid rgba(0,0,0,0.18); border-radius: 6px; padding: 6px 8px; font-size: 12px; color: #333; }
     .img { max-width: min(320px, 100%); border-radius: 8px; display: block; }
+    .img-caption { margin-top: 6px; font-size: 13px; line-height: 1.4; }
+    .voice-btn { border:none; background:transparent; padding:0; font:inherit; color:inherit; cursor:pointer; display:flex; align-items:center; gap:8px; }
+    .voice-icon { font-size:12px; color:#3b3b3b; }
+    .voice-duration { font-size:13px; color:#3b3b3b; min-width:26px; text-align:left; }
+    .voice-btn.playing .voice-icon { color:#07c160; }
     .card { display: block; border-radius: 8px; background: #f8f8f8; padding: 9px; text-decoration: none; color: inherit; }
     .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
     .card-desc { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
     .card-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
     .inline-link { color: #576b95; }
+    .mention { color: #576b95; font-weight: 600; }
     .end-tip { font-size: 12px; color: var(--muted); text-align: center; margin: 16px 0 4px; }
+    .profile-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.35); z-index: 20; }
+    .profile-modal.show { display: flex; }
+    .profile-card { width: min(320px, 100%); background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 12px 30px rgba(0,0,0,.2); }
+    .profile-head { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+    .profile-avatar { width:50px; height:50px; border-radius:8px; object-fit:cover; background:#ddd; }
+    .profile-name { font-size:16px; font-weight:600; }
+    .profile-item { font-size:13px; color:#444; line-height:1.45; margin-top:4px; word-break:break-word; }
+    .profile-close { margin-top:12px; width:100%; border:none; border-radius:8px; background:#f2f2f2; padding:8px 0; cursor:pointer; }
   </style>
 </head>
 <body>
   <main class="phone">
     <div class="status-bar">
-      <div id="status-carrier">一点就通</div>
-      <div id="status-time">22:30</div>
-      <div id="status-battery">81%</div>
+      <div id="status-carrier">中国移动</div>
+      <div id="status-time">12:21</div>
+      <div id="status-battery">31%</div>
     </div>
 
     <section id="list-view" class="list-view">
       <header class="top-nav">
         <div></div>
-        <div class="center-title">巨信</div>
+        <div class="center-title">微信</div>
         <div class="plus">＋</div>
       </header>
       <div class="search-wrap">
-        <div class="search">🔍 查询</div>
+        <div class="search">🔍 搜索</div>
       </div>
       <div id="list-scroll" class="list-scroll"></div>
       <footer class="tabbar">
@@ -239,8 +256,19 @@
       <div class="timeline" id="timeline"></div>
     </section>
   </main>
+  <aside id="profile-modal" class="profile-modal" aria-hidden="true">
+    <div class="profile-card">
+      <div class="profile-head">
+        <img id="profile-avatar" class="profile-avatar" src="" alt="avatar"/>
+        <div id="profile-name" class="profile-name"></div>
+      </div>
+      <div id="profile-wechat" class="profile-item"></div>
+      <div id="profile-bio" class="profile-item"></div>
+      <button id="profile-close" class="profile-close" type="button">关闭</button>
+    </div>
+  </aside>
 
-  <script id="chat-data" type="application/json">{"title":"Chapter1","conversations":[{"id":"conv-1","title":"姐姐","subtitle":"sister","avatar":"https://picsum.photos/seed/sister/100/100","self":"protagonist","replayIntervalMs":900,"preview":"弟，最近还好吧","listTime":"22:13","startIndex":0,"profiles":{"users":{"protagonist":{"name":"奋斗的西瓜","avatar":"https://picsum.photos/seed/protagonist/100/100","bio":"新人独立恐怖游戏开发者，求关注!"},"sister":{"name":"姐姐","avatar":"https://picsum.photos/seed/sister/100/100","bio":"无"},"zhou_police":{"name":"周警官","avatar":"https://picsum.photos/seed/policeman/100/100","bio":"无"},"coat_man":{"name":"风衣男","avatar":"https://picsum.photos/seed/weiredpoliceman/100/100","bio":"无"},"neighbour1":{"name":"803","avatar":"https://picsum.photos/seed/neighbour1/100/100","bio":"living the moment"},"neighbour2":{"name":"603","avatar":"https://picsum.photos/seed/neighbour2/100/100","bio":"不服就干"},"neighbour3":{"name":"904","avatar":"https://picsum.photos/seed/neighbour3/100/100","bio":"喜欢清晨的阳光啊"},"admin":{"name":"物业管家","avatar":"https://picsum.photos/seed/admin/100/100","bio":"竭诚为您服务"}}},"messages":[{"id":"m1","senderId":"sister","timeRaw":"2026-04-10 22:00:12","kind":"text","text":"弟，最近还好吧","index":0,"timestamp":"2026-04-10T14:00:12.000Z","timeText":"2026-04-10 22:00"},{"id":"m2","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"不太好,跟你吐槽一下今天大早遇到的怪事,气死我勒！","index":1,"timestamp":"2026-04-10T14:01:12.000Z","timeText":"2026-04-10 22:01"},{"id":"m3","senderId":"sister","timeRaw":"+1m","kind":"text","text":"什么怪事能把你气成这样","index":2,"timestamp":"2026-04-10T14:02:12.000Z","timeText":"2026-04-10 22:02"},{"id":"m4","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"我之前不是花了十多天做了一个消除类的小游戏，昨晚半夜兴奋地发到了小红簿上，结果早上起来一看，一个点赞都没有。什么垃圾推流算法啊！","index":3,"timestamp":"2026-04-10T14:03:12.000Z","timeText":"2026-04-10 22:03"},{"id":"m5","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"正蛋疼呢，结果突然听到门铃响。然后我就打算去去开门，结果透过监控一看，发现是两个警察。","index":4,"timestamp":"2026-04-10T14:04:12.000Z","timeText":"2026-04-10 22:04"},{"id":"m6","senderId":"protagonist","timeRaw":"+10s","kind":"text","text":"最奇怪的是其中一个的打扮，我发你看一下。","index":5,"timestamp":"2026-04-10T14:04:22.000Z","timeText":"2026-04-10 22:04"},{"id":"m7","senderId":"protagonist","timeRaw":"+30s","kind":"image","imageUrl":"./visiting.png","index":6,"timestamp":"2026-04-10T14:04:52.000Z","timeText":"2026-04-10 22:04"},{"id":"m8","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"那个风衣男是不是很诡异？虽然现在也是算不上热，但是他穿的也太多了吧，而且不知道为啥今天雾气那么大","index":7,"timestamp":"2026-04-10T14:05:22.000Z","timeText":"2026-04-10 22:05"},{"id":"m9","senderId":"sister","timeRaw":"+10s","kind":"text","text":"是挺怪的，那么他们找你什么事呢","index":8,"timestamp":"2026-04-10T14:05:32.000Z","timeText":"2026-04-10 22:05"},{"id":"m10","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"我也纳闷。后面了解到那个在前面的看着正常的警察姓周，个子不高，气色不错，看着挺靠谱的,给人感觉也不错。但另一个警察……真的很怪。不说他穿了一件巨厚的旧风衣，还远远的站着，连个正脸都看不清。就算离得那么远，还感觉从他那边传来闻股发臭的味道，不知道是不是很久没洗澡了。","index":9,"timestamp":"2026-04-10T14:06:02.000Z","timeText":"2026-04-10 22:06"},{"id":"m11","senderId":"sister","timeRaw":"+10s","kind":"text","text":"。。。","index":10,"timestamp":"2026-04-10T14:06:12.000Z","timeText":"2026-04-10 22:06"},{"id":"m12","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"然后感觉就是例行的文化吧，周警官问我在这里住了多久，做什么职业，是不是一个人住。我说住了五年，职业是独立游戏开发人，目前一个人住。","index":11,"timestamp":"2026-04-10T14:06:42.000Z","timeText":"2026-04-10 22:06"},{"id":"m13","senderId":"protagonist","timeRaw":"+45s","kind":"text","text":"结果那个周警官听完，似乎有点吃惊，盯着我看了半天。最可气的是那个站在远处的大哥，居然在那儿笑，甚至笑的有点咳嗽。不过他那个咳嗽的声音感觉病的有点严重，这还能当警察么?","index":12,"timestamp":"2026-04-10T14:07:27.000Z","timeText":"2026-04-10 22:07"},{"id":"m14","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"我当时就有点生气，问他们到底是什么事来找我，我很忙的。结果这个时候周警官才问我：最近有没有发生什么奇怪的事？","index":13,"timestamp":"2026-04-10T14:07:57.000Z","timeText":"2026-04-10 22:07"},{"id":"m15","senderId":"protagonist","timeRaw":"+35s","kind":"text","text":"这个问题是不是莫名其妙，能发生什么奇怪的事","index":14,"timestamp":"2026-04-10T14:08:32.000Z","timeText":"2026-04-10 22:08"},{"id":"m16","senderId":"sister","timeRaw":"+10s","kind":"text","text":"确实，感觉在绕圈子，他们真的是警察么","index":15,"timestamp":"2026-04-10T14:08:42.000Z","timeText":"2026-04-10 22:08"},{"id":"m17","senderId":"protagonist","timeRaw":"+12s","kind":"text","text":"盲生你发现了华点！不过我当时没想那么多，可能第一次有点毛吧，所以就说没遇到，想赶快结束，结果周警官又说，有没有听到什么奇怪的声音","index":16,"timestamp":"2026-04-10T14:08:54.000Z","timeText":"2026-04-10 22:08"},{"id":"m18","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"这时候我想起业主群里最近抱怨的事——似乎是装修的噪音，咚咚的。还有半夜持续不断的冲马桶的声音。最离谱的是有小孩哭，一哭就是半个多小时，于是就说了这件事。","index":17,"timestamp":"2026-04-10T14:09:24.000Z","timeText":"2026-04-10 22:09"},{"id":"m19","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"结果周警官眼睛瞪的更大了，然后说他们走访了上下楼住户说这栋楼最近根本没人装修，而且楼里最年轻的孩子都七八岁了，哪来的半夜哭半小时的婴儿？","index":18,"timestamp":"2026-04-10T14:10:24.000Z","timeText":"2026-04-10 22:10"},{"id":"m20","senderId":"sister","timeRaw":"+30s","kind":"text","text":"你是不是最近熬夜太多熬出幻觉了","index":19,"timestamp":"2026-04-10T14:10:54.000Z","timeText":"2026-04-10 22:10"},{"id":"m21","senderId":"protagonist","timeRaw":"+40s","kind":"text","text":"聊天记录可查好吧！结果最可气的是那个风衣男突然用沙哑的声音凶狠地叫我别骗他们。瞬间气氛怪怪的，周警官看不对就结束问话走了，临走给了我他的微信让我有什么发现可以联系他。","index":20,"timestamp":"2026-04-10T14:11:34.000Z","timeText":"2026-04-10 22:11"},{"id":"m22","senderId":"sister","timeRaw":"+1m","kind":"text","text":"那就多配合配合人家吧，可能有啥隐秘之事","index":21,"timestamp":"2026-04-10T14:12:34.000Z","timeText":"2026-04-10 22:12"},{"id":"m23","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"到时候再说吧，我再看看怎么改进改进我的游戏","index":22,"timestamp":"2026-04-10T14:13:04.000Z","timeText":"2026-04-10 22:13"},{"id":"m24","senderId":"sister","timeRaw":"+20s","kind":"text","text":"对了，经济上没遇到什么困难吧？","index":23,"timestamp":"2026-04-10T14:13:24.000Z","timeText":"2026-04-10 22:13"},{"id":"m25","senderId":"protagonist","timeRaw":"+10s","kind":"text","text":"没有，先这样，我去忙了","index":24,"timestamp":"2026-04-10T14:13:34.000Z","timeText":"2026-04-10 22:13"}]},{"id":"conv-2","title":"4幢一家人","subtitle":"4幢一家人","avatar":"https://picsum.photos/seed/group/100/100","self":"protagnist","replayIntervalMs":1000,"preview":"邻居们，最近装修注意一下时间吧，咚咚咚的，有时候晚上还在咚咚咚的","listTime":"09:36","startIndex":0,"profiles":{"users":{"protagonist":{"name":"奋斗的西瓜","avatar":"https://picsum.photos/seed/protagonist/100/100","bio":"新人独立恐怖游戏开发者，求关注!"},"sister":{"name":"姐姐","avatar":"https://picsum.photos/seed/sister/100/100","bio":"无"},"zhou_police":{"name":"周警官","avatar":"https://picsum.photos/seed/policeman/100/100","bio":"无"},"coat_man":{"name":"风衣男","avatar":"https://picsum.photos/seed/weiredpoliceman/100/100","bio":"无"},"neighbour1":{"name":"803","avatar":"https://picsum.photos/seed/neighbour1/100/100","bio":"living the moment"},"neighbour2":{"name":"603","avatar":"https://picsum.photos/seed/neighbour2/100/100","bio":"不服就干"},"neighbour3":{"name":"904","avatar":"https://picsum.photos/seed/neighbour3/100/100","bio":"喜欢清晨的阳光啊"},"admin":{"name":"物业管家","avatar":"https://picsum.photos/seed/admin/100/100","bio":"竭诚为您服务"}}},"messages":[{"id":"g1","senderId":"neighbour1","timeRaw":"2026-04-10 09:30:00","kind":"text","text":"邻居们，最近装修注意一下时间吧，咚咚咚的，有时候晚上还在咚咚咚的","index":0,"timestamp":"2026-04-10T01:30:00.000Z","timeText":"2026-04-10 09:30"},{"id":"g2","senderId":"neighbour2","timeRaw":"+1m","kind":"text","text":"+1 是谁这么没公德心 物业也不管管 说好的非装修时段不能装修呢","quote":{"messageId":"g1","senderId":"neighbour1","timeText":"2026-04-10 09:30","snippet":"邻居们，最近装修注意一下时间吧，咚咚咚的，有时候晚上还在咚咚咚的"},"index":1,"timestamp":"2026-04-10T01:31:00.000Z","timeText":"2026-04-10 09:31"},{"id":"g3","senderId":"neighbour3","timeRaw":"+1m","kind":"text","text":"谁半夜1 2点还在洗澡的，水声哗啦啦的，注意一下时间吧，老房子隔音不好","quote":{"messageId":"g2","senderId":"neighbour2","timeText":"2026-04-10 09:31","snippet":"+1 是谁这么没公德心 物业也不管管 说好的非装修时段不能装修呢"},"index":2,"timestamp":"2026-04-10T01:32:00.000Z","timeText":"2026-04-10 09:32"},{"id":"g4","senderId":"neighbour1","timeRaw":"+2m","kind":"text","text":"这些也都算了，有时候还有小孩的哭声，哭声持续时间也太久了，也不哄哄，对小孩身体也不好吧","index":3,"timestamp":"2026-04-10T01:34:00.000Z","timeText":"2026-04-10 09:34"},{"id":"g5","senderId":"neighbour2","timeRaw":"+1m","kind":"text","text":"物业出来管管，这么多人都在反应问题，别装死了@物业","index":4,"timestamp":"2026-04-10T01:35:00.000Z","timeText":"2026-04-10 09:35"},{"id":"g6","senderId":"admin","timeRaw":"+1m","kind":"text","text":"收到，下次再出现的时候群里说一下，我们会让保安来巡查一下的","index":5,"timestamp":"2026-04-10T01:36:00.000Z","timeText":"2026-04-10 09:36"},{"id":"g7","senderId":"neighbour3","timeRaw":"+20s","kind":"text","text":"你们说，婴儿真的能哭30min么","index":6,"timestamp":"2026-04-10T01:36:20.000Z","timeText":"2026-04-10 09:36"}]}],"ui":{"statusBar":{"carrier":"一点就通","time":"22:30","battery":"81%"},"topTitle":"巨信","searchPlaceholder":"查询","persistKey":"room_wechat_seen_chapter1"}}</script>
+  <script id="chat-data" type="application/json">{"title":"Chapter1","conversations":[{"id":"conv-1","title":"姐姐","subtitle":"sister","avatar":"https://picsum.photos/seed/sister/100/100","self":"protagonist","replayIntervalMs":900,"preview":"弟，最近还好吧","listTime":"22:13","startIndex":0,"profiles":{"users":{"protagonist":{"name":"奋斗的西瓜","avatar":"https://picsum.photos/seed/protagonist/100/100","bio":"新人独立游戏开发者，求关注!"},"sister":{"name":"姐姐","avatar":"https://picsum.photos/seed/sister/100/100","bio":"无"},"zhou_police":{"name":"周警官","avatar":"https://picsum.photos/seed/policeman/100/100","bio":"无"},"coat_man":{"name":"风衣男","avatar":"https://picsum.photos/seed/weiredpoliceman/100/100","bio":"无"},"neighbour1":{"name":"803","avatar":"https://picsum.photos/seed/neighbour1/100/100","bio":"living the moment"},"neighbour2":{"name":"603","avatar":"https://picsum.photos/seed/neighbour2/100/100","bio":"不服就干"},"neighbour3":{"name":"904","avatar":"https://picsum.photos/seed/neighbour3/100/100","bio":"喜欢清晨的阳光啊"},"admin":{"name":"物业小雅","avatar":"https://picsum.photos/seed/admin/100/100","bio":"竭诚为您服务"},"user1":{"name":"风海(群主)-十年独立恐怖游戏开发","avatar":"https://picsum.photos/seed/user1/100/100","bio":"热衷于收集各种都市传说，民间传说。然后做成游戏"},"user2":{"name":"巧盒-新人独立游戏开发者","avatar":"https://picsum.photos/seed/user2/100/100","bio":"肉鸽类游戏摸索中"},"user3":{"name":"秀栽-独立新游推广中","avatar":"https://picsum.photos/seed/user3/100/100","bio":"最新大作，77号远征队绝赞试玩中"},"student1":{"name":"首朱","avatar":"https://picsum.photos/seed/stu1/100/100","bio":"人生豪迈，重头再来"},"student2":{"name":"海飞","avatar":"https://picsum.photos/seed/stu2/100/100","bio":"不要温和地走进那个良夜"},"student3":{"name":"Zack","avatar":"https://picsum.photos/seed/stu2/100/100","bio":"新公司火力全开中，HC无限"}}},"messages":[{"id":"m1","senderId":"sister","timeRaw":"2026-04-10 22:00:12","kind":"text","text":"弟，最近还好吧","index":0,"timestamp":"2026-04-10T14:00:12.000Z","timeText":"2026-04-10 22:00"},{"id":"m2","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"不太好,跟你吐槽一下今天大早遇到的怪事,气死我勒！","index":1,"timestamp":"2026-04-10T14:01:12.000Z","timeText":"2026-04-10 22:01"},{"id":"m3","senderId":"sister","timeRaw":"+1m","kind":"text","text":"什么怪事能把你气成这样","index":2,"timestamp":"2026-04-10T14:02:12.000Z","timeText":"2026-04-10 22:02"},{"id":"m4","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"我之前不是花了十多天做了一个消除类的小游戏，昨晚半夜兴奋地发到了小红簿上，结果早上起来一看，一个点赞都没有。什么垃圾推流算法啊！","index":3,"timestamp":"2026-04-10T14:03:12.000Z","timeText":"2026-04-10 22:03"},{"id":"m5","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"正蛋疼呢，结果突然听到门铃响。然后我就打算去去开门，结果透过监控一看，发现是两个警察。","index":4,"timestamp":"2026-04-10T14:04:12.000Z","timeText":"2026-04-10 22:04"},{"id":"m6","senderId":"protagonist","timeRaw":"+10s","kind":"text","text":"最奇怪的是其中一个的打扮，我发你看一下。","index":5,"timestamp":"2026-04-10T14:04:22.000Z","timeText":"2026-04-10 22:04"},{"id":"m7","senderId":"protagonist","timeRaw":"+30s","kind":"image","imageUrl":"./visiting.png","index":6,"timestamp":"2026-04-10T14:04:52.000Z","timeText":"2026-04-10 22:04"},{"id":"m8","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"那个风衣男是不是很诡异？虽然现在也是算不上热，但是他穿的也太多了吧，而且不知道为啥今天雾气那么大","index":7,"timestamp":"2026-04-10T14:05:22.000Z","timeText":"2026-04-10 22:05"},{"id":"m9","senderId":"sister","timeRaw":"+10s","kind":"text","text":"是挺怪的，那么他们找你什么事呢","index":8,"timestamp":"2026-04-10T14:05:32.000Z","timeText":"2026-04-10 22:05"},{"id":"m10","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"我也纳闷。后面了解到那个在前面的看着正常的警察姓周，个子不高，气色不错，看着挺靠谱的,给人感觉也不错。但另一个警察……真的很怪。不说他穿了一件巨厚的旧风衣，还远远的站着，连个正脸都看不清。就算离得那么远，还感觉从他那边传来闻股发臭的味道，不知道是不是很久没洗澡了。","index":9,"timestamp":"2026-04-10T14:06:02.000Z","timeText":"2026-04-10 22:06"},{"id":"m11","senderId":"sister","timeRaw":"+10s","kind":"text","text":"。。。","index":10,"timestamp":"2026-04-10T14:06:12.000Z","timeText":"2026-04-10 22:06"},{"id":"m12","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"然后感觉就是例行的文化吧，周警官问我在这里住了多久，做什么职业，是不是一个人住。我说住了五年，职业是独立游戏开发人，目前一个人住。","index":11,"timestamp":"2026-04-10T14:06:42.000Z","timeText":"2026-04-10 22:06"},{"id":"m13","senderId":"protagonist","timeRaw":"+45s","kind":"text","text":"结果那个周警官听完，似乎有点吃惊，盯着我看了半天。最可气的是那个站在远处的大哥，居然在那儿笑，甚至笑的有点咳嗽。不过他那个咳嗽的声音感觉病的有点严重，这还能当警察么?","index":12,"timestamp":"2026-04-10T14:07:27.000Z","timeText":"2026-04-10 22:07"},{"id":"m14","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"我当时就有点生气，问他们到底是什么事来找我，我很忙的。结果这个时候周警官才问我：最近有没有发生什么奇怪的事？","index":13,"timestamp":"2026-04-10T14:07:57.000Z","timeText":"2026-04-10 22:07"},{"id":"m15","senderId":"protagonist","timeRaw":"+35s","kind":"text","text":"这个问题是不是莫名其妙，能发生什么奇怪的事","index":14,"timestamp":"2026-04-10T14:08:32.000Z","timeText":"2026-04-10 22:08"},{"id":"m16","senderId":"sister","timeRaw":"+10s","kind":"text","text":"确实，感觉在绕圈子，他们真的是警察么","index":15,"timestamp":"2026-04-10T14:08:42.000Z","timeText":"2026-04-10 22:08"},{"id":"m17","senderId":"protagonist","timeRaw":"+12s","kind":"text","text":"盲生你发现了华点！不过我当时没想那么多，可能第一次有点毛吧，所以就说没遇到，想赶快结束，结果周警官又说，有没有听到什么奇怪的声音","index":16,"timestamp":"2026-04-10T14:08:54.000Z","timeText":"2026-04-10 22:08"},{"id":"m18","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"这时候我想起业主群里最近抱怨的事——似乎是装修的噪音，咚咚的。还有半夜持续不断的冲马桶的声音。最离谱的是有小孩哭，一哭就是半个多小时，于是就说了这件事。","index":17,"timestamp":"2026-04-10T14:09:24.000Z","timeText":"2026-04-10 22:09"},{"id":"m19","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"结果周警官眼睛瞪的更大了，然后说他们走访了上下楼住户说这栋楼最近根本没人装修，而且楼里最年轻的孩子都七八岁了，哪来的半夜哭半小时的婴儿？","index":18,"timestamp":"2026-04-10T14:10:24.000Z","timeText":"2026-04-10 22:10"},{"id":"m20","senderId":"sister","timeRaw":"+30s","kind":"text","text":"你是不是最近熬夜太多熬出幻觉了","index":19,"timestamp":"2026-04-10T14:10:54.000Z","timeText":"2026-04-10 22:10"},{"id":"m21","senderId":"protagonist","timeRaw":"+40s","kind":"text","text":"聊天记录可查好吧！结果最可气的是那个风衣男突然用沙哑的声音凶狠地叫我别骗他们。瞬间气氛怪怪的，周警官看不对就结束问话走了，临走给了我他的微信让我有什么发现可以联系他。","index":20,"timestamp":"2026-04-10T14:11:34.000Z","timeText":"2026-04-10 22:11"},{"id":"m22","senderId":"sister","timeRaw":"+1m","kind":"text","text":"那就多配合配合人家吧，可能有啥隐秘之事","index":21,"timestamp":"2026-04-10T14:12:34.000Z","timeText":"2026-04-10 22:12"},{"id":"m23","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"到时候再说吧，我再看看怎么改进改进我的游戏","index":22,"timestamp":"2026-04-10T14:13:04.000Z","timeText":"2026-04-10 22:13"},{"id":"m24","senderId":"sister","timeRaw":"+20s","kind":"text","text":"对了，经济上没遇到什么困难吧？","index":23,"timestamp":"2026-04-10T14:13:24.000Z","timeText":"2026-04-10 22:13"},{"id":"m25","senderId":"protagonist","timeRaw":"+10s","kind":"text","text":"没有，先这样，我去忙了","index":24,"timestamp":"2026-04-10T14:13:34.000Z","timeText":"2026-04-10 22:13"}]},{"id":"conv-2","title":"4幢一家人","subtitle":"4幢一家人","avatar":"https://picsum.photos/seed/group/100/100","self":"protagnist","replayIntervalMs":1000,"preview":"邻居们，最近装修注意一下时间吧，咚咚咚的，有时候晚上还在咚咚咚的","listTime":"12:07","startIndex":0,"profiles":{"users":{"protagonist":{"name":"奋斗的西瓜","avatar":"https://picsum.photos/seed/protagonist/100/100","bio":"新人独立游戏开发者，求关注!"},"sister":{"name":"姐姐","avatar":"https://picsum.photos/seed/sister/100/100","bio":"无"},"zhou_police":{"name":"周警官","avatar":"https://picsum.photos/seed/policeman/100/100","bio":"无"},"coat_man":{"name":"风衣男","avatar":"https://picsum.photos/seed/weiredpoliceman/100/100","bio":"无"},"neighbour1":{"name":"803","avatar":"https://picsum.photos/seed/neighbour1/100/100","bio":"living the moment"},"neighbour2":{"name":"603","avatar":"https://picsum.photos/seed/neighbour2/100/100","bio":"不服就干"},"neighbour3":{"name":"904","avatar":"https://picsum.photos/seed/neighbour3/100/100","bio":"喜欢清晨的阳光啊"},"admin":{"name":"物业小雅","avatar":"https://picsum.photos/seed/admin/100/100","bio":"竭诚为您服务"},"user1":{"name":"风海(群主)-十年独立恐怖游戏开发","avatar":"https://picsum.photos/seed/user1/100/100","bio":"热衷于收集各种都市传说，民间传说。然后做成游戏"},"user2":{"name":"巧盒-新人独立游戏开发者","avatar":"https://picsum.photos/seed/user2/100/100","bio":"肉鸽类游戏摸索中"},"user3":{"name":"秀栽-独立新游推广中","avatar":"https://picsum.photos/seed/user3/100/100","bio":"最新大作，77号远征队绝赞试玩中"},"student1":{"name":"首朱","avatar":"https://picsum.photos/seed/stu1/100/100","bio":"人生豪迈，重头再来"},"student2":{"name":"海飞","avatar":"https://picsum.photos/seed/stu2/100/100","bio":"不要温和地走进那个良夜"},"student3":{"name":"Zack","avatar":"https://picsum.photos/seed/stu2/100/100","bio":"新公司火力全开中，HC无限"}}},"messages":[{"id":"g1","senderId":"neighbour1","timeRaw":"2026-04-09 12:00:00","kind":"text","text":"邻居们，最近装修注意一下时间吧，咚咚咚的，有时候晚上还在咚咚咚的","index":0,"timestamp":"2026-04-09T04:00:00.000Z","timeText":"2026-04-09 12:00"},{"id":"g2","senderId":"neighbour2","timeRaw":"+1m","kind":"text","text":"+1 是谁这么没公德心 物业也不管管 说好的非装修时段不能装修呢, 之前我在群里反应很多次噪音了，也不知道是谁那么没素质","quote":{"messageId":"g1","senderId":"neighbour1","timeText":"2026-04-09 12:00","snippet":"邻居们，最近装修注意一下时间吧，咚咚咚的，有时候晚上还在咚咚咚的"},"index":1,"timestamp":"2026-04-09T04:01:00.000Z","timeText":"2026-04-09 12:01"},{"id":"g3","senderId":"neighbour3","timeRaw":"+1m","kind":"text","text":"谁半夜1 2点还在洗澡的，水声哗啦啦的，注意一下时间吧，老房子隔音不好","quote":{"messageId":"g2","senderId":"neighbour2","timeText":"2026-04-09 12:01","snippet":"+1 是谁这么没公德心 物业也不管管 说好的非装修时段不能装修呢, 之前我在群里反应很多次噪音了，也不知道是谁那么没素质"},"index":2,"timestamp":"2026-04-09T04:02:00.000Z","timeText":"2026-04-09 12:02"},{"id":"g4","senderId":"neighbour1","timeRaw":"+2m","kind":"text","text":"这些也都算了，有时候还有小孩的哭声，哭声持续时间也太久了，也不哄哄，对小孩身体也不好吧","index":3,"timestamp":"2026-04-09T04:04:00.000Z","timeText":"2026-04-09 12:04"},{"id":"g5","senderId":"neighbour2","timeRaw":"+1m","kind":"text","text":"物业出来管管，这么多人都在反应问题，别装死了@物业","index":4,"timestamp":"2026-04-09T04:05:00.000Z","timeText":"2026-04-09 12:05"},{"id":"g6","senderId":"admin","timeRaw":"+1m","kind":"text","text":"收到，下次再出现的时候群里说一下，我们会让保安来巡查一下的","index":5,"timestamp":"2026-04-09T04:06:00.000Z","timeText":"2026-04-09 12:06"},{"id":"g7","senderId":"neighbour3","timeRaw":"+20s","kind":"text","text":"你们说，婴儿真的能哭30min么","index":6,"timestamp":"2026-04-09T04:06:20.000Z","timeText":"2026-04-09 12:06"},{"id":"g8","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"卧槽，你这说的我心里有点发毛了,这些我之前也听到过来，之前没细想，你这说的细思极恐着","quote":{"messageId":"g7","senderId":"neighbour3","timeText":"2026-04-09 12:06","snippet":"你们说，婴儿真的能哭30min么"},"index":7,"timestamp":"2026-04-09T04:07:20.000Z","timeText":"2026-04-09 12:07"}]},{"id":"conv-3","title":"独立游戏开发爱好者群","subtitle":"独立游戏开发爱好者群","avatar":"https://picsum.photos/seed/group1/100/100","self":"protagnist","replayIntervalMs":1000,"preview":"[链接] 从零开始学习游戏剧本设计","listTime":"09:45","startIndex":0,"profiles":{"users":{"protagonist":{"name":"奋斗的西瓜","avatar":"https://picsum.photos/seed/protagonist/100/100","bio":"新人独立游戏开发者，求关注!"},"sister":{"name":"姐姐","avatar":"https://picsum.photos/seed/sister/100/100","bio":"无"},"zhou_police":{"name":"周警官","avatar":"https://picsum.photos/seed/policeman/100/100","bio":"无"},"coat_man":{"name":"风衣男","avatar":"https://picsum.photos/seed/weiredpoliceman/100/100","bio":"无"},"neighbour1":{"name":"803","avatar":"https://picsum.photos/seed/neighbour1/100/100","bio":"living the moment"},"neighbour2":{"name":"603","avatar":"https://picsum.photos/seed/neighbour2/100/100","bio":"不服就干"},"neighbour3":{"name":"904","avatar":"https://picsum.photos/seed/neighbour3/100/100","bio":"喜欢清晨的阳光啊"},"admin":{"name":"物业小雅","avatar":"https://picsum.photos/seed/admin/100/100","bio":"竭诚为您服务"},"user1":{"name":"风海(群主)-十年独立恐怖游戏开发","avatar":"https://picsum.photos/seed/user1/100/100","bio":"热衷于收集各种都市传说，民间传说。然后做成游戏"},"user2":{"name":"巧盒-新人独立游戏开发者","avatar":"https://picsum.photos/seed/user2/100/100","bio":"肉鸽类游戏摸索中"},"user3":{"name":"秀栽-独立新游推广中","avatar":"https://picsum.photos/seed/user3/100/100","bio":"最新大作，77号远征队绝赞试玩中"},"student1":{"name":"首朱","avatar":"https://picsum.photos/seed/stu1/100/100","bio":"人生豪迈，重头再来"},"student2":{"name":"海飞","avatar":"https://picsum.photos/seed/stu2/100/100","bio":"不要温和地走进那个良夜"},"student3":{"name":"Zack","avatar":"https://picsum.photos/seed/stu2/100/100","bio":"新公司火力全开中，HC无限"}}},"messages":[{"id":"g1","senderId":"user1","timeRaw":"2026-04-10 09:30:00","kind":"link-card","linkCard":{"url":"http://xhslink.com/o/IauyEhNlBL","title":"从零开始学习游戏剧本设计","site":"example.","desc":"不仅仅是讲故事！打造优质剧本的保姆级教程。"},"index":0,"timestamp":"2026-04-10T01:30:00.000Z","timeText":"2026-04-10 09:30"},{"id":"g2","senderId":"user1","timeRaw":"+1s","kind":"text","text":"转发一篇文章，大家感兴趣可以了解一下。关于如何打磨好一个文字游戏的剧本，可以从这几个方面：1）游戏视角的选择 2）视角变化 3） 玩家和主角的关系 4）打破第四面墙 5）信息不对称 6）结构形式","index":1,"timestamp":"2026-04-10T01:30:01.000Z","timeText":"2026-04-10 09:30"},{"id":"g3","senderId":"user2","timeRaw":"+1s","kind":"text","text":"点赞收藏，群主好人一生平安","index":2,"timestamp":"2026-04-10T01:30:02.000Z","timeText":"2026-04-10 09:30"},{"id":"g4","senderId":"user3","timeRaw":"+2s","kind":"text","text":"手动点赞！同时也欢迎大家来试完我的最新游戏 77号远征队 鞠躬","index":3,"timestamp":"2026-04-10T01:30:04.000Z","timeText":"2026-04-10 09:30"},{"id":"g5","senderId":"user3","timeRaw":"+2s","kind":"image","imageUrl":"./77game.png","index":4,"timestamp":"2026-04-10T01:30:06.000Z","timeText":"2026-04-10 09:30"},{"id":"g6","senderId":"protagonist","timeRaw":"+10s","kind":"text","text":"广告狗滚粗！要玩也玩我的真 独立游戏","quote":{"messageId":"g4","senderId":"user3","timeText":"2026-04-10 09:30","snippet":"手动点赞！同时也欢迎大家来试完我的最新游戏 77号远征队 鞠躬"},"index":5,"timestamp":"2026-04-10T01:30:16.000Z","timeText":"2026-04-10 09:30"},{"id":"g7","senderId":"protagonist","timeRaw":"+10s","kind":"link-card","linkCard":{"url":"https://www.squaregamezz.site/","title":"极速方块","site":"www.squaregamezz.site.","desc":"我已经在极速方块中拿了128分，你也看看你能拿多少分。"},"index":6,"timestamp":"2026-04-10T01:30:26.000Z","timeText":"2026-04-10 09:30"},{"id":"g8","senderId":"user3","timeRaw":"+10s","kind":"text","text":"你这不也是广告么，什么垃圾游戏，狗都不玩","quote":{"messageId":"g6","senderId":"protagonist","timeText":"2026-04-10 09:30","snippet":"广告狗滚粗！要玩也玩我的真 独立游戏"},"index":7,"timestamp":"2026-04-10T01:30:36.000Z","timeText":"2026-04-10 09:30"},{"id":"g9","senderId":"user1","timeRaw":"+1m","kind":"text","text":"本群可以正常推广自己的游戏，请@奋斗的西瓜 和 @秀栽-独立新游推广中 不要互相攻击","index":8,"timestamp":"2026-04-10T01:31:36.000Z","timeText":"2026-04-10 09:31"},{"id":"g10","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"要不是不知道哪家天天发出一些奇怪的声音影响我创作，我早就更新一些更好玩的元素进去了","index":9,"timestamp":"2026-04-10T01:32:36.000Z","timeText":"2026-04-10 09:32"},{"id":"g11","senderId":"user1","timeRaw":"+12m","kind":"text","text":"哈哈，希望你能早日克服困难，打造出好玩的游戏，说到噪音，我想起来之前收集过的一些都市传闻，也给大家降降火:\n1. 哭声：某独居女性总是时不时在家门口附近听到婴儿的哭声，听了几天终于忍不住打开门一看究竟，结果再也没有回来。原来是附近有连环杀人犯通过录影带播放婴儿哭声这个方式诱骗独居女性出来进行杀害\n2. 水滴声：某人晚上睡觉总是听到楼上空调外机的滴水声打到了自己卧室窗的的顶棚上，所以老是睡不好，有一天终于鼓起勇气试图去跟楼上理论，却发现楼上的邻居早已经在卧室窗台留下对负心汉的控诉的遗书割腕自杀，血顺着窗台滴到自家窗的顶棚","index":10,"timestamp":"2026-04-10T01:44:36.000Z","timeText":"2026-04-10 09:44"},{"id":"g12","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"谢谢群主，有被吓到","index":11,"timestamp":"2026-04-10T01:45:36.000Z","timeText":"2026-04-10 09:45"},{"id":"g13","senderId":"user2","timeRaw":"+1s","kind":"text","text":"2我有一点没理解，先不说什么人的血能滴几天，为啥白天没听到？","quote":{"messageId":"g11","senderId":"user1","timeText":"2026-04-10 09:44","snippet":"哈哈，希望你能早日克服困难，打造出好玩的游戏，说到噪音，我想起来之前收集过的一些都市传闻，也给大家降降火:\n1. 哭声：某独居女性总是时不时在家门口附近听到婴儿"},"index":12,"timestamp":"2026-04-10T01:45:37.000Z","timeText":"2026-04-10 09:45"},{"id":"g14","senderId":"user1","timeRaw":"+10s","kind":"text","text":"哈哈，你的观察很敏锐，其实很多这种恐怖故事都不能细想，要么就是有超自然因素解释一切，比如那个故事可能单纯就用作祟解释过去了。很多时候就是依靠那种对有限文字先入为主的想象，是创作者和读者共同营造的一种恐怖体验，","quote":{"messageId":"g13","senderId":"user2","timeText":"2026-04-10 09:45","snippet":"2我有一点没理解，先不说什么人的血能滴几天，为啥白天没听到？"},"index":13,"timestamp":"2026-04-10T01:45:47.000Z","timeText":"2026-04-10 09:45"}]},{"id":"conv-4","title":"603","subtitle":603,"avatar":"https://picsum.photos/seed/neighbour2/100/100","self":"protagonist","replayIntervalMs":900,"preview":"不要老半夜摔门好不好，一摔门就被你们吵醒了","listTime":"08:23","startIndex":0,"profiles":{"users":{"protagonist":{"name":"奋斗的西瓜","avatar":"https://picsum.photos/seed/protagonist/100/100","bio":"新人独立游戏开发者，求关注!"},"sister":{"name":"姐姐","avatar":"https://picsum.photos/seed/sister/100/100","bio":"无"},"zhou_police":{"name":"周警官","avatar":"https://picsum.photos/seed/policeman/100/100","bio":"无"},"coat_man":{"name":"风衣男","avatar":"https://picsum.photos/seed/weiredpoliceman/100/100","bio":"无"},"neighbour1":{"name":"803","avatar":"https://picsum.photos/seed/neighbour1/100/100","bio":"living the moment"},"neighbour2":{"name":"603","avatar":"https://picsum.photos/seed/neighbour2/100/100","bio":"不服就干"},"neighbour3":{"name":"904","avatar":"https://picsum.photos/seed/neighbour3/100/100","bio":"喜欢清晨的阳光啊"},"admin":{"name":"物业小雅","avatar":"https://picsum.photos/seed/admin/100/100","bio":"竭诚为您服务"},"user1":{"name":"风海(群主)-十年独立恐怖游戏开发","avatar":"https://picsum.photos/seed/user1/100/100","bio":"热衷于收集各种都市传说，民间传说。然后做成游戏"},"user2":{"name":"巧盒-新人独立游戏开发者","avatar":"https://picsum.photos/seed/user2/100/100","bio":"肉鸽类游戏摸索中"},"user3":{"name":"秀栽-独立新游推广中","avatar":"https://picsum.photos/seed/user3/100/100","bio":"最新大作，77号远征队绝赞试玩中"},"student1":{"name":"首朱","avatar":"https://picsum.photos/seed/stu1/100/100","bio":"人生豪迈，重头再来"},"student2":{"name":"海飞","avatar":"https://picsum.photos/seed/stu2/100/100","bio":"不要温和地走进那个良夜"},"student3":{"name":"Zack","avatar":"https://picsum.photos/seed/stu2/100/100","bio":"新公司火力全开中，HC无限"}}},"messages":[{"id":"m1","senderId":"neighbour2","timeRaw":"2026-04-10 08:20:12","kind":"text","text":"不要老半夜摔门好不好，一摔门就被你们吵醒了","index":0,"timestamp":"2026-04-10T00:20:12.000Z","timeText":"2026-04-10 08:20"},{"id":"m2","senderId":"neighbour2","timeRaw":"+10s","kind":"text","text":"我都多久晚上没睡好觉了","index":1,"timestamp":"2026-04-10T00:20:22.000Z","timeText":"2026-04-10 08:20"},{"id":"m3","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"我最近晚上很早就睡了，怎么可能摔门，不要凭空污蔑别人","index":2,"timestamp":"2026-04-10T00:21:22.000Z","timeText":"2026-04-10 08:21"},{"id":"m4","senderId":"neighbour2","timeRaw":"+1m","kind":"text","text":"之前你们大晚上还在吵架，怎么可能很早就睡了","index":3,"timestamp":"2026-04-10T00:22:22.000Z","timeText":"2026-04-10 08:22"},{"id":"m5","senderId":"protagonist","timeRaw":"+10s","kind":"text","text":"??????? 我跟谁吵架","index":4,"timestamp":"2026-04-10T00:22:32.000Z","timeText":"2026-04-10 08:22"},{"id":"m6","senderId":"neighbour2","timeRaw":"+30s","kind":"text","text":"装傻就没意思了","index":5,"timestamp":"2026-04-10T00:23:02.000Z","timeText":"2026-04-10 08:23"}]},{"id":"conv-5","title":"毕业一群","subtitle":"毕业一群(500)","avatar":"https://picsum.photos/seed/group2/100/100","self":"protagnist","replayIntervalMs":1000,"preview":"兄弟们，我们的新项目融资到位了，正在招兵买马中，感兴趣的可以私联我","listTime":"20:24","startIndex":0,"profiles":{"users":{"protagonist":{"name":"奋斗的西瓜","avatar":"https://picsum.photos/seed/protagonist/100/100","bio":"新人独立游戏开发者，求关注!"},"sister":{"name":"姐姐","avatar":"https://picsum.photos/seed/sister/100/100","bio":"无"},"zhou_police":{"name":"周警官","avatar":"https://picsum.photos/seed/policeman/100/100","bio":"无"},"coat_man":{"name":"风衣男","avatar":"https://picsum.photos/seed/weiredpoliceman/100/100","bio":"无"},"neighbour1":{"name":"803","avatar":"https://picsum.photos/seed/neighbour1/100/100","bio":"living the moment"},"neighbour2":{"name":"603","avatar":"https://picsum.photos/seed/neighbour2/100/100","bio":"不服就干"},"neighbour3":{"name":"904","avatar":"https://picsum.photos/seed/neighbour3/100/100","bio":"喜欢清晨的阳光啊"},"admin":{"name":"物业小雅","avatar":"https://picsum.photos/seed/admin/100/100","bio":"竭诚为您服务"},"user1":{"name":"风海(群主)-十年独立恐怖游戏开发","avatar":"https://picsum.photos/seed/user1/100/100","bio":"热衷于收集各种都市传说，民间传说。然后做成游戏"},"user2":{"name":"巧盒-新人独立游戏开发者","avatar":"https://picsum.photos/seed/user2/100/100","bio":"肉鸽类游戏摸索中"},"user3":{"name":"秀栽-独立新游推广中","avatar":"https://picsum.photos/seed/user3/100/100","bio":"最新大作，77号远征队绝赞试玩中"},"student1":{"name":"首朱","avatar":"https://picsum.photos/seed/stu1/100/100","bio":"人生豪迈，重头再来"},"student2":{"name":"海飞","avatar":"https://picsum.photos/seed/stu2/100/100","bio":"不要温和地走进那个良夜"},"student3":{"name":"Zack","avatar":"https://picsum.photos/seed/stu2/100/100","bio":"新公司火力全开中，HC无限"}}},"messages":[{"id":"g1","senderId":"student3","timeRaw":"2026-04-10 20:21:02","kind":"text","text":"兄弟们，我们的新项目融资到位了，正在招兵买马中，感兴趣的可以私联我","index":0,"timestamp":"2026-04-10T12:21:02.000Z","timeText":"2026-04-10 20:21"},{"id":"g2","senderId":"student1","timeRaw":"+10s","kind":"text","text":"zack哥牛逼！","index":1,"timestamp":"2026-04-10T12:21:12.000Z","timeText":"2026-04-10 20:21"},{"id":"g3","senderId":"student2","timeRaw":"+10s","kind":"text","text":"未来可期！","index":2,"timestamp":"2026-04-10T12:21:22.000Z","timeText":"2026-04-10 20:21"},{"id":"g4","senderId":"protagonist","timeRaw":"+1m","kind":"text","text":"祝老同学事业长虹！什么时候搞个同学会请我们吃大餐 :)","index":3,"timestamp":"2026-04-10T12:22:22.000Z","timeText":"2026-04-10 20:22"},{"id":"g5","senderId":"student3","timeRaw":"+30s","kind":"text","text":"不敢当不敢当，不敢在Mark哥这尊大佛面前造次，对了Mark哥现在在哪个公司发财啊，是心脏跳动，还是马上福报","quote":{"messageId":"g4","senderId":"protagonist","timeText":"2026-04-10 20:22","snippet":"祝老同学事业长虹！什么时候搞个同学会请我们吃大餐 :)"},"index":4,"timestamp":"2026-04-10T12:22:52.000Z","timeText":"2026-04-10 20:22"},{"id":"g6","senderId":"protagonist","timeRaw":"+30s","kind":"text","text":"个体户，最近我开发了一个游戏，你们要不要试玩一下,到时候你们机会首批玩家，送稀有装备！","index":5,"timestamp":"2026-04-10T12:23:22.000Z","timeText":"2026-04-10 20:23"},{"id":"g7","senderId":"protagonist","timeRaw":"+10s","kind":"link-card","linkCard":{"url":"https://www.squaregamezz.site/","title":"极速方块","site":"www.squaregamezz.site.","desc":"我已经在极速方块中拿了128分，你也看看你能拿多少分。"},"index":6,"timestamp":"2026-04-10T12:23:32.000Z","timeText":"2026-04-10 20:23"},{"id":"g8","senderId":"student3","timeRaw":"+1m","kind":"text","text":"哎，曾经的优秀工程师，怎么现在在干这个了","index":7,"timestamp":"2026-04-10T12:24:32.000Z","timeText":"2026-04-10 20:24"}]}],"ui":{"statusBar":{"carrier":"中国移动","time":"12:21","battery":"31%"},"topTitle":"微信","searchPlaceholder":"搜索","persistKey":"chat_framework_seen_v1"}}</script>
   <script>
     const payload = JSON.parse(document.getElementById('chat-data').textContent);
     const listView = document.getElementById('list-view');
@@ -249,10 +277,19 @@
     const backBtn = document.getElementById('back-btn');
     const timeline = document.getElementById('timeline');
     const chatTitle = document.getElementById('chat-title');
+    const profileModal = document.getElementById('profile-modal');
+    const profileAvatar = document.getElementById('profile-avatar');
+    const profileName = document.getElementById('profile-name');
+    const profileWechat = document.getElementById('profile-wechat');
+    const profileBio = document.getElementById('profile-bio');
+    const profileClose = document.getElementById('profile-close');
 
     const persistKey = payload.ui?.persistKey || 'chat_framework_seen_v1';
     let timer = null;
+    let recallTimers = [];
     let seenMap = {};
+    let activeAudio = null;
+    let activeVoiceBtn = null;
 
     function loadSeen() {
       try {
@@ -280,9 +317,96 @@
         .replaceAll("'", '&#39;');
     }
 
+    const emojiMap = {
+      "微笑":"🙂","撇嘴":"😒","色":"😍","发呆":"😳","得意":"😎","流泪":"😢","害羞":"☺️","闭嘴":"🤐","睡":"😴","大哭":"😭",
+      "尴尬":"😅","发怒":"😠","调皮":"😜","呲牙":"😁","惊讶":"😮","难过":"😞","酷":"😎","冷汗":"😓","抓狂":"😫","吐":"🤮",
+      "偷笑":"🤭","愉快":"😄","白眼":"🙄","傲慢":"😤","困":"🥱","惊恐":"😱","憨笑":"😄","悠闲":"😌","咒骂":"🤬","疑问":"❓",
+      "嘘":"🤫","晕":"😵","衰":"🥴","骷髅":"💀","敲打":"👊","再见":"👋","擦汗":"😓","抠鼻":"👃","鼓掌":"👏","坏笑":"😏",
+      "左哼哼":"😤","右哼哼":"😤","哈欠":"🥱","鄙视":"😒","委屈":"🥺","快哭了":"🥹","阴险":"😈","亲亲":"😘","吓":"😨","可怜":"🥺",
+      "菜刀":"🔪","西瓜":"🍉","啤酒":"🍺","咖啡":"☕","蛋糕":"🍰","玫瑰":"🌹","凋谢":"🥀","爱心":"❤️","心碎":"💔","强":"👍",
+      "弱":"👎","握手":"🤝","胜利":"✌️","抱拳":"🙏","勾引":"👉","拳头":"👊","OK":"👌","跳跳":"💃","发抖":"🫨","怄火":"😤",
+      "转圈":"🌀","捂脸":"🤦","奸笑":"😏","机智":"🧠","皱眉":"😣","耶":"✌️","旺柴":"🐶","社会社会":"😎","吃瓜":"🍉","加油":"💪",
+      "汗":"😓","天啊":"😱","Emm":"😶","让我看看":"👀","叹气":"😮‍💨","苦涩":"😖","裂开":"🫠"
+    };
+
     function linkify(text) {
       const escaped = esc(text || '');
       return escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a class="inline-link" href="$1" target="_blank" rel="noreferrer">$1</a>');
+    }
+    function emojify(text) {
+      return String(text || '').replace(/\[([^\[\]]+)\]/g, (m, key) => emojiMap[key] || m);
+    }
+    function mentionify(htmlText) {
+      return htmlText.replace(/(^|[\s>])@([A-Za-z0-9_\-\u4e00-\u9fa5]+)/g, '$1<span class="mention">@$2</span>');
+    }
+    function formatText(text) {
+      return mentionify(linkify(emojify(text || '')));
+    }
+    function formatVoiceDuration(sec) {
+      const n = Number(sec || 0);
+      return n > 0 ? n + '"' : '语音';
+    }
+    function setVoiceState(btn, playing) {
+      if (!btn) return;
+      const icon = btn.querySelector('.voice-icon');
+      btn.classList.toggle('playing', !!playing);
+      if (icon) icon.textContent = playing ? '▮▮' : '▶';
+    }
+    function stopActiveAudio() {
+      if (activeAudio) {
+        activeAudio.pause();
+        activeAudio = null;
+      }
+      setVoiceState(activeVoiceBtn, false);
+      activeVoiceBtn = null;
+    }
+    function openProfileByDataset(data) {
+      profileAvatar.src = data.avatar || '';
+      profileName.textContent = data.name || '';
+      profileWechat.textContent = '微信号：' + (data.wechatId || '未设置');
+      profileBio.textContent = '简介：' + (data.bio || '无');
+      profileModal.classList.add('show');
+      profileModal.setAttribute('aria-hidden', 'false');
+    }
+    function closeProfile() {
+      profileModal.classList.remove('show');
+      profileModal.setAttribute('aria-hidden', 'true');
+    }
+    function recallText(msg, conv, user) {
+      return msg.senderId === conv.self ? '你撤回了一条消息' : (user.name || msg.senderId) + ' 撤回了一条消息';
+    }
+    function formatVoiceDuration(sec) {
+      const n = Number(sec || 0);
+      return n > 0 ? n + '"' : '语音';
+    }
+    function setVoiceState(btn, playing) {
+      if (!btn) return;
+      const icon = btn.querySelector('.voice-icon');
+      btn.classList.toggle('playing', !!playing);
+      if (icon) icon.textContent = playing ? '▮▮' : '▶';
+    }
+    function stopActiveAudio() {
+      if (activeAudio) {
+        activeAudio.pause();
+        activeAudio = null;
+      }
+      setVoiceState(activeVoiceBtn, false);
+      activeVoiceBtn = null;
+    }
+    function openProfileByDataset(data) {
+      profileAvatar.src = data.avatar || '';
+      profileName.textContent = data.name || '';
+      profileWechat.textContent = '微信号：' + (data.wechatId || '未设置');
+      profileBio.textContent = '简介：' + (data.bio || '无');
+      profileModal.classList.add('show');
+      profileModal.setAttribute('aria-hidden', 'false');
+    }
+    function closeProfile() {
+      profileModal.classList.remove('show');
+      profileModal.setAttribute('aria-hidden', 'true');
+    }
+    function recallText(msg, conv, user) {
+      return msg.senderId === conv.self ? '你撤回了一条消息' : (user.name || msg.senderId) + ' 撤回了一条消息';
     }
 
     function renderQuote(quote, profiles) {
@@ -293,7 +417,15 @@
 
     function renderContent(msg) {
       if (msg.kind === 'image') {
-        return '<img class="img" src="' + esc(msg.imageUrl || '') + '" alt="image"/>';
+        const caption = msg.text ? '<div class="img-caption">' + formatText(msg.text) + '</div>' : '';
+        return '<img class="img" src="' + esc(msg.imageUrl || '') + '" alt="image"/>' + caption;
+      }
+      if (msg.kind === 'voice') {
+        const caption = msg.text ? '<div class="img-caption">' + formatText(msg.text) + '</div>' : '';
+        return '<button class="voice-btn" type="button" data-audio-url="' + esc(msg.audioUrl || '') + '">'
+          + '<span class="voice-icon">▶</span>'
+          + '<span class="voice-duration">' + esc(formatVoiceDuration(msg.durationSec)) + '</span>'
+          + '</button>' + caption;
       }
       if (msg.kind === 'link-card') {
         const c = msg.linkCard || {};
@@ -303,20 +435,45 @@
           + '<div class="card-footer"><span>' + esc(c.site || '') + '</span><span>链接卡片</span></div>'
           + '</a>';
       }
-      return '<div>' + linkify(msg.text || '') + '</div>';
+      return '<div>' + formatText(msg.text || '') + '</div>';
     }
 
-    function renderMessage(msg, conv) {
+    function renderMessage(msg, conv, options) {
+      const opts = options || {};
       const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId, avatar: '' };
       const self = conv.self;
       const selfCls = msg.senderId === self ? 'msg self' : 'msg';
-      const avatar = '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>';
+      const avatar = '<button class="avatar-btn" type="button"'
+        + ' data-name="' + esc(user.name || msg.senderId) + '"'
+        + ' data-wechat-id="' + esc(user.wechatId || '') + '"'
+        + ' data-bio="' + esc(user.bio || '') + '"'
+        + ' data-avatar="' + esc(user.avatar || '') + '">'
+        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>'
+        + '</button>';
+      const bubbleCls = (msg.kind === 'image' || msg.kind === 'voice') ? 'bubble media' : 'bubble';
+      const body = (opts.forceRecalled && msg.recall)
+        ? '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>'
+        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg) + '</div>';
       const main = '<div class="msg-main">'
         + '<p class="meta">' + esc(user.name || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p>'
-        + '<div class="bubble">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg) + '</div>'
+        + '<div class="msg-body">' + body + '</div>'
         + '</div>';
       const html = msg.senderId === self ? main + avatar : avatar + main;
-      return '<article class="' + selfCls + '">' + html + '</article>';
+      return '<article class="' + selfCls + '" data-cid="' + esc(opts.conversationId || '') + '" data-mid="' + esc(msg.id || '') + '">' + html + '</article>';
+    }
+
+    function applyRecall(conversationId, msg, conv) {
+      const node = timeline.querySelector('article[data-cid="' + conversationId + '"][data-mid="' + msg.id + '"] .msg-body');
+      if (!node) return;
+      const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId };
+      node.innerHTML = '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>';
+    }
+
+    function queueRecall(conversationId, msg, conv) {
+      if (!msg.recall) return;
+      const delay = Math.max(0, Number(msg.recallDelayMs ?? msg.recall?.delayMs ?? 0));
+      const t = window.setTimeout(() => applyRecall(conversationId, msg, conv), delay);
+      recallTimers.push(t);
     }
 
     function clearTimer() {
@@ -324,6 +481,9 @@
         window.clearInterval(timer);
         timer = null;
       }
+      recallTimers.forEach((t) => window.clearTimeout(t));
+      recallTimers = [];
+      stopActiveAudio();
     }
 
     function markSeen(conversationId) {
@@ -370,14 +530,15 @@
       }
 
       if (seenMap[conversationId]) {
-        const full = conv.messages.map((msg) => renderMessage(msg, conv)).join('');
+        const full = conv.messages.map((msg) => renderMessage(msg, conv, { conversationId, forceRecalled: true })).join('');
         timeline.innerHTML = full + '<div class="end-tip">当前聊天已结束</div>';
         timeline.scrollTop = timeline.scrollHeight;
         return;
       }
 
       let current = Math.max(0, Number(conv.startIndex || 0));
-      timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv));
+      timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
+      queueRecall(conversationId, conv.messages[current], conv);
       timeline.scrollTop = timeline.scrollHeight;
       current += 1;
 
@@ -388,7 +549,8 @@
           finishConversation(conversationId);
           return;
         }
-        timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv));
+        timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
+        queueRecall(conversationId, conv.messages[current], conv);
         timeline.scrollTop = timeline.scrollHeight;
         current += 1;
       }, step);
@@ -398,6 +560,34 @@
       clearTimer();
       detailView.style.display = 'none';
       listView.style.display = 'flex';
+    });
+
+    profileClose.addEventListener('click', closeProfile);
+    profileModal.addEventListener('click', (e) => {
+      if (e.target === profileModal) closeProfile();
+    });
+    timeline.addEventListener('click', (e) => {
+      const avatarBtn = e.target.closest('.avatar-btn');
+      if (avatarBtn) {
+        openProfileByDataset(avatarBtn.dataset);
+        return;
+      }
+      const voiceBtn = e.target.closest('.voice-btn');
+      if (!voiceBtn) return;
+      const src = voiceBtn.dataset.audioUrl || '';
+      if (!src) return;
+
+      if (activeVoiceBtn === voiceBtn && activeAudio && !activeAudio.paused) {
+        stopActiveAudio();
+        return;
+      }
+
+      stopActiveAudio();
+      activeAudio = new Audio(src);
+      activeVoiceBtn = voiceBtn;
+      setVoiceState(voiceBtn, true);
+      activeAudio.addEventListener('ended', stopActiveAudio);
+      activeAudio.play().catch(() => stopActiveAudio());
     });
 
     loadSeen();

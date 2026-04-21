@@ -59,7 +59,7 @@ specVersion: "1.0"
 每条消息必须以消息头开始：
 
 ```text
-@senderId #messageId [timeRaw] [optional-tags...]
+@senderId #messageId [optional-timeRaw] [optional-tags...]
 ```
 
 示例：
@@ -74,9 +74,10 @@ specVersion: "1.0"
 
 约束：
 - `senderId`：必须存在于 `profiles.yml` 的 `users` 中
-- `messageId`：会话内唯一
+- `messageId`：会话内唯一。可选；省略时系统会自动生成（`m1/m2/...`）
 - 第一条消息时间必须是绝对时间
-- 后续消息可用绝对时间或相对时间
+- 后续消息可用绝对时间、相对时间，或省略时间
+- 省略时间时，系统会按“该条消息非空白字符数 N => +Ns”自动推导（最少 `+1s`）
 
 ### 2.3 时间格式
 
@@ -96,6 +97,8 @@ specVersion: "1.0"
 - `[image]`：消息体为图片 URL 或路径
 - `[link-card]`：消息体为键值对卡片配置
 - `[quote:<messageId>]`：引用前文消息
+- `[voice]`：语音消息（支持时长与转写）
+- `[recall]` / `[recall:+10s]`：消息撤回（可设置撤回延时）
 
 #### 文本消息（默认）
 
@@ -109,7 +112,10 @@ specVersion: "1.0"
 ```md
 @alice #m4 [+30s] [image]
 https://picsum.photos/seed/demo/460/320
+这是一条图片说明文字（可选）
 ```
+
+说明：`[image]` 下第一行视为图片地址，后续行视为图片说明文本。
 
 #### 链接卡片消息
 
@@ -127,6 +133,36 @@ desc: 这是一个链接卡片示例。
 @alice #m6 [+1m] [quote:m5]
 这条是对 m5 的回复。
 ```
+
+#### 语音消息
+
+```md
+@bob #m7 [+20s] [voice]
+./audio/demo.mp3
+duration: 8
+这是语音的转写内容（可选）
+```
+
+说明：
+- 第一行为音频 URL/相对路径，或使用 `url: ...`
+- 可选 `duration: 秒数`，用于语音气泡显示
+- 其余行作为转写文本（可选）
+
+#### 撤回消息
+
+```md
+@alice #m8 [+10s] [recall]
+这条消息会立即撤回
+
+@bob #m9 [+10s] [recall:+12s]
+这条消息会在 12 秒后撤回
+```
+
+### 2.5 文本增强效果
+
+- `@用户名` 会在渲染时高亮显示（`@mention` 效果）
+- 文本中的 URL 会自动转为可点击链接
+- 点击头像可查看 `profiles.yml` 中的 `name/wechatId/bio`
 
 ## 3. profiles.yml 规范
 
@@ -146,6 +182,7 @@ users:
 字段说明：
 - `users.<senderId>.name`：显示名
 - `users.<senderId>.avatar`：头像 URL
+- `users.<senderId>.wechatId`：微信号（用于头像资料卡）
 - 其他字段（`bio`、`wechatId` 等）会保留，可用于后续扩展
 
 ## 4. chat.yml 规范

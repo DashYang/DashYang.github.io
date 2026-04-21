@@ -1,0 +1,8 @@
+chat:
+  type: "group"
+  title: "独立游戏开发爱好者群"
+  self: "protagnist"
+  groupInfo:
+    name: "独立游戏开发爱好者群"
+    avatar: "https://picsum.photos/seed/group1/100/100"
+    members: ["protagnist", "user1", "user2", "user3"]

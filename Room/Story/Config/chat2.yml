@@ -1,0 +1,5 @@
+chat:
+  type: "single"
+  title: "603"
+  self: "protagonist"
+  peer: 603

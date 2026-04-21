@@ -76,12 +76,18 @@ function loadUiConfig(inputDir) {
  * node src/build-folder.js examples/multi dist/wechat-hub.html
  */
 function main() {
-  const [inputDir, outputHtml] = process.argv.slice(2);
-  if (!inputDir || !outputHtml) {
-    console.error("Usage: node src/build-folder.js <input-folder> <output.html>");
+  try {
+    const [inputDir, outputHtml] = process.argv.slice(2);
+    if (!inputDir || !outputHtml) {
+      console.error("Usage: node src/build-folder.js <input-folder> <output.html>");
+      process.exit(1);
+    }
+    buildFolder(inputDir, outputHtml);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    console.error(`[build-folder-error] ${reason}`);
     process.exit(1);
   }
-  buildFolder(inputDir, outputHtml);
 }
 
 // Only run main when this file is executed directly (not when imported).
