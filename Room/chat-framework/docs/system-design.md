@@ -6,6 +6,7 @@
 - 由 Markdown + YAML 生成聊天页面
 - 单会话渲染
 - 多会话微信主界面聚合
+- 多账号登录/解锁/切换（story.yml，可选）
 - 图片、链接卡片、引用消息
 - 回放式展示（按间隔逐条出现）
 - 回放完成状态本地持久化（再次进入直接全量显示）
@@ -19,6 +20,7 @@
 - `profiles.yml`：发送者画像
 - `chat.yml`：会话元信息
 - `ui.yml`：多会话主界面文案与状态栏（可选）
+- `story.yml`：多账号解锁顺序与切换入口（多会话可选）
 
 输出：
 - 单会话：`dist/index.html` 或指定输出
@@ -124,6 +126,7 @@
 1. `build-folder.js` 扫描目录下所有 `*.md`
 2. 对每个 md 执行单会话加载与归一化
 3. 读取同目录 `ui.yml`（可选）
+4. 读取同目录 `story.yml`（可选，多账号）
 4. `buildConversationModels` 生成列表视图模型
 5. `renderWechatHubHtml` 生成聚合页面
 6. 浏览器端 JS 执行回放逻辑与本地记忆
@@ -151,6 +154,7 @@ CLI: node src/build-folder.js
   -> listMarkdownFiles
   -> loadConversationFromMarkdown (for each md)
   -> loadUiConfig (ui.yml)
+  -> loadStoryConfig (story.yml)
   -> buildConversationModels
   -> renderWechatHubHtml
   -> fs.writeFileSync
@@ -162,6 +166,7 @@ CLI: node src/build-folder.js
 open wechat-hub.html
   -> parse embedded JSON payload
   -> render conversation list
+  -> multi-account: show "我" tab account switch (if story.yml + multiple self ids)
   -> click list item
       -> openConversation
       -> if seenMap[id] then full render

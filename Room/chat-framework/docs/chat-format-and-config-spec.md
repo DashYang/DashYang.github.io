@@ -99,6 +99,8 @@ specVersion: "1.0"
 - `[quote:<messageId>]`：引用前文消息
 - `[voice]`：语音消息（支持时长与转写）
 - `[recall]` / `[recall:+10s]`：消息撤回（可设置撤回延时）
+- `[article]`：微信文章转发卡片
+- `[contact-card]`：联系人名片
 
 #### 文本消息（默认）
 
@@ -158,6 +160,23 @@ duration: 8
 这条消息会在 12 秒后撤回
 ```
 
+#### 微信文章转发卡片
+
+```md
+@alice #m10 [+10s] [article]
+id: a1
+```
+
+#### 联系人名片
+
+```md
+@bob #m11 [+10s] [contact-card]
+name: 周警官
+nickName: zhou_police
+avatar: https://example.com/a.jpg
+bio: 社区民警
+```
+
 ### 2.5 文本增强效果
 
 - `@用户名` 会在渲染时高亮显示（`@mention` 效果）
@@ -165,6 +184,10 @@ duration: 8
 - 点击头像可查看 `profiles.yml` 中的 `name/wechatId/bio`
 
 ## 3. profiles.yml 规范
+
+支持两种方式：
+- 单文件：`profiles.yml`（`users` 字典）
+- 目录模式：`profiles/`，每个用户一个文件（如 `alice.yml`、`bob.yml`）
 
 ```yml
 users:
@@ -182,8 +205,62 @@ users:
 字段说明：
 - `users.<senderId>.name`：显示名
 - `users.<senderId>.avatar`：头像 URL
-- `users.<senderId>.wechatId`：微信号（用于头像资料卡）
+- `users.<senderId>.nickName`：昵称（用于头像资料卡）
 - 其他字段（`bio`、`wechatId` 等）会保留，可用于后续扩展
+
+### 3.1 目录模式示例（推荐）
+
+`chat.md` frontmatter:
+```md
+---
+profiles: "./profiles"
+---
+```
+
+`profiles/alice.yml`:
+```yml
+profile:
+  name: "Alice"
+  nickName: "alice_pm"
+  avatar: "https://example.com/a.jpg"
+  bio: "产品经理"
+  moments:
+    m1:
+      publishAt: "2026-04-30 09:00:00"
+      text: "今天开了个好会"
+      images: ["https://example.com/1.jpg", "https://example.com/2.jpg"]
+```
+
+说明：
+- 朋友圈只支持文字和图片
+- `publishAt` 晚于浏览器当前时间的内容不会显示
+
+### 3.2 微信文章配置
+
+文章实体统一放在 `articles/` 目录下，profile 中只保存文章引用：
+
+```yml
+profile:
+  officialArticles: ["a1", "a2"]
+```
+
+`articles/a1.yml`:
+
+```yml
+article:
+  publishAt: "2026-04-27 08:30:00"
+  title: "文章标题"
+  author: "公众号名称"
+  cover: "https://example.com/cover.jpg"
+  summary: "文章摘要（可选）"
+  text: "文章正文（支持换行）"
+  images: ["https://example.com/1.jpg", "https://example.com/2.jpg"]
+```
+
+说明：
+- 入口在多会话页底部“通讯录”
+- 仅展示 `publishAt <= 当前时间` 的文章
+- 支持文字+图片
 
 ## 4. chat.yml 规范
 
@@ -237,6 +314,23 @@ ui:
 - `topTitle`：主界面标题（默认“微信”）
 - `searchPlaceholder`：搜索框提示词
 - `persistKey`：回放完成状态的本地存储键
+
+## 5.2 story.yml 规范（多账号登录/切换）
+
+`build-folder` 会尝试读取输入目录下的 `story.yml`。该文件用于定义多账号解锁顺序，并在页面底部“我”中提供账号切换入口。
+
+```yml
+story:
+  accountOrder: ["protagonist", "sister", "admin"]
+```
+
+字段说明：
+- `accountOrder`：账号 id 列表（账号 id 即各会话 `chat.yml` 的 `self`），用于定义解锁顺序与展示顺序。
+
+运行时行为：
+- 初始仅解锁第一个账号。
+- 当当前账号时间轴推进到最后一天，且该账号在当前日期下“微信/通讯录/发现”的未读全部清零，会解锁下一个账号，并在“我”Tab 显示红点提示。
+- 已解锁账号可在“我”中随时切换；时间轴进度与已读状态按账号隔离。
 
 ## 6. 完整示例
 

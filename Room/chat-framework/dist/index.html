@@ -44,6 +44,16 @@ body { margin: 0; background: linear-gradient(180deg,#f7f7f7,#e9e9e9); color: va
 .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
 .card-desc { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
 .card-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+.article-card { border:none; display:block; width:100%; text-align:left; cursor:pointer; border-radius:8px; background:#f8f8f8; padding:9px; }
+.article-title { font-size:14px; font-weight:600; line-height:1.4; }
+.article-meta { margin-top:4px; font-size:11px; color:var(--muted); }
+.article-cover { width:100%; margin-top:8px; border-radius:6px; max-height:150px; object-fit:cover; background:#ddd; }
+.article-summary { margin-top:7px; font-size:12px; color:#4c4c4c; line-height:1.45; }
+.contact-card { border-radius:8px; background:#f8f8f8; padding:10px; display:flex; gap:9px; align-items:center; }
+.contact-avatar { width:42px; height:42px; border-radius:8px; object-fit:cover; background:#ddd; }
+.contact-name { font-size:14px; font-weight:600; }
+.contact-nick { margin-top:2px; font-size:11px; color:var(--muted); }
+.contact-bio { margin-top:6px; font-size:12px; color:#4c4c4c; line-height:1.35; }
 a.inline-link { color: #576b95; }
 .mention { color: #576b95; font-weight: 600; }
 .profile-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.35); z-index: 20; }
@@ -54,6 +64,17 @@ a.inline-link { color: #576b95; }
 .profile-name { font-size:16px; font-weight:600; }
 .profile-item { font-size:13px; color:#444; line-height:1.45; margin-top:4px; word-break:break-word; }
 .profile-close { margin-top: 12px; width: 100%; border:none; border-radius:8px; background:#f2f2f2; padding:8px 0; cursor:pointer; }
+.article-modal { position: fixed; inset: 0; background:#fff; z-index: 30; display:none; overflow-y:auto; }
+.article-modal.show { display:block; }
+.article-header { position: sticky; top: 0; background:#fff; border-bottom:1px solid #ececec; height:46px; display:flex; align-items:center; padding:0 10px; }
+.article-back { border:none; background:transparent; font-size:14px; color:#444; cursor:pointer; padding:6px 8px; }
+.article-body { padding:14px 14px 30px; }
+.article-page-title { font-size:24px; font-weight:700; line-height:1.35; margin:0; }
+.article-page-sub { margin-top:8px; font-size:12px; color:#8f8f8f; }
+.article-page-cover { width:100%; border-radius:8px; margin-top:12px; }
+.article-page-text { margin-top:14px; font-size:16px; line-height:1.8; color:#222; white-space:pre-wrap; word-break:break-word; }
+.article-page-images { margin-top:12px; display:grid; gap:8px; }
+.article-page-images img { width:100%; border-radius:8px; background:#ddd; }
 </style>
 </head>
 <body>
@@ -65,14 +86,14 @@ a.inline-link { color: #576b95; }
     <section class="timeline">
       <article class="msg self"><div class="msg-main"><p class="meta">Alice · 2026-04-09 10:00</p><div class="bubble"><div>大家早上好，今天把 Markdown 转聊天记录页面的框架先跑起来。</div></div></div><button class="avatar-btn" type="button"
       data-name="Alice"
-      data-wechat-id="alice_pm"
+      data-nick-name="alice_pm"
       data-bio="产品经理"
       data-avatar="https://picsum.photos/seed/alice/100/100">
       <img class="avatar" src="https://picsum.photos/seed/alice/100/100" alt="Alice"/>
     </button></article>
 <article class="msg"><button class="avatar-btn" type="button"
       data-name="Bob"
-      data-wechat-id="bob_dev"
+      data-nick-name="bob_dev"
       data-bio="前端工程师"
       data-avatar="https://picsum.photos/seed/bob/100/100">
       <img class="avatar" src="https://picsum.photos/seed/bob/100/100" alt="Bob"/>
@@ -83,7 +104,7 @@ a.inline-link { color: #576b95; }
     </a></div></div></article>
 <article class="msg"><button class="avatar-btn" type="button"
       data-name="Clara"
-      data-wechat-id="clara_ui"
+      data-nick-name="clara_ui"
       data-bio="设计师"
       data-avatar="https://picsum.photos/seed/clara/100/100">
       <img class="avatar" src="https://picsum.photos/seed/clara/100/100" alt="Clara"/>
@@ -94,21 +115,21 @@ a.inline-link { color: #576b95; }
       <div class="card-footer"><span>openai.com</span><span>链接卡片</span></div>
     </a></div></div><button class="avatar-btn" type="button"
       data-name="Alice"
-      data-wechat-id="alice_pm"
+      data-nick-name="alice_pm"
       data-bio="产品经理"
       data-avatar="https://picsum.photos/seed/alice/100/100">
       <img class="avatar" src="https://picsum.photos/seed/alice/100/100" alt="Alice"/>
     </button></article>
 <article class="msg"><button class="avatar-btn" type="button"
       data-name="Bob"
-      data-wechat-id="bob_dev"
+      data-nick-name="bob_dev"
       data-bio="前端工程师"
       data-avatar="https://picsum.photos/seed/bob/100/100">
       <img class="avatar" src="https://picsum.photos/seed/bob/100/100" alt="Bob"/>
     </button><div class="msg-main"><p class="meta">Bob · 2026-04-09 10:04</p><div class="bubble media"><img class="img" src="https://picsum.photos/seed/wireframe/480/320" alt="image"/></div></div></article>
 <article class="msg self"><div class="msg-main"><p class="meta">Alice · 2026-04-09 10:05</p><div class="bubble"><div class="quote"><div>Clara · 2026-04-09 10:02</div><div>我看了，链接里的信息可以做成卡片样式。</div></div><div>好，我先把引用样式和主题切换接口补上。</div></div></div><button class="avatar-btn" type="button"
       data-name="Alice"
-      data-wechat-id="alice_pm"
+      data-nick-name="alice_pm"
       data-bio="产品经理"
       data-avatar="https://picsum.photos/seed/alice/100/100">
       <img class="avatar" src="https://picsum.photos/seed/alice/100/100" alt="Alice"/>
@@ -126,6 +147,18 @@ a.inline-link { color: #576b95; }
       <button id="profile-close" class="profile-close" type="button">关闭</button>
     </div>
   </aside>
+  <aside id="article-modal" class="article-modal" aria-hidden="true">
+    <header class="article-header">
+      <button id="article-back" class="article-back" type="button">返回</button>
+    </header>
+    <div class="article-body">
+      <h1 id="article-title" class="article-page-title"></h1>
+      <div id="article-sub" class="article-page-sub"></div>
+      <img id="article-cover" class="article-page-cover" src="" alt="cover"/>
+      <div id="article-text" class="article-page-text"></div>
+      <div id="article-images" class="article-page-images"></div>
+    </div>
+  </aside>
   <script>
     (() => {
       const modal = document.getElementById('profile-modal');
@@ -134,13 +167,21 @@ a.inline-link { color: #576b95; }
       const wechatEl = document.getElementById('profile-wechat');
       const bioEl = document.getElementById('profile-bio');
       const closeBtn = document.getElementById('profile-close');
+      const articleModal = document.getElementById('article-modal');
+      const articleBack = document.getElementById('article-back');
+      const articleTitle = document.getElementById('article-title');
+      const articleSub = document.getElementById('article-sub');
+      const articleCover = document.getElementById('article-cover');
+      const articleText = document.getElementById('article-text');
+      const articleImages = document.getElementById('article-images');
       const avatarBtns = Array.from(document.querySelectorAll('.avatar-btn'));
       const voiceBtns = Array.from(document.querySelectorAll('.voice-btn'));
+      const articleBtns = Array.from(document.querySelectorAll('.article-card'));
 
       function openProfile(btn) {
         avatar.src = btn.dataset.avatar || '';
         nameEl.textContent = btn.dataset.name || '';
-        wechatEl.textContent = '微信号：' + (btn.dataset.wechatId || '未设置');
+        wechatEl.textContent = '昵称：' + (btn.dataset.nickName || '未设置');
         bioEl.textContent = '简介：' + (btn.dataset.bio || '无');
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
@@ -148,6 +189,25 @@ a.inline-link { color: #576b95; }
       function closeProfile() {
         modal.classList.remove('show');
         modal.setAttribute('aria-hidden', 'true');
+      }
+      function openArticle(btn) {
+        const title = btn.dataset.title || '';
+        const author = btn.dataset.author || '';
+        const cover = btn.dataset.cover || '';
+        const text = btn.dataset.text || '';
+        const images = (btn.dataset.images || '').split(',').filter(Boolean);
+        articleTitle.textContent = title;
+        articleSub.textContent = author;
+        articleCover.style.display = cover ? 'block' : 'none';
+        articleCover.src = cover || '';
+        articleText.textContent = text;
+        articleImages.innerHTML = images.map((url) => '<img src="' + url + '" alt="image"/>').join('');
+        articleModal.classList.add('show');
+        articleModal.setAttribute('aria-hidden', 'false');
+      }
+      function closeArticle() {
+        articleModal.classList.remove('show');
+        articleModal.setAttribute('aria-hidden', 'true');
       }
 
       avatarBtns.forEach((btn) => {
@@ -157,6 +217,10 @@ a.inline-link { color: #576b95; }
       modal.addEventListener('click', (e) => {
         if (e.target === modal) closeProfile();
       });
+      articleBtns.forEach((btn) => {
+        btn.addEventListener('click', () => openArticle(btn));
+      });
+      articleBack.addEventListener('click', closeArticle);
 
       let activeAudio = null;
       let activeBtn = null;

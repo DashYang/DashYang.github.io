@@ -25,11 +25,17 @@ function escapeHtml(s = "") {
  * @example
  * toSnippet({ kind: 'image' }) // => '[图片]'
  */
-function toSnippet(message) {
+function toSnippet(message, articles) {
   if (!message) return "";
   if (message.recall) return "[消息已撤回]";
   if (message.kind === "image") return "[图片]";
   if (message.kind === "voice") return `[语音] ${message.durationSec ? `${message.durationSec}"` : ""}`.trim();
+  if (message.kind === "article-card") {
+    const raw = message.articleCard || {};
+    const title = raw.title || (raw.refId ? (articles?.[raw.refId]?.title || "") : "");
+    return `[文章] ${title}`.trim();
+  }
+  if (message.kind === "contact-card") return `[名片] ${message.contactCard?.name || ""}`.trim();
   if (message.kind === "link-card") {
     const title = message.linkCard?.title || message.linkCard?.url || "链接";
     return `[链接] ${title}`;
@@ -105,10 +111,11 @@ export function buildConversationModels(conversations) {
       avatar,
       self: selfId || "",
       replayIntervalMs: Number(conv.frontmatter?.replayIntervalMs || 1000),
-      preview: toSnippet(startMessage),
+      preview: toSnippet(startMessage, conv.articles),
       listTime: toListTime(listTimeSource),
       startIndex,
       profiles: conv.profiles,
+      articles: conv.articles || {},
       messages: conv.messages
     };
   });
@@ -169,7 +176,8 @@ export function renderWechatHubHtml(input) {
   const payload = safeJson({
     title: appTitle,
     conversations: input.conversations || [],
-    ui
+    ui,
+    story: input.story || {}
   });
 
   return `<!doctype html>
@@ -258,6 +266,70 @@ export function renderWechatHubHtml(input) {
       flex: 1;
       min-height: 0;
     }
+    .moments-view {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      background: #f4f4f4;
+    }
+    .moments-scroll {
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      padding: 10px 10px 20px;
+    }
+    .moments-empty {
+      font-size: 13px;
+      color: #8b8b8b;
+      text-align: center;
+      padding: 30px 0;
+    }
+    .moment-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    }
+    .moment-head { display:flex; align-items:center; gap:10px; }
+    .moment-avatar { width:38px; height:38px; border-radius:8px; object-fit:cover; background:#ddd; }
+    .moment-name { font-size:14px; font-weight:600; }
+    .moment-time { font-size:11px; color:#8f8f8f; margin-top:2px; }
+    .moment-text { margin:10px 0 0; font-size:14px; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
+    .moment-images { margin-top:8px; display:grid; gap:6px; grid-template-columns:repeat(3, 1fr); }
+    .moment-images img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:6px; background:#ddd; }
+    .contacts-view {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      background: #f4f4f4;
+    }
+    .contacts-scroll {
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      padding: 10px 10px 20px;
+    }
+    .contacts-empty { font-size:13px; color:#8b8b8b; text-align:center; padding:30px 0; }
+    .oa-card { background:#fff; border-radius:10px; padding:12px; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+    .oa-title { font-size:16px; font-weight:600; line-height:1.35; }
+    .oa-meta { margin-top:6px; font-size:12px; color:#8f8f8f; }
+    .oa-cover { width:100%; margin-top:10px; border-radius:8px; object-fit:cover; max-height:180px; background:#ddd; }
+    .oa-desc { margin-top:8px; color:#555; font-size:13px; line-height:1.45; }
+    .oa-open { margin-top:10px; border:none; background:#f2f2f2; border-radius:8px; padding:8px 10px; cursor:pointer; font-size:13px; }
+    .article-modal { position: fixed; inset: 0; background:#fff; z-index:30; display:none; overflow-y:auto; }
+    .article-modal.show { display:block; }
+    .article-header { position: sticky; top: 0; background:#fff; border-bottom:1px solid #ececec; height:46px; display:flex; align-items:center; padding:0 10px; }
+    .article-back { border:none; background:transparent; font-size:14px; color:#444; cursor:pointer; padding:6px 8px; }
+    .article-body { padding:14px 14px 30px; }
+    .article-title { font-size:24px; font-weight:700; line-height:1.35; margin:0; }
+    .article-sub { margin-top:8px; font-size:12px; color:#8f8f8f; }
+    .article-cover { width:100%; border-radius:8px; margin-top:12px; }
+    .article-text { margin-top:14px; font-size:16px; line-height:1.8; color:#222; white-space:pre-wrap; word-break:break-word; }
+    .article-images { margin-top:12px; display:grid; gap:8px; }
+    .article-images img { width:100%; border-radius:8px; background:#ddd; }
     .list-scroll {
       overflow-y: auto;
       flex: 1;
@@ -323,6 +395,21 @@ export function renderWechatHubHtml(input) {
       color: var(--green);
       font-weight: 600;
     }
+    .tab-item { position: relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; }
+    .tab-badge { position:absolute; top:-6px; right:-10px; min-width:16px; height:16px; padding:0 4px; border-radius:10px; background:#ff3b30; color:#fff; font-size:10px; line-height:16px; display:none; text-align:center; box-sizing:border-box; }
+    .account-view { display:none; flex-direction:column; flex:1; min-height:0; background:#efefef; }
+    .account-top { height:46px; border-bottom:1px solid var(--line); display:grid; grid-template-columns:auto 1fr auto; align-items:center; padding:0 10px; background:var(--panel); }
+    .account-back { border:none; background:transparent; color:#222; font-size:22px; cursor:pointer; padding:4px 6px; }
+    .account-manage { font-size:14px; color:#1f1f1f; }
+    .account-center { padding:26px 16px 10px; text-align:center; color:#222; font-size:18px; }
+    .account-list-wrap { padding:8px 12px 18px; overflow-y:auto; flex:1; min-height:0; }
+    .account-card { width:100%; border:none; background:#fff; border-radius:10px; padding:14px 12px; margin-bottom:10px; display:flex; align-items:center; gap:10px; text-align:left; cursor:pointer; }
+    .account-avatar { width:52px; height:52px; border-radius:6px; object-fit:cover; background:#ddd; }
+    .account-name { font-size:16px; color:#222; line-height:1.2; }
+    .account-id { margin-top:6px; font-size:13px; color:#9b9b9b; }
+    .account-current { margin-left:auto; font-size:14px; color:#07c160; white-space:nowrap; }
+    .account-add { width:100%; border:1px dashed #d0d0d0; background:#fff; border-radius:10px; padding:14px 12px; display:flex; align-items:center; gap:10px; color:#6f6f6f; }
+    .account-add-plus { width:52px; height:52px; border:1px dashed #cfcfcf; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:34px; color:#9d9d9d; line-height:1; }
     .detail-view {
       display: none;
       flex-direction: column;
@@ -383,6 +470,16 @@ export function renderWechatHubHtml(input) {
     .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
     .card-desc { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
     .card-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+    .article-card { border:none; display:block; width:100%; text-align:left; cursor:pointer; border-radius:8px; background:#f8f8f8; padding:9px; }
+    .article-title { font-size:14px; font-weight:600; line-height:1.4; }
+    .article-meta { margin-top:4px; font-size:11px; color:var(--muted); }
+    .article-cover { width:100%; margin-top:8px; border-radius:6px; max-height:150px; object-fit:cover; background:#ddd; }
+    .article-summary { margin-top:7px; font-size:12px; color:#4c4c4c; line-height:1.45; }
+    .contact-card { border-radius:8px; background:#f8f8f8; padding:10px; display:flex; gap:9px; align-items:center; }
+    .contact-avatar { width:42px; height:42px; border-radius:8px; object-fit:cover; background:#ddd; }
+    .contact-name { font-size:14px; font-weight:600; }
+    .contact-nick { margin-top:2px; font-size:11px; color:var(--muted); }
+    .contact-bio { margin-top:6px; font-size:12px; color:#4c4c4c; line-height:1.35; }
     .inline-link { color: #576b95; }
     .mention { color: #576b95; font-weight: 600; }
     .end-tip { font-size: 12px; color: var(--muted); text-align: center; margin: 16px 0 4px; }
@@ -414,13 +511,31 @@ export function renderWechatHubHtml(input) {
         <div class="search">🔍 ${escapeHtml(ui.searchPlaceholder)}</div>
       </div>
       <div id="list-scroll" class="list-scroll"></div>
-      <footer class="tabbar">
-        <div class="active">微信</div>
-        <div>通讯录</div>
-        <div>发现</div>
-        <div>我</div>
-      </footer>
     </section>
+
+    <section id="moments-view" class="moments-view">
+      <header class="top-nav">
+        <div></div>
+        <div class="center-title">朋友圈</div>
+        <div></div>
+      </header>
+      <div id="moments-scroll" class="moments-scroll"></div>
+    </section>
+    <section id="contacts-view" class="contacts-view">
+      <header class="top-nav">
+        <div></div>
+        <div class="center-title">通讯录</div>
+        <div></div>
+      </header>
+      <div id="contacts-scroll" class="contacts-scroll"></div>
+    </section>
+
+    <footer id="home-tabbar" class="tabbar">
+      <div id="tab-chat" class="active tab-item">微信<span id="badge-chat" class="tab-badge"></span></div>
+      <div id="tab-contacts" class="tab-item">通讯录<span id="badge-contacts" class="tab-badge"></span></div>
+      <div id="tab-moments" class="tab-item">发现<span id="badge-moments" class="tab-badge"></span></div>
+      <div id="tab-me" class="tab-item">我<span id="badge-me" class="tab-badge"></span></div>
+    </footer>
 
     <section id="detail-view" class="detail-view">
       <header class="chat-top">
@@ -428,6 +543,16 @@ export function renderWechatHubHtml(input) {
         <div class="chat-title" id="chat-title"></div>
       </header>
       <div class="timeline" id="timeline"></div>
+    </section>
+
+    <section id="account-view" class="account-view">
+      <header class="account-top">
+        <button id="account-back" class="account-back" type="button">‹</button>
+        <div></div>
+        <div class="account-manage">管理</div>
+      </header>
+      <div class="account-center">轻触头像以切换账号</div>
+      <div id="account-list-wrap" class="account-list-wrap"></div>
     </section>
   </main>
   <aside id="profile-modal" class="profile-modal" aria-hidden="true">
@@ -441,45 +566,550 @@ export function renderWechatHubHtml(input) {
       <button id="profile-close" class="profile-close" type="button">关闭</button>
     </div>
   </aside>
+  <aside id="article-modal" class="article-modal" aria-hidden="true">
+    <header class="article-header">
+      <button id="article-back" class="article-back" type="button">返回</button>
+    </header>
+    <div class="article-body">
+      <h1 id="article-title" class="article-title"></h1>
+      <div id="article-sub" class="article-sub"></div>
+      <img id="article-cover" class="article-cover" src="" alt="cover"/>
+      <div id="article-text" class="article-text"></div>
+      <div id="article-images" class="article-images"></div>
+    </div>
+  </aside>
 
   <script id="chat-data" type="application/json">${payload}</script>
   <script>
     const payload = JSON.parse(document.getElementById('chat-data').textContent);
     const listView = document.getElementById('list-view');
+    const momentsView = document.getElementById('moments-view');
+    const contactsView = document.getElementById('contacts-view');
     const detailView = document.getElementById('detail-view');
+    const accountView = document.getElementById('account-view');
     const listScroll = document.getElementById('list-scroll');
+    const momentsScroll = document.getElementById('moments-scroll');
+    const contactsScroll = document.getElementById('contacts-scroll');
     const backBtn = document.getElementById('back-btn');
     const timeline = document.getElementById('timeline');
     const chatTitle = document.getElementById('chat-title');
+    const statusTime = document.getElementById('status-time');
+    const tabChat = document.getElementById('tab-chat');
+    const tabContacts = document.getElementById('tab-contacts');
+    const tabMoments = document.getElementById('tab-moments');
+    const tabMe = document.getElementById('tab-me');
+    const badgeChat = document.getElementById('badge-chat');
+    const badgeContacts = document.getElementById('badge-contacts');
+    const badgeMoments = document.getElementById('badge-moments');
+    const badgeMe = document.getElementById('badge-me');
+    const homeTabbar = document.getElementById('home-tabbar');
     const profileModal = document.getElementById('profile-modal');
     const profileAvatar = document.getElementById('profile-avatar');
     const profileName = document.getElementById('profile-name');
     const profileWechat = document.getElementById('profile-wechat');
     const profileBio = document.getElementById('profile-bio');
     const profileClose = document.getElementById('profile-close');
+    const articleModal = document.getElementById('article-modal');
+    const articleBack = document.getElementById('article-back');
+    const articleTitle = document.getElementById('article-title');
+    const articleSub = document.getElementById('article-sub');
+    const articleCover = document.getElementById('article-cover');
+    const articleText = document.getElementById('article-text');
+    const articleImages = document.getElementById('article-images');
+    const accountBack = document.getElementById('account-back');
+    const accountListWrap = document.getElementById('account-list-wrap');
 
     const persistKey = payload.ui?.persistKey || 'chat_framework_seen_v1';
     let timer = null;
     let recallTimers = [];
     let seenMap = {};
+    let stageSeenMap = {};
+    let momentSeenMap = {};
+    let articleSeenMap = {};
+    let stageIndexMap = {};
+    let unlockedAccounts = {};
+    let accountNoticeMap = {};
+    let stageIndex = 0;
+    let timelineStages = [];
+    let activeAccountId = "";
+    let accountIds = [];
     let activeAudio = null;
     let activeVoiceBtn = null;
+    let articleRows = [];
+
+    function parseMomentTime(raw) {
+      if (!raw) return null;
+      const t = String(raw).trim().replace(" ", "T");
+      const d = new Date(t);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    function normalizeMomentImages(m) {
+      if (!m) return [];
+      if (Array.isArray(m.images)) return m.images.filter(Boolean);
+      if (typeof m.images === "string" && m.images) return [m.images];
+      if (m.imageUrl) return [m.imageUrl];
+      return [];
+    }
+
+    function collectMoments() {
+      const stageDay = currentStageMs();
+      const rows = [];
+      const seen = new Set();
+      for (const conv of (payload.conversations || [])) {
+        if (!isVisibleByAccount(conv)) continue;
+        const users = conv.profiles?.users || {};
+        for (const [id, user] of Object.entries(users)) {
+          if (!user || seen.has(id)) continue;
+          seen.add(id);
+          const moments = user.moments || {};
+          for (const moment of Object.values(moments)) {
+            if (!moment) continue;
+            const publishRaw = moment.publishAt || moment.time || "";
+            const day = toDayKey(publishRaw);
+            if (!day || day > stageDay) continue;
+            rows.push({
+              id: id + "-" + (moment.id || publishRaw || rows.length),
+              name: user.name || id,
+              nickName: user.nickName || user.wechatId || "",
+              avatar: user.avatar || "",
+              text: String(moment.text || ""),
+              images: normalizeMomentImages(moment),
+              publishRaw: publishRaw,
+              dayKey: day
+            });
+          }
+        }
+      }
+      rows.sort((a, b) => String(b.publishRaw).localeCompare(String(a.publishRaw), "zh-CN"));
+      return rows;
+    }
+
+    function renderMoments() {
+      const rows = collectMoments();
+      if (!rows.length) {
+        momentsScroll.innerHTML = '<div class="moments-empty">当前时间下暂无可展示的朋友圈</div>';
+        return;
+      }
+      momentsScroll.innerHTML = rows.map((m) => {
+        const imgs = m.images.slice(0, 9).map((url) => '<img src="' + esc(url) + '" alt="moment"/>').join('');
+        const text = m.text ? '<div class="moment-text">' + formatText(m.text) + '</div>' : '';
+        const imgWrap = imgs ? '<div class="moment-images">' + imgs + '</div>' : '';
+        return '<article class="moment-card">'
+          + '<div class="moment-head">'
+          + '<img class="moment-avatar" src="' + esc(m.avatar) + '" alt="' + esc(m.name) + '"/>'
+          + '<div><div class="moment-name">' + esc(m.name) + '</div><div class="moment-time">' + esc(m.publishRaw) + '</div></div>'
+          + '</div>'
+          + text + imgWrap
+          + '</article>';
+      }).join('');
+    }
+
+    function showChatList() {
+      listView.style.display = 'flex';
+      momentsView.style.display = 'none';
+      contactsView.style.display = 'none';
+      detailView.style.display = 'none';
+      accountView.style.display = 'none';
+      homeTabbar.style.display = 'grid';
+      tabChat.classList.add('active');
+      tabContacts.classList.remove('active');
+      tabMoments.classList.remove('active');
+      updateUnreadBadges();
+    }
+
+    function showMoments() {
+      clearTimer();
+      listView.style.display = 'none';
+      detailView.style.display = 'none';
+      contactsView.style.display = 'none';
+      accountView.style.display = 'none';
+      momentsView.style.display = 'flex';
+      homeTabbar.style.display = 'grid';
+      tabChat.classList.remove('active');
+      tabContacts.classList.remove('active');
+      tabMoments.classList.add('active');
+      renderMoments();
+      const seen = getMomentSeen(currentStageMs());
+      for (const m of collectMoments()) seen[m.id] = true;
+      saveSeen();
+      updateUnreadBadges();
+      maybeAdvanceStage();
+    }
+
+    function collectArticles() {
+      const stageDay = currentStageMs();
+      const rows = [];
+      for (const conv of (payload.conversations || [])) {
+        if (!isVisibleByAccount(conv)) continue;
+        const users = conv.profiles?.users || {};
+        const repo = conv.articles || {};
+        const user = users[activeAccountId];
+        if (!user) continue;
+        const refs = Array.isArray(user.officialArticles || user.articles)
+          ? (user.officialArticles || user.articles)
+          : Object.keys(user.officialArticles || user.articles || {});
+        for (const refId of refs) {
+          const item = repo[String(refId)];
+          if (!item) continue;
+          const publishRaw = item.publishAt || item.time || "";
+          const day = toDayKey(publishRaw);
+          if (!day || day > stageDay) continue;
+          const imgs = normalizeMomentImages(item);
+          rows.push({
+            id: String(refId),
+            title: String(item.title || "未命名文章"),
+            author: String(item.author || user.name || ""),
+            publishRaw: publishRaw,
+            cover: String(item.cover || imgs[0] || ""),
+            desc: String(item.desc || item.summary || ""),
+            text: String(item.text || item.content || ""),
+            images: imgs,
+            dayKey: day
+          });
+        }
+      }
+      rows.sort((a, b) => String(b.publishRaw).localeCompare(String(a.publishRaw), "zh-CN"));
+      return rows;
+    }
+
+    function renderContacts() {
+      articleRows = collectArticles();
+      if (!articleRows.length) {
+        contactsScroll.innerHTML = '<div class="contacts-empty">已读完</div>';
+        return;
+      }
+      contactsScroll.innerHTML = articleRows.map((a, idx) => {
+        const cover = a.cover ? '<img class="oa-cover" src="' + esc(a.cover) + '" alt="cover"/>' : '';
+        const desc = a.desc ? '<div class="oa-desc">' + esc(a.desc) + '</div>' : '';
+        return '<article class="oa-card">'
+          + '<div class="oa-title">' + esc(a.title) + '</div>'
+          + '<div class="oa-meta">' + esc(a.author) + ' · ' + esc(a.publishRaw) + '</div>'
+          + cover + desc
+          + '<button class="oa-open" type="button" data-idx="' + idx + '">阅读全文</button>'
+          + '</article>';
+      }).join('');
+    }
+
+    function openArticle(index) {
+      const a = articleRows[index];
+      if (!a) return;
+      articleTitle.textContent = a.title;
+      articleSub.textContent = a.author + " · " + a.publishRaw;
+      articleCover.style.display = a.cover ? "block" : "none";
+      articleCover.src = a.cover || "";
+      articleText.textContent = a.text || "";
+      articleImages.innerHTML = (a.images || []).map((url) => '<img src="' + esc(url) + '" alt="image"/>').join('');
+      articleModal.classList.add('show');
+      articleModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function openInlineArticle(data) {
+      const a = {
+        title: data.title || "未命名文章",
+        author: data.author || "",
+        publishRaw: data.publishRaw || "",
+        cover: data.cover || "",
+        text: data.text || "",
+        images: data.images || []
+      };
+      articleTitle.textContent = a.title;
+      articleSub.textContent = [a.author, a.publishRaw].filter(Boolean).join(" · ");
+      articleCover.style.display = a.cover ? "block" : "none";
+      articleCover.src = a.cover || "";
+      articleText.textContent = a.text || "";
+      articleImages.innerHTML = (a.images || []).map((url) => '<img src="' + esc(url) + '" alt="image"/>').join('');
+      articleModal.classList.add('show');
+      articleModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeArticle() {
+      articleModal.classList.remove('show');
+      articleModal.setAttribute('aria-hidden', 'true');
+    }
+
+    function showContacts() {
+      clearTimer();
+      listView.style.display = 'none';
+      momentsView.style.display = 'none';
+      detailView.style.display = 'none';
+      accountView.style.display = 'none';
+      contactsView.style.display = 'flex';
+      homeTabbar.style.display = 'grid';
+      tabChat.classList.remove('active');
+      tabContacts.classList.add('active');
+      tabMoments.classList.remove('active');
+      renderContacts();
+      const seen = getArticleSeen(currentStageMs());
+      for (const a of articleRows) seen[a.id] = true;
+      saveSeen();
+      updateUnreadBadges();
+      maybeAdvanceStage();
+    }
 
     function loadSeen() {
       try {
         const raw = localStorage.getItem(persistKey);
-        seenMap = raw ? JSON.parse(raw) : {};
+        const parsed = raw ? JSON.parse(raw) : {};
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed.conversationSeen || parsed.stageSeen || typeof parsed.stageIndex === 'number')) {
+          seenMap = parsed.conversationSeen || {};
+          stageSeenMap = parsed.stageSeen || {};
+          momentSeenMap = parsed.momentSeen || {};
+          articleSeenMap = parsed.articleSeen || {};
+          stageIndexMap = parsed.stageIndexMap || {};
+          if (typeof parsed.stageIndex === "number" && !Object.keys(stageIndexMap).length) {
+            stageIndexMap.default = Number(parsed.stageIndex);
+          }
+          unlockedAccounts = parsed.unlockedAccounts || {};
+          accountNoticeMap = parsed.accountNoticeMap || {};
+          stageIndex = Number(parsed.stageIndex || 0);
+          activeAccountId = parsed.activeAccountId || "";
+        } else {
+          seenMap = parsed && typeof parsed === 'object' ? parsed : {};
+          stageSeenMap = {};
+          momentSeenMap = {};
+          articleSeenMap = {};
+          stageIndexMap = {};
+          unlockedAccounts = {};
+          accountNoticeMap = {};
+          stageIndex = 0;
+        }
       } catch (_) {
         seenMap = {};
+        stageSeenMap = {};
+        momentSeenMap = {};
+        articleSeenMap = {};
+        stageIndexMap = {};
+        unlockedAccounts = {};
+        accountNoticeMap = {};
+        stageIndex = 0;
       }
     }
 
     function saveSeen() {
       try {
-        localStorage.setItem(persistKey, JSON.stringify(seenMap));
+        localStorage.setItem(persistKey, JSON.stringify({
+          conversationSeen: seenMap,
+          stageSeen: stageSeenMap,
+          momentSeen: momentSeenMap,
+          articleSeen: articleSeenMap,
+          stageIndexMap,
+          unlockedAccounts,
+          accountNoticeMap,
+          stageIndex,
+          activeAccountId
+        }));
       } catch (_) {
         // Ignore storage failures.
       }
+    }
+
+    function toDayKey(raw) {
+      if (!raw) return "";
+      const s = String(raw);
+      const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (m) return m[1];
+      const d = parseMomentTime(raw);
+      if (!d) return "";
+      const pad = (n) => String(n).padStart(2, "0");
+      return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+    }
+
+    function accountKey() {
+      return activeAccountId || "default";
+    }
+
+    function keyWithAccount(key) {
+      return accountKey() + "|" + key;
+    }
+
+    function initAccounts() {
+      const set = new Set();
+      for (const conv of (payload.conversations || [])) {
+        if (conv.self) set.add(String(conv.self));
+      }
+      const all = Array.from(set);
+      const ordered = Array.isArray(payload.story?.accountOrder) ? payload.story.accountOrder.map((x) => String(x)) : [];
+      const first = ordered.filter((id) => set.has(id));
+      const rest = all.filter((id) => !first.includes(id));
+      accountIds = [...first, ...rest];
+      if (!accountIds.length) accountIds = ["default"];
+      if (!Object.keys(unlockedAccounts).length) {
+        unlockedAccounts[accountIds[0]] = true;
+      }
+      if (!activeAccountId || !accountIds.includes(activeAccountId)) {
+        activeAccountId = accountIds.find((id) => unlockedAccounts[id]) || accountIds[0];
+      }
+      syncStageIndexFromAccount();
+    }
+
+    function syncStageIndexFromAccount() {
+      stageIndex = Number(stageIndexMap[accountKey()] || 0);
+    }
+
+    function persistStageIndexForAccount() {
+      stageIndexMap[accountKey()] = stageIndex;
+    }
+
+    function isAccountUnlocked(id) {
+      return !!unlockedAccounts[id];
+    }
+
+    function nextLockedAccount() {
+      const idx = accountIds.indexOf(activeAccountId);
+      if (idx === -1) return "";
+      for (let i = idx + 1; i < accountIds.length; i += 1) {
+        if (!isAccountUnlocked(accountIds[i])) return accountIds[i];
+      }
+      return "";
+    }
+
+    function collectStageDaysForAccount(accountId) {
+      const days = [];
+      for (const conv of (payload.conversations || [])) {
+        const self = String(conv.self || "");
+        const match = (!accountId || accountId === "default")
+          ? true
+          : self === String(accountId);
+        if (!match) continue;
+        const first = conv.messages?.[0];
+        const day = toDayKey(first?.timestamp || first?.timeText || "");
+        if (day) days.push(day);
+      }
+      days.sort((a, b) => a.localeCompare(b, "zh-CN"));
+      const uniq = [];
+      for (const day of days) {
+        if (!uniq.length || uniq[uniq.length - 1] !== day) uniq.push(day);
+      }
+      return uniq;
+    }
+
+    function initTimelineStages() {
+      syncStageIndexFromAccount();
+      timelineStages = collectStageDaysForAccount(activeAccountId);
+      if (!timelineStages.length) {
+        const now = toDayKey(new Date().toISOString());
+        timelineStages = [now];
+      }
+      stageIndex = Math.max(0, Math.min(stageIndex, timelineStages.length - 1));
+      persistStageIndexForAccount();
+    }
+
+    function currentStageMs() {
+      return timelineStages[Math.max(0, Math.min(stageIndex, timelineStages.length - 1))];
+    }
+
+    function stageKey(day) {
+      return String(day);
+    }
+
+    function getStageSeen(day) {
+      const key = keyWithAccount(stageKey(day));
+      if (!stageSeenMap[key]) stageSeenMap[key] = {};
+      return stageSeenMap[key];
+    }
+    function getMomentSeen(day) {
+      const key = keyWithAccount(stageKey(day));
+      if (!momentSeenMap[key]) momentSeenMap[key] = {};
+      return momentSeenMap[key];
+    }
+    function getArticleSeen(day) {
+      const key = keyWithAccount(stageKey(day));
+      if (!articleSeenMap[key]) articleSeenMap[key] = {};
+      return articleSeenMap[key];
+    }
+    function unreadChatCount(day) {
+      const seen = getStageSeen(day);
+      return (payload.conversations || []).filter((c) => isVisibleByStage(c) && !seen[c.id]).length;
+    }
+    function unreadMomentsCount(day) {
+      const seen = getMomentSeen(day);
+      return collectMoments().filter((m) => !seen[m.id]).length;
+    }
+    function unreadArticlesCount(day) {
+      const seen = getArticleSeen(day);
+      return collectArticles().filter((a) => !seen[a.id]).length;
+    }
+    function setBadge(node, n) {
+      if (!node) return;
+      if (n > 0) {
+        node.style.display = "inline-block";
+        node.textContent = n > 99 ? "99+" : String(n);
+      } else {
+        node.style.display = "none";
+        node.textContent = "";
+      }
+    }
+    function updateUnreadBadges() {
+      const day = currentStageMs();
+      setBadge(badgeChat, unreadChatCount(day));
+      setBadge(badgeMoments, unreadMomentsCount(day));
+      setBadge(badgeContacts, unreadArticlesCount(day));
+      const meCount = Object.entries(accountNoticeMap).filter(([id, on]) => on && id !== activeAccountId && isAccountUnlocked(id)).length;
+      setBadge(badgeMe, meCount);
+    }
+
+    function setStageStatusTime() {
+      if (!statusTime) return;
+      statusTime.textContent = currentStageMs();
+    }
+
+    function conversationUnlockMs(conv) {
+      const first = conv.messages?.[0];
+      return toDayKey(first?.timestamp || first?.timeText || "");
+    }
+
+    function isVisibleByAccount(conv) {
+      if (!activeAccountId || activeAccountId === "default") return true;
+      return String(conv.self || "") === String(activeAccountId);
+    }
+
+    function isVisibleByStage(conv) {
+      if (!isVisibleByAccount(conv)) return false;
+      const unlock = conversationUnlockMs(conv);
+      return unlock ? unlock <= currentStageMs() : true;
+    }
+
+    function isCurrentStageConversation(conv) {
+      if (!isVisibleByAccount(conv)) return false;
+      const unlock = conversationUnlockMs(conv);
+      return !!unlock && unlock === currentStageMs();
+    }
+
+    function maybeAdvanceStage() {
+      const curMs = currentStageMs();
+      if (stageIndex < timelineStages.length - 1) {
+        const need = (payload.conversations || []).filter((c) => isCurrentStageConversation(c)).map((c) => c.id);
+        if (need.length) {
+          const seen = getStageSeen(curMs);
+          const allChatDone = need.every((id) => !!seen[id]);
+          const momentsDone = unreadMomentsCount(curMs) === 0;
+          const articlesDone = unreadArticlesCount(curMs) === 0;
+          if (allChatDone && momentsDone && articlesDone) {
+            stageIndex += 1;
+            persistStageIndexForAccount();
+            saveSeen();
+            setStageStatusTime();
+            renderList();
+          }
+        }
+      }
+      if (isAccountFullyCompleted()) {
+        const next = nextLockedAccount();
+        if (next) {
+          unlockedAccounts[next] = true;
+          accountNoticeMap[next] = true;
+          saveSeen();
+          updateUnreadBadges();
+        }
+      }
+    }
+
+    function isAccountFullyCompleted() {
+      return stageIndex >= timelineStages.length - 1
+        && unreadChatCount(currentStageMs()) === 0
+        && unreadMomentsCount(currentStageMs()) === 0
+        && unreadArticlesCount(currentStageMs()) === 0;
     }
 
     function esc(s) {
@@ -537,7 +1167,7 @@ export function renderWechatHubHtml(input) {
     function openProfileByDataset(data) {
       profileAvatar.src = data.avatar || '';
       profileName.textContent = data.name || '';
-      profileWechat.textContent = '微信号：' + (data.wechatId || '未设置');
+      profileWechat.textContent = '昵称：' + (data.nickName || '未设置');
       profileBio.textContent = '简介：' + (data.bio || '无');
       profileModal.classList.add('show');
       profileModal.setAttribute('aria-hidden', 'false');
@@ -555,7 +1185,7 @@ export function renderWechatHubHtml(input) {
       return '<div class="quote"><div>' + esc(sender) + ' · ' + esc(quote.timeText || '') + '</div><div>' + esc(quote.snippet || '') + '</div></div>';
     }
 
-    function renderContent(msg) {
+    function renderContent(msg, conv) {
       if (msg.kind === 'image') {
         const caption = msg.text ? '<div class="img-caption">' + formatText(msg.text) + '</div>' : '';
         return '<img class="img" src="' + esc(msg.imageUrl || '') + '" alt="image"/>' + caption;
@@ -575,17 +1205,52 @@ export function renderWechatHubHtml(input) {
           + '<div class="card-footer"><span>' + esc(c.site || '') + '</span><span>链接卡片</span></div>'
           + '</a>';
       }
+      if (msg.kind === 'article-card') {
+        const raw = msg.articleCard || {};
+        const repo = conv.articles || {};
+        const fromRepo = raw.refId ? (repo[raw.refId] || {}) : {};
+        const a = {
+          title: fromRepo.title || raw.title || "",
+          author: fromRepo.author || raw.author || "",
+          cover: fromRepo.cover || raw.cover || "",
+          summary: fromRepo.summary || raw.summary || "",
+          text: fromRepo.text || raw.text || "",
+          images: Array.isArray(fromRepo.images) ? fromRepo.images : (raw.images || [])
+        };
+        const cover = a.cover ? '<img class="article-cover" src="' + esc(a.cover) + '" alt="cover"/>' : '';
+        const summary = a.summary ? '<div class="article-summary">' + formatText(a.summary) + '</div>' : '';
+        return '<button class="article-card" type="button"'
+          + ' data-title="' + esc(a.title || '') + '"'
+          + ' data-author="' + esc(a.author || '') + '"'
+          + ' data-cover="' + esc(a.cover || '') + '"'
+          + ' data-text="' + esc(a.text || '') + '"'
+          + ' data-images="' + esc((a.images || []).join(",")) + '"'
+          + '>'
+          + '<div class="article-title">' + esc(a.title || '文章') + '</div>'
+          + '<div class="article-meta">' + esc(a.author || '') + '</div>'
+          + cover + summary
+          + '</button>';
+      }
+      if (msg.kind === 'contact-card') {
+        const c = msg.contactCard || {};
+        return '<div class="contact-card">'
+          + '<img class="contact-avatar" src="' + esc(c.avatar || '') + '" alt="contact"/>'
+          + '<div><div class="contact-name">' + esc(c.name || '') + '</div>'
+          + '<div class="contact-nick">' + esc(c.nickName ? ('昵称：' + c.nickName) : '') + '</div>'
+          + '<div class="contact-bio">' + esc(c.bio || '') + '</div></div>'
+          + '</div>';
+      }
       return '<div>' + formatText(msg.text || '') + '</div>';
     }
 
     function renderMessage(msg, conv, options) {
       const opts = options || {};
       const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId, avatar: '' };
-      const self = conv.self;
+      const self = activeAccountId || conv.self;
       const selfCls = msg.senderId === self ? 'msg self' : 'msg';
       const avatar = '<button class="avatar-btn" type="button"'
         + ' data-name="' + esc(user.name || msg.senderId) + '"'
-        + ' data-wechat-id="' + esc(user.wechatId || '') + '"'
+        + ' data-nick-name="' + esc(user.nickName || user.wechatId || '') + '"'
         + ' data-bio="' + esc(user.bio || '') + '"'
         + ' data-avatar="' + esc(user.avatar || '') + '">'
         + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>'
@@ -593,7 +1258,7 @@ export function renderWechatHubHtml(input) {
       const bubbleCls = (msg.kind === 'image' || msg.kind === 'voice') ? 'bubble media' : 'bubble';
       const body = (opts.forceRecalled && msg.recall)
         ? '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>'
-        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg) + '</div>';
+        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg, conv) + '</div>';
       const main = '<div class="msg-main">'
         + '<p class="meta">' + esc(user.name || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p>'
         + '<div class="msg-body">' + body + '</div>'
@@ -633,8 +1298,12 @@ export function renderWechatHubHtml(input) {
     }
 
     function markSeen(conversationId) {
-      seenMap[conversationId] = true;
+      seenMap[keyWithAccount(conversationId)] = true;
+      const seen = getStageSeen(currentStageMs());
+      seen[conversationId] = true;
       saveSeen();
+      updateUnreadBadges();
+      maybeAdvanceStage();
     }
 
     function finishConversation(conversationId) {
@@ -644,7 +1313,9 @@ export function renderWechatHubHtml(input) {
     }
 
     function renderList() {
-      listScroll.innerHTML = payload.conversations.map((c) => {
+      setStageStatusTime();
+      updateUnreadBadges();
+      listScroll.innerHTML = payload.conversations.filter((c) => isVisibleByStage(c)).map((c) => {
         return '<button class="list-item" data-id="' + esc(c.id) + '">'
           + '<img class="list-avatar" src="' + esc(c.avatar || '') + '" alt="avatar"/>'
           + '<div class="list-main">'
@@ -664,49 +1335,121 @@ export function renderWechatHubHtml(input) {
       clearTimer();
       const conv = payload.conversations.find((x) => x.id === conversationId);
       if (!conv) return;
+      if (!isVisibleByStage(conv)) return;
 
       listView.style.display = 'none';
+      momentsView.style.display = 'none';
+      contactsView.style.display = 'none';
       detailView.style.display = 'flex';
+      accountView.style.display = 'none';
+      homeTabbar.style.display = 'none';
+      tabChat.classList.add('active');
+      tabMoments.classList.remove('active');
       chatTitle.textContent = conv.title || '';
       timeline.innerHTML = '';
 
-      if (!conv.messages.length) {
+      const stageMs = currentStageMs();
+      const stageSeen = getStageSeen(stageMs);
+      const prevStageMs = stageIndex > 0 ? timelineStages[stageIndex - 1] : "";
+      const stageMessages = (conv.messages || []).filter((m) => toDayKey(m.timestamp || m.timeText || "") <= stageMs);
+      const oldMessages = prevStageMs
+        ? (conv.messages || []).filter((m) => toDayKey(m.timestamp || m.timeText || "") <= prevStageMs)
+        : [];
+      if (!stageMessages.length) {
         finishConversation(conversationId);
         return;
       }
 
-      if (seenMap[conversationId]) {
-        const full = conv.messages.map((msg) => renderMessage(msg, conv, { conversationId, forceRecalled: true })).join('');
+      if (stageSeen[conversationId]) {
+        const full = stageMessages.map((msg) => renderMessage(msg, conv, { conversationId, forceRecalled: true })).join('');
         timeline.innerHTML = full + '<div class="end-tip">当前聊天已结束</div>';
         timeline.scrollTop = timeline.scrollHeight;
         return;
       }
 
-      let current = Math.max(0, Number(conv.startIndex || 0));
-      timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
-      queueRecall(conversationId, conv.messages[current], conv);
+      if (oldMessages.length) {
+        timeline.innerHTML = oldMessages.map((msg) => renderMessage(msg, conv, { conversationId, forceRecalled: true })).join('');
+      } else {
+        timeline.innerHTML = '';
+      }
+
+      let current = oldMessages.length;
+      if (current >= stageMessages.length) {
+        finishConversation(conversationId);
+        return;
+      }
+
+      timeline.insertAdjacentHTML('beforeend', renderMessage(stageMessages[current], conv, { conversationId }));
+      queueRecall(conversationId, stageMessages[current], conv);
       timeline.scrollTop = timeline.scrollHeight;
       current += 1;
 
       const step = Math.max(100, Number(conv.replayIntervalMs || 1000));
       timer = window.setInterval(() => {
-        if (current >= conv.messages.length) {
+        if (current >= stageMessages.length) {
           stopPlaybackTimer();
           finishConversation(conversationId);
           return;
         }
-        timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
-        queueRecall(conversationId, conv.messages[current], conv);
+        timeline.insertAdjacentHTML('beforeend', renderMessage(stageMessages[current], conv, { conversationId }));
+        queueRecall(conversationId, stageMessages[current], conv);
         timeline.scrollTop = timeline.scrollHeight;
         current += 1;
       }, step);
     }
 
+    function renderAccountList() {
+      accountListWrap.innerHTML = accountIds.filter((id) => isAccountUnlocked(id)).map((id) => {
+        const name = payload.conversations.find((c) => c.profiles?.users?.[id])?.profiles?.users?.[id]?.name || id;
+        const avatar = payload.conversations.find((c) => c.profiles?.users?.[id])?.profiles?.users?.[id]?.avatar || "";
+        const current = id === activeAccountId ? '<div class="account-current">● 当前使用</div>' : '';
+        return '<button class="account-card" type="button" data-id="' + esc(id) + '">'
+          + '<img class="account-avatar" src="' + esc(avatar) + '" alt="avatar"/>'
+          + '<div><div class="account-name">' + esc(name) + '</div><div class="account-id">' + esc(id) + '</div></div>'
+          + current
+          + '</button>';
+      }).join('') + '<div class="account-add"><div class="account-add-plus">+</div><div>添加账号</div></div>';
+      accountListWrap.querySelectorAll('.account-card').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeAccountId = btn.dataset.id || activeAccountId;
+          accountNoticeMap[activeAccountId] = false;
+          initTimelineStages();
+          saveSeen();
+          showChatList();
+          clearTimer();
+          renderList();
+        });
+      });
+    }
+
+    function showAccountView() {
+      renderAccountList();
+      accountNoticeMap[activeAccountId] = false;
+      for (const id of Object.keys(accountNoticeMap)) {
+        if (isAccountUnlocked(id)) accountNoticeMap[id] = false;
+      }
+      saveSeen();
+      updateUnreadBadges();
+      listView.style.display = 'none';
+      momentsView.style.display = 'none';
+      contactsView.style.display = 'none';
+      detailView.style.display = 'none';
+      accountView.style.display = 'flex';
+      homeTabbar.style.display = 'none';
+    }
+
     backBtn.addEventListener('click', () => {
       clearTimer();
-      detailView.style.display = 'none';
-      listView.style.display = 'flex';
+      showChatList();
     });
+    tabChat.addEventListener('click', () => {
+      clearTimer();
+      showChatList();
+    });
+    tabContacts.addEventListener('click', showContacts);
+    tabMoments.addEventListener('click', showMoments);
+    tabMe.addEventListener('click', showAccountView);
+    accountBack.addEventListener('click', showChatList);
 
     profileClose.addEventListener('click', closeProfile);
     profileModal.addEventListener('click', (e) => {
@@ -716,6 +1459,18 @@ export function renderWechatHubHtml(input) {
       const avatarBtn = e.target.closest('.avatar-btn');
       if (avatarBtn) {
         openProfileByDataset(avatarBtn.dataset);
+        return;
+      }
+      const articleBtn = e.target.closest('.article-card');
+      if (articleBtn) {
+        const data = {
+          title: articleBtn.dataset.title || "",
+          author: articleBtn.dataset.author || "",
+          cover: articleBtn.dataset.cover || "",
+          text: articleBtn.dataset.text || "",
+          images: (articleBtn.dataset.images || "").split(",").filter(Boolean)
+        };
+        openInlineArticle(data);
         return;
       }
       const voiceBtn = e.target.closest('.voice-btn');
@@ -735,8 +1490,26 @@ export function renderWechatHubHtml(input) {
       activeAudio.addEventListener('ended', stopActiveAudio);
       activeAudio.play().catch(() => stopActiveAudio());
     });
+    contactsScroll.addEventListener('click', (e) => {
+      const btn = e.target.closest('.oa-open');
+      if (!btn) return;
+      const idx = Number(btn.dataset.idx || -1);
+      const item = articleRows[idx];
+      if (item) {
+        const seen = getArticleSeen(currentStageMs());
+        seen[item.id] = true;
+        saveSeen();
+        updateUnreadBadges();
+        maybeAdvanceStage();
+      }
+      openArticle(idx);
+    });
+    articleBack.addEventListener('click', closeArticle);
 
     loadSeen();
+    initAccounts();
+    initTimelineStages();
+    showChatList();
     renderList();
   </script>
 </body>
@@ -829,6 +1602,16 @@ export function renderWechatStoryHtml(input) {
     .card-title { font-size:14px; font-weight:600; margin-bottom:4px; }
     .card-desc { font-size:12px; color:var(--muted); margin-bottom:8px; }
     .card-footer { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); }
+    .article-card { border:none; display:block; width:100%; text-align:left; cursor:pointer; border-radius:8px; background:#f8f8f8; padding:9px; }
+    .article-title { font-size:14px; font-weight:600; line-height:1.4; }
+    .article-meta { margin-top:4px; font-size:11px; color:var(--muted); }
+    .article-cover { width:100%; margin-top:8px; border-radius:6px; max-height:150px; object-fit:cover; background:#ddd; }
+    .article-summary { margin-top:7px; font-size:12px; color:#4c4c4c; line-height:1.45; }
+    .contact-card { border-radius:8px; background:#f8f8f8; padding:10px; display:flex; gap:9px; align-items:center; }
+    .contact-avatar { width:42px; height:42px; border-radius:8px; object-fit:cover; background:#ddd; }
+    .contact-name { font-size:14px; font-weight:600; }
+    .contact-nick { margin-top:2px; font-size:11px; color:var(--muted); }
+    .contact-bio { margin-top:6px; font-size:12px; color:#4c4c4c; line-height:1.35; }
     .inline-link { color:#576b95; }
     .mention { color:#576b95; font-weight:600; }
     .end-tip { font-size:12px; color:var(--muted); text-align:center; margin:16px 0 4px; }
@@ -967,7 +1750,7 @@ export function renderWechatStoryHtml(input) {
     function openProfileByDataset(data) {
       profileAvatar.src = data.avatar || '';
       profileName.textContent = data.name || '';
-      profileWechat.textContent = '微信号：' + (data.wechatId || '未设置');
+      profileWechat.textContent = '昵称：' + (data.nickName || '未设置');
       profileBio.textContent = '简介：' + (data.bio || '无');
       profileModal.classList.add('show');
       profileModal.setAttribute('aria-hidden', 'false');
@@ -1031,7 +1814,7 @@ export function renderWechatStoryHtml(input) {
       const sender = profiles.users?.[quote.senderId]?.name || quote.senderId || '';
       return '<div class="quote"><div>' + esc(sender) + ' · ' + esc(quote.timeText || '') + '</div><div>' + esc(quote.snippet || '') + '</div></div>';
     }
-    function renderContent(msg) {
+    function renderContent(msg, conv) {
       if (msg.kind === 'image') {
         const caption = msg.text ? '<div class="img-caption">' + formatText(msg.text) + '</div>' : '';
         return '<img class="img" src="' + esc(msg.imageUrl || '') + '" alt="image"/>' + caption;
@@ -1050,6 +1833,41 @@ export function renderWechatStoryHtml(input) {
           + '<div class="card-desc">' + esc(c.desc || '') + '</div>'
           + '<div class="card-footer"><span>' + esc(c.site || '') + '</span><span>链接卡片</span></div></a>';
       }
+      if (msg.kind === 'article-card') {
+        const raw = msg.articleCard || {};
+        const repo = conv.articles || {};
+        const fromRepo = raw.refId ? (repo[raw.refId] || {}) : {};
+        const a = {
+          title: fromRepo.title || raw.title || "",
+          author: fromRepo.author || raw.author || "",
+          cover: fromRepo.cover || raw.cover || "",
+          summary: fromRepo.summary || raw.summary || "",
+          text: fromRepo.text || raw.text || "",
+          images: Array.isArray(fromRepo.images) ? fromRepo.images : (raw.images || [])
+        };
+        const cover = a.cover ? '<img class="article-cover" src="' + esc(a.cover) + '" alt="cover"/>' : '';
+        const summary = a.summary ? '<div class="article-summary">' + formatText(a.summary) + '</div>' : '';
+        return '<button class="article-card" type="button"'
+          + ' data-title="' + esc(a.title || '') + '"'
+          + ' data-author="' + esc(a.author || '') + '"'
+          + ' data-cover="' + esc(a.cover || '') + '"'
+          + ' data-text="' + esc(a.text || '') + '"'
+          + ' data-images="' + esc((a.images || []).join(",")) + '"'
+          + '>'
+          + '<div class="article-title">' + esc(a.title || '文章') + '</div>'
+          + '<div class="article-meta">' + esc(a.author || '') + '</div>'
+          + cover + summary
+          + '</button>';
+      }
+      if (msg.kind === 'contact-card') {
+        const c = msg.contactCard || {};
+        return '<div class="contact-card">'
+          + '<img class="contact-avatar" src="' + esc(c.avatar || '') + '" alt="contact"/>'
+          + '<div><div class="contact-name">' + esc(c.name || '') + '</div>'
+          + '<div class="contact-nick">' + esc(c.nickName ? ('昵称：' + c.nickName) : '') + '</div>'
+          + '<div class="contact-bio">' + esc(c.bio || '') + '</div></div>'
+          + '</div>';
+      }
       return '<div>' + formatText(msg.text || '') + '</div>';
     }
     function renderMessage(msg, conv, options) {
@@ -1059,7 +1877,7 @@ export function renderWechatStoryHtml(input) {
       const selfCls = msg.senderId === self ? 'msg self' : 'msg';
       const avatar = '<button class="avatar-btn" type="button"'
         + ' data-name="' + esc(user.name || msg.senderId) + '"'
-        + ' data-wechat-id="' + esc(user.wechatId || '') + '"'
+        + ' data-nick-name="' + esc(user.nickName || user.wechatId || '') + '"'
         + ' data-bio="' + esc(user.bio || '') + '"'
         + ' data-avatar="' + esc(user.avatar || '') + '">'
         + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>'
@@ -1067,7 +1885,7 @@ export function renderWechatStoryHtml(input) {
       const bubbleCls = (msg.kind === 'image' || msg.kind === 'voice') ? 'bubble media' : 'bubble';
       const body = (opts.forceRecalled && msg.recall)
         ? '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>'
-        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg) + '</div>';
+        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg, conv) + '</div>';
       const main = '<div class="msg-main"><p class="meta">' + esc(user.name || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p><div class="msg-body">' + body + '</div></div>';
       const html = msg.senderId === self ? main + avatar : avatar + main;
       return '<article class="' + selfCls + '" data-cid="' + esc(opts.conversationId || '') + '" data-mid="' + esc(msg.id || '') + '">' + html + '</article>';
@@ -1188,6 +2006,18 @@ export function renderWechatStoryHtml(input) {
       const avatarBtn = e.target.closest('.avatar-btn');
       if (avatarBtn) {
         openProfileByDataset(avatarBtn.dataset);
+        return;
+      }
+      const articleBtn = e.target.closest('.article-card');
+      if (articleBtn) {
+        const data = {
+          title: articleBtn.dataset.title || "",
+          author: articleBtn.dataset.author || "",
+          cover: articleBtn.dataset.cover || "",
+          text: articleBtn.dataset.text || "",
+          images: (articleBtn.dataset.images || "").split(",").filter(Boolean)
+        };
+        openInlineArticle(data);
         return;
       }
       const voiceBtn = e.target.closest('.voice-btn');

@@ -9,6 +9,7 @@ cd /Users/dash/workspace/DashYang.github.io/Room/chat-framework
 npm run build
 npm run build:paper
 npm run build:folder
+npm run build:showcase
 npm run hooks:install
 ```
 
@@ -16,6 +17,7 @@ npm run hooks:install
 - `dist/index.html`（单文件，wechat）
 - `dist/paper.html`（单文件，paper）
 - `dist/wechat-hub.html`（多会话微信界面）
+- `dist/showcase-wechat-hub.html`（全功能预览基线）
 
 ## Markdown 格式
 
@@ -37,18 +39,23 @@ specVersion: "1.0"
 ```
 
 - 头部语法：`@发送者 #消息ID [可选时间] [可选标签...]`
-- 标签：`[image]`、`[link-card]`、`[quote:消息ID]`、`[voice]`、`[recall]`、`[recall:+10s]`
+- 标签：`[image]`、`[link-card]`、`[quote:消息ID]`、`[voice]`、`[recall]`、`[recall:+10s]`、`[article]`、`[contact-card]`
 - 时间：第一条必须绝对时间；后续可 `+30s/+2m/+1h/+1d`，也可省略（按消息字数自动推导秒数）
 - `#消息ID` 可省略（自动生成为 `m1/m2/...`）
 - `@用户名` 在文本中会高亮显示
 - `[image]` 支持“图 + 文字说明”（图片地址后续行作为说明）
 - `[voice]` 支持语音消息（首行是音频 URL/路径，可选 `duration: 秒数` 和转写文本）
 - `[recall]` / `[recall:+10s]` 支持撤回效果（多会话回放时会在设置延时后变为“撤回了一条消息”）
-- 点击聊天头像可查看 `profiles.yml` 中的昵称、微信号（`wechatId`）和简介（`bio`）
+- `[article]` 支持在聊天中转发微信文章卡片，推荐用 `id` 引用 `articles/` 目录中的文章
+- `[contact-card]` 支持在聊天中发送联系人名片（头像/姓名/昵称/bio）
+- 点击聊天头像可查看 `profiles` 中的昵称（`nickName`）和简介（`bio`）
+- 多会话页支持“发现 -> 朋友圈”，仅展示文字/图片，并按当前时间过滤未来动态
+- 多会话页支持“通讯录 -> 微信文章”，文章正文统一来自 `articles/` 目录；profile 仅保存文章 id 引用
 
 ## YAML
 
-- `profiles.yml`：发言人信息（头像、昵称、bio 等）
+- `profiles.yml` 或 `profiles/`：发言人信息（支持目录模式：每个用户一个 yml 文件）
+- `articles/`：微信文章内容（每篇一个 yml，文件名即 article id）
 - `chat.yml`：会话元信息（single/group）
 
 ## 多会话模式说明
@@ -63,6 +70,28 @@ specVersion: "1.0"
 - 某个会话完整播放过一次后，再次进入会直接完整展示（基于 `localStorage` 记忆）
 
 参考目录：`examples/multi/`
+
+### 多账号登录/切换（story.yml）
+
+在多会话目录下可选放置 `story.yml`，用于开启“多账号解锁 + 切换”的微信式体验。
+
+```yml
+story:
+  accountOrder: ["protagonist", "sister", "admin"]
+```
+
+- `accountOrder`：账号（即 `chat.yml` 的 `self`）的解锁顺序。
+- 解锁规则：当当前账号的时间轴已到最后一天，且“微信/通讯录/发现”的红点全部清零后，会给下一个账号在“我”上打红点提示；进入“我”可看到已解锁账号列表并随时切换。
+- 时间轴与已读状态按账号隔离（同一个 `persistKey` 下记录多个账号的进度）。
+
+示例：`examples/showcase/story.yml`
+
+### 全功能预览基线（约定）
+
+- 目录：`examples/showcase/`
+- 产物：`dist/showcase-wechat-hub.html`
+- 目标：集中覆盖当前所有核心功能（聊天、引用、图文、语音、撤回、头像资料卡、朋友圈）
+- 约定：后续每新增一个功能，必须同步补充 `examples/showcase` 示例数据，保证可直接预览与回归
 
 ### 主界面文案配置（ui.yml）
 
