@@ -1,0 +1,4 @@
+chat:
+  type: "single"
+  title: "姐姐账号会话"
+  self: "sister"

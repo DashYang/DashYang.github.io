@@ -1,0 +1,18 @@
+profile:
+  name: "姐姐"
+  nickName: "sister_yan"
+  avatar: "https://picsum.photos/seed/sister/100/100"
+  bio: "偶尔督促弟弟更新文档"
+  aliases:
+    contacts:
+      protagonist: "弟弟"
+  moments:
+    s1:
+      publishAt: "2026-04-27 18:40:00"
+      text: "支持语音、撤回、朋友圈之后，体验终于完整了。"
+      images: ["https://picsum.photos/seed/moment-sister-1/300/300", "https://picsum.photos/seed/moment-sister-2/300/300"]
+    s2:
+      publishAt: "2026-04-29 11:20:00"
+      text: "【多账号示例】这是姐姐账号自己的朋友圈内容。"
+  officialArticles: ["sister-a1"]
+  chatFiles: ["04-sister-account.md"]

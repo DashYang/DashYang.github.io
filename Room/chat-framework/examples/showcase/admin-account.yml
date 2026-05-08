@@ -1,0 +1,4 @@
+chat:
+  type: "single"
+  title: "物业账号会话"
+  self: "admin"

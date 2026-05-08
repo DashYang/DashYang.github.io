@@ -38,6 +38,16 @@ body { margin: 0; background: linear-gradient(180deg,#f7f7f7,#e9e9e9); color: va
 .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
 .card-desc { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
 .card-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+.article-card { border:none; display:block; width:100%; text-align:left; cursor:pointer; border-radius:8px; background:#f8f8f8; padding:9px; }
+.article-title { font-size:14px; font-weight:600; line-height:1.4; }
+.article-meta { margin-top:4px; font-size:11px; color:var(--muted); }
+.article-cover { width:100%; margin-top:8px; border-radius:6px; max-height:150px; object-fit:cover; background:#ddd; }
+.article-summary { margin-top:7px; font-size:12px; color:#4c4c4c; line-height:1.45; }
+.contact-card { border-radius:8px; background:#f8f8f8; padding:10px; display:flex; gap:9px; align-items:center; }
+.contact-avatar { width:42px; height:42px; border-radius:8px; object-fit:cover; background:#ddd; }
+.contact-name { font-size:14px; font-weight:600; }
+.contact-nick { margin-top:2px; font-size:11px; color:var(--muted); }
+.contact-bio { margin-top:6px; font-size:12px; color:#4c4c4c; line-height:1.35; }
 a.inline-link { color: #576b95; }
 .mention { color: #576b95; font-weight: 600; }
 .profile-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.35); z-index: 20; }
@@ -48,6 +58,17 @@ a.inline-link { color: #576b95; }
 .profile-name { font-size:16px; font-weight:600; }
 .profile-item { font-size:13px; color:#444; line-height:1.45; margin-top:4px; word-break:break-word; }
 .profile-close { margin-top: 12px; width: 100%; border:none; border-radius:8px; background:#f2f2f2; padding:8px 0; cursor:pointer; }
+.article-modal { position: fixed; inset: 0; background:#fff; z-index: 30; display:none; overflow-y:auto; }
+.article-modal.show { display:block; }
+.article-header { position: sticky; top: 0; background:#fff; border-bottom:1px solid #ececec; height:46px; display:flex; align-items:center; padding:0 10px; }
+.article-back { border:none; background:transparent; font-size:14px; color:#444; cursor:pointer; padding:6px 8px; }
+.article-body { padding:14px 14px 30px; }
+.article-page-title { font-size:24px; font-weight:700; line-height:1.35; margin:0; }
+.article-page-sub { margin-top:8px; font-size:12px; color:#8f8f8f; }
+.article-page-cover { width:100%; border-radius:8px; margin-top:12px; }
+.article-page-text { margin-top:14px; font-size:16px; line-height:1.8; color:#222; white-space:pre-wrap; word-break:break-word; }
+.article-page-images { margin-top:12px; display:grid; gap:8px; }
+.article-page-images img { width:100%; border-radius:8px; background:#ddd; }
 `;
 
 const paperCss = `
@@ -70,6 +91,12 @@ body { margin:0; font-family:"Source Han Serif SC","Noto Serif SC",serif; backgr
 .voice-icon{font-size:12px;color:#3b3b3b}.voice-duration{font-size:13px;color:#3b3b3b;min-width:26px;text-align:left}.voice-btn.playing .voice-icon{color:#5f513f}
 .card{display:block;padding:8px;border:1px solid #dac8ac;background:#fff4e3;text-decoration:none;color:inherit}
 .card-title{font-weight:700}.card-desc,.card-footer{font-size:12px;color:var(--muted)}
+.article-card{border:1px solid #dac8ac;display:block;width:100%;text-align:left;cursor:pointer;padding:8px;background:#fff4e3;border-radius:4px}
+.article-title{font-size:14px;font-weight:700;line-height:1.4}.article-meta{margin-top:4px;font-size:11px;color:var(--muted)}
+.article-cover{width:100%;margin-top:8px;border:1px solid #dac8ac;max-height:150px;object-fit:cover}.article-summary{margin-top:7px;font-size:12px;color:#4c4c4c;line-height:1.45}
+.contact-card{padding:9px;border:1px solid #dac8ac;background:#fff4e3;border-radius:4px;display:flex;gap:9px;align-items:center}
+.contact-avatar{width:42px;height:42px;border-radius:4px;object-fit:cover;background:#ddd}.contact-name{font-size:14px;font-weight:700}
+.contact-nick{margin-top:2px;font-size:11px;color:var(--muted)}.contact-bio{margin-top:6px;font-size:12px;color:#4c4c4c;line-height:1.35}
 .mention{color:#6b5842;font-weight:700}
 .profile-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.35);z-index:20}
 .profile-modal.show{display:flex}
@@ -77,6 +104,13 @@ body { margin:0; font-family:"Source Han Serif SC","Noto Serif SC",serif; backgr
 .profile-head{display:flex;gap:10px;align-items:center;margin-bottom:10px}.profile-avatar{width:50px;height:50px;border-radius:4px;object-fit:cover;background:#ddd}
 .profile-name{font-size:16px;font-weight:700}.profile-item{font-size:13px;color:#444;line-height:1.45;margin-top:4px;word-break:break-word}
 .profile-close{margin-top:12px;width:100%;border:1px solid #dac8ac;border-radius:6px;background:#f8efdf;padding:8px 0;cursor:pointer}
+.article-modal{position:fixed;inset:0;background:#fffef9;z-index:30;display:none;overflow-y:auto}
+.article-modal.show{display:block}.article-header{position:sticky;top:0;background:#fffef9;border-bottom:1px solid #e4d7c1;height:46px;display:flex;align-items:center;padding:0 10px}
+.article-back{border:none;background:transparent;font-size:14px;color:#444;cursor:pointer;padding:6px 8px}
+.article-body{padding:14px 14px 30px}.article-page-title{font-size:24px;font-weight:700;line-height:1.35;margin:0}
+.article-page-sub{margin-top:8px;font-size:12px;color:#8f8f8f}.article-page-cover{width:100%;border:1px solid #dac8ac;margin-top:12px}
+.article-page-text{margin-top:14px;font-size:16px;line-height:1.8;color:#222;white-space:pre-wrap;word-break:break-word}
+.article-page-images{margin-top:12px;display:grid;gap:8px}.article-page-images img{width:100%;border:1px solid #dac8ac;background:#ddd}
 `;
 
 export const themes = {

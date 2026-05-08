@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { loadConversationFromMarkdown } from "./load-conversation.js";
+import { loadConversationFromMarkdown, loadProfiles } from "./load-conversation.js";
 import { buildConversationModels, renderWechatHubHtml } from "./multi-renderer.js";
 import { parseSimpleYaml } from "./yaml.js";
 
@@ -32,21 +32,65 @@ function listMarkdownFiles(inputDir) {
  * buildFolder('examples/multi', 'dist/wechat-hub.html')
  */
 export function buildFolder(inputDir, outputHtml) {
-  const mdFiles = listMarkdownFiles(inputDir);
-  if (mdFiles.length === 0) {
-    throw new Error(`No markdown files found in folder: ${inputDir}`);
+  const profilesPath = findProfilesPath(inputDir);
+  const profiles = profilesPath ? loadProfiles(profilesPath) : null;
+  const profileEntries = profiles ? collectConversationEntriesFromProfiles(inputDir, profiles) : [];
+  const fallbackMdFiles = listMarkdownFiles(inputDir);
+  if (!profileEntries.length && fallbackMdFiles.length === 0) {
+    throw new Error(`No chat sources found in folder: ${inputDir}`);
   }
 
-  const conversations = mdFiles.map((mdPath) => loadConversationFromMarkdown(mdPath));
+  const sources = profileEntries.length
+    ? profileEntries
+    : fallbackMdFiles.map((mdPath) => ({ mdPath, selfId: "", chatPath: "", profilePath: profilesPath || "", profiles }));
+
+  const conversations = sources.map((src) => loadConversationFromMarkdown(src.mdPath, {
+    selfId: src.selfId || undefined,
+    chatPath: src.chatPath || undefined,
+    profilePath: src.profilePath || undefined,
+    profiles
+  }));
   const models = buildConversationModels(conversations);
   const title = path.basename(inputDir);
   const ui = loadUiConfig(inputDir);
-  const html = renderWechatHubHtml({ title, conversations: models, ui });
+  const story = loadStoryConfig(inputDir);
+  const html = renderWechatHubHtml({ title, conversations: models, ui, story });
 
   fs.mkdirSync(path.dirname(outputHtml), { recursive: true });
   fs.writeFileSync(outputHtml, html, "utf-8");
   console.log(`Built: ${outputHtml}`);
-  console.log(`Loaded conversations: ${mdFiles.length}`);
+  console.log(`Loaded conversations: ${conversations.length}`);
+}
+
+function findProfilesPath(inputDir) {
+  const dirPath = path.join(inputDir, "profiles");
+  if (fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()) return dirPath;
+  const filePath = path.join(inputDir, "profiles.yml");
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) return filePath;
+  return "";
+}
+
+function collectConversationEntriesFromProfiles(inputDir, profiles) {
+  const rows = [];
+  for (const [profileId, profile] of Object.entries(profiles.users || {})) {
+    const chatFiles = Array.isArray(profile.chatFiles) ? profile.chatFiles : [];
+    const groupChats = (profile.groupChats && typeof profile.groupChats === "object") ? profile.groupChats : {};
+    for (const raw of chatFiles) {
+      const rel = String(raw || "").trim();
+      if (!rel) continue;
+      const mdPath = path.resolve(inputDir, rel);
+      if (!fs.existsSync(mdPath)) {
+        throw new Error(`[profile:${profileId}] chat file not found: ${rel}`);
+      }
+      const mapped = groupChats[rel] || groupChats[path.basename(rel)] || "";
+      const chatPath = mapped ? path.resolve(inputDir, String(mapped)) : "";
+      if (chatPath && !fs.existsSync(chatPath)) {
+        throw new Error(`[profile:${profileId}] group chat yml not found: ${mapped}`);
+      }
+      rows.push({ mdPath, selfId: profileId, chatPath });
+    }
+  }
+  return rows;
 }
 
 /**
@@ -65,6 +109,14 @@ function loadUiConfig(inputDir) {
   const text = fs.readFileSync(uiPath, "utf-8");
   const parsed = parseSimpleYaml(text);
   return parsed.ui || {};
+}
+
+function loadStoryConfig(inputDir) {
+  const storyPath = path.join(inputDir, "story.yml");
+  if (!fs.existsSync(storyPath)) return {};
+  const text = fs.readFileSync(storyPath, "utf-8");
+  const parsed = parseSimpleYaml(text);
+  return parsed.story || {};
 }
 
 /**

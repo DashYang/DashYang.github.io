@@ -181,7 +181,7 @@ bio: 社区民警
 
 - `@用户名` 会在渲染时高亮显示（`@mention` 效果）
 - 文本中的 URL 会自动转为可点击链接
-- 点击头像可查看 `profiles.yml` 中的 `name/wechatId/bio`
+- 点击头像可查看 `profiles.yml` 中的 `name/bio`
 
 ## 3. profiles.yml 规范
 
@@ -195,7 +195,9 @@ users:
     name: "Alice"
     avatar: "https://example.com/a.jpg"
     bio: "产品经理"
-    wechatId: "alice_pm"
+    aliases:
+      contacts:
+        bob: "Bob备注"
   bob:
     name: "Bob"
     avatar: "https://example.com/b.jpg"
@@ -205,8 +207,8 @@ users:
 字段说明：
 - `users.<senderId>.name`：显示名
 - `users.<senderId>.avatar`：头像 URL
-- `users.<senderId>.nickName`：昵称（用于头像资料卡）
-- 其他字段（`bio`、`wechatId` 等）会保留，可用于后续扩展
+- `users.<senderId>.bio`：简介
+- `users.<senderId>.aliases`：别名配置（可选）
 
 ### 3.1 目录模式示例（推荐）
 
@@ -221,9 +223,13 @@ profiles: "./profiles"
 ```yml
 profile:
   name: "Alice"
-  nickName: "alice_pm"
   avatar: "https://example.com/a.jpg"
   bio: "产品经理"
+  aliases:
+    selfInGroups:
+      "Room MVP 群": "Alice-群昵称"
+    contacts:
+      bob: "Bob备注"
   moments:
     m1:
       publishAt: "2026-04-30 09:00:00"
@@ -233,7 +239,7 @@ profile:
 
 说明：
 - 朋友圈只支持文字和图片
-- `publishAt` 晚于浏览器当前时间的内容不会显示
+- `publishAt` 晚于当前阶段日期的内容不会显示
 
 ### 3.2 微信文章配置
 
@@ -258,7 +264,7 @@ article:
 ```
 
 说明：
-- 入口在多会话页底部“通讯录”
+- 入口在多会话页底部“文章”
 - 仅展示 `publishAt <= 当前时间` 的文章
 - 支持文字+图片
 
@@ -270,11 +276,8 @@ article:
 chat:
   type: "group"
   title: "Room MVP 群"
-  self: "alice"
   groupInfo:
-    name: "Room MVP 群"
     avatar: "https://example.com/group.jpg"
-    members: ["alice", "bob", "clara"]
 ```
 
 ### 4.2 单聊
@@ -283,14 +286,29 @@ chat:
 chat:
   type: "single"
   title: "Bob"
-  self: "alice"
-  peer: "bob"
 ```
 
 字段说明：
 - `type`：`group` 或 `single`
-- `self`：当前用户 senderId（决定消息左右布局）
 - `title`：会话标题（列表和详情头部）
+- 群聊 yml 只需保留 `title/groupInfo`；`self` 由当前 profile 视角隐含
+- 单聊可不配置 `chat.yml`，自动由消息参与者推断 `peer/title`
+- 单聊不需要配置 `peer`（自动由消息参与者推断）
+- 群聊不需要配置 `members`，`groupInfo.name` 也不需要（直接使用 `title`）
+
+### 4.3 profile 中声明会话文件（推荐）
+
+```yml
+profile:
+  chatFiles: ["01-group.md", "02-single.md"]
+  groupChats:
+    "01-group.md": "group.yml"
+```
+
+说明：
+- `chatFiles`：该账号可见的会话 markdown 列表（相对 `build-folder` 输入目录）
+- `groupChats`：群聊 markdown 到群聊 yml 的映射（单聊无需配置）
+- 构建时会检查当前 profile id 是否出现在消息 sender 列表中，且所有 sender 都能在 profiles 中找到
 
 ## 5. ui.yml 规范（多会话模式）
 
@@ -325,12 +343,17 @@ story:
 ```
 
 字段说明：
-- `accountOrder`：账号 id 列表（账号 id 即各会话 `chat.yml` 的 `self`），用于定义解锁顺序与展示顺序。
+- `accountOrder`：账号 id 列表（账号 id 即 `profiles/*.yml` 文件名），用于定义解锁顺序与展示顺序。
 
 运行时行为：
 - 初始仅解锁第一个账号。
-- 当当前账号时间轴推进到最后一天，且该账号在当前日期下“微信/通讯录/发现”的未读全部清零，会解锁下一个账号，并在“我”Tab 显示红点提示。
+- 当当前账号时间轴推进到最后一天，且该账号在当前日期下“微信/文章/发现”的未读全部清零，会解锁下一个账号，并在“我”Tab 显示红点提示。
 - 已解锁账号可在“我”中随时切换；时间轴进度与已读状态按账号隔离。
+
+## 5.3 会话自动播放红点
+
+- 会话列表中，当天有“可自动播放但未播放完”的消息时，会话项显示小红点。
+- 播放完当天内容后，该会话红点消失。
 
 ## 6. 完整示例
 

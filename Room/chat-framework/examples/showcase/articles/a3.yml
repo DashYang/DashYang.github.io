@@ -1,0 +1,7 @@
+article:
+  publishAt: "2026-04-28 20:20:00"
+  title: "【新内容通知演示】4/28 通讯录未读文章"
+  author: "Room 演示号"
+  cover: "https://picsum.photos/seed/article-demo-428/800/420"
+  summary: "用于演示：当天不读完“通讯录文章”，日期不会推进到下一天。"
+  text: "这篇文章用于验证新内容通知。\n\n在 2026-04-28 阶段，需要把它读完，才能推进到 2026-04-29。"

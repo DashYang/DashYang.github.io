@@ -1,0 +1,7 @@
+article:
+  publishAt: "2026-04-30 08:10:00"
+  title: "【物业账号】本周社区服务安排"
+  author: "物业公告"
+  cover: "https://picsum.photos/seed/admin-article-1/800/420"
+  summary: "用于演示：文章与 admin profile 关联。"
+  text: "这篇文章只挂在 admin 的 profile 下。\n\n切换到物业账号时可在通讯录中看到。"

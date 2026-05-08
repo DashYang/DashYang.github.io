@@ -142,6 +142,8 @@ export function resolveQuotes(messages) {
     }
     if (target.kind === "link-card") snippet = `[链接] ${target.linkCard?.title || target.linkCard?.url || ""}`;
     if (target.kind === "voice") snippet = `[语音] ${target.durationSec ? `${target.durationSec}秒` : ""}`;
+    if (target.kind === "article-card") snippet = `[文章] ${target.articleCard?.title || target.articleCard?.refId || ""}`;
+    if (target.kind === "contact-card") snippet = `[名片] ${target.contactCard?.name || target.contactCard?.refId || ""}`;
 
     return {
       ...m,

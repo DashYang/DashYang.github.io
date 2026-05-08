@@ -1,5 +1,5 @@
 chat:
   type: "single"
   title: "姐姐"
-  self: "protagonist"
+  self: "Mark"
   peer: sister 

@@ -1,0 +1,23 @@
+profile:
+  name: "奋斗的西瓜"
+  nickName: "melongame"
+  avatar: "https://picsum.photos/seed/protagonist/100/100"
+  bio: "独立游戏开发者"
+  aliases:
+    selfInGroups:
+      "Room 功能预览群": "瓜总"
+    contacts:
+      sister: "老姐"
+      admin: "物业小雅（备注）"
+  moments:
+    p1:
+      publishAt: "2026-04-28 09:20:00"
+      text: "把功能预览页固化到 examples/showcase，后续每次发版先跑一遍。"
+      images: ["https://picsum.photos/seed/moment-protagonist-1/300/300"]
+    p2:
+      publishAt: "2026-05-08 10:00:00"
+      text: "这条是未来时间，当前应被过滤。"
+  officialArticles: ["a1", "a2", "a3", "a4"]
+  chatFiles: ["01-group.md", "02-single.md", "03-nextday.md"]
+  groupChats:
+    "01-group.md": "group.yml"

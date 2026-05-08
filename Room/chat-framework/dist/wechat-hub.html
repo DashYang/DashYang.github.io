@@ -21,14 +21,17 @@
       background: #d9d9d9;
       font-family: "PingFang SC", "Helvetica Neue", sans-serif;
       color: var(--text);
+      overflow: hidden;
     }
     .phone {
       max-width: 390px;
       margin: 0 auto;
-      min-height: 100vh;
+      height: 100vh;
       background: var(--bg);
+      position: relative;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
       border-left: 1px solid #cfcfcf;
       border-right: 1px solid #cfcfcf;
     }
@@ -60,15 +63,6 @@
       justify-self: end;
       font-size: 22px;
       color: #444;
-    }
-    .account-btn {
-      border: none;
-      background: transparent;
-      color: #4f4f4f;
-      font-size: 13px;
-      cursor: pointer;
-      padding: 4px 6px;
-      justify-self: start;
     }
     .search-wrap {
       padding: 9px 12px 10px;
@@ -104,7 +98,7 @@
       overflow-y: auto;
       flex: 1;
       min-height: 0;
-      padding: 10px 10px 20px;
+      padding: 10px 10px 84px;
     }
     .moments-empty {
       font-size: 13px;
@@ -137,7 +131,7 @@
       overflow-y: auto;
       flex: 1;
       min-height: 0;
-      padding: 10px 10px 20px;
+      padding: 10px 10px 84px;
     }
     .contacts-empty { font-size:13px; color:#8b8b8b; text-align:center; padding:30px 0; }
     .oa-card { background:#fff; border-radius:10px; padding:12px; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
@@ -161,6 +155,7 @@
       overflow-y: auto;
       flex: 1;
       min-height: 0;
+      padding-bottom: 84px;
       background: #fff;
     }
     .list-item {
@@ -175,6 +170,7 @@
       text-align: left;
       cursor: pointer;
     }
+    .list-avatar-wrap { position: relative; width: 50px; height: 50px; }
     .list-avatar {
       width: 50px;
       height: 50px;
@@ -184,6 +180,7 @@
     }
     .list-main {
       min-width: 0;
+      position: relative;
     }
     .list-title {
       font-size: 18px;
@@ -201,6 +198,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .list-dot { position:absolute; left:-4px; top:-4px; width:10px; height:10px; border-radius:50%; background:#ff3b30; box-shadow:0 0 0 2px #fff; }
     .list-time {
       font-size: 14px;
       color: #b0b0b0;
@@ -208,9 +206,14 @@
       padding-left: 6px;
     }
     .tabbar {
-      height: 54px;
+      height: 56px;
       border-top: 1px solid var(--line);
       background: var(--panel);
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 40;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       align-items: center;
@@ -222,14 +225,26 @@
       color: var(--green);
       font-weight: 600;
     }
-    .tab-item { position: relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; }
-    .tab-badge { position:absolute; top:-6px; right:-10px; min-width:16px; height:16px; padding:0 4px; border-radius:10px; background:#ff3b30; color:#fff; font-size:10px; line-height:16px; display:none; text-align:center; box-sizing:border-box; }
-    .account-modal { position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:35; display:none; align-items:flex-end; }
-    .account-modal.show { display:flex; }
-    .account-sheet { width:100%; background:#fff; border-radius:14px 14px 0 0; padding:10px 12px 12px; }
-    .account-title { font-size:14px; color:#666; margin:2px 0 8px; }
-    .account-row { width:100%; border:none; background:#fff; padding:10px 8px; text-align:left; border-radius:8px; font-size:15px; cursor:pointer; }
-    .account-row.active { background:#f0faf4; color:#07c160; font-weight:600; }
+    .tab-item { position: relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:44px; gap:2px; }
+    .tab-icon { width:22px; height:22px; color:#8f8f8f; display:block; }
+    .tab-icon svg { width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+    .tab-label { font-size:12px; line-height:1; }
+    .tabbar .active .tab-icon, .tabbar .active .tab-label { color: var(--green); }
+    .tab-badge { position:absolute; top:2px; right:20px; min-width:16px; height:16px; padding:0 4px; border-radius:10px; background:#ff3b30; color:#fff; font-size:10px; line-height:16px; display:none; text-align:center; box-sizing:border-box; }
+    .tab-badge.dot { min-width:8px; width:8px; height:8px; padding:0; border-radius:50%; color:transparent; line-height:8px; top:6px; right:23px; }
+    .account-view { display:none; flex-direction:column; flex:1; min-height:0; background:#efefef; }
+    .account-top { height:46px; border-bottom:1px solid var(--line); display:grid; grid-template-columns:auto 1fr auto; align-items:center; padding:0 10px; background:var(--panel); }
+    .account-back { border:none; background:transparent; color:#222; font-size:22px; cursor:pointer; padding:4px 6px; }
+    .account-manage { font-size:14px; color:#1f1f1f; }
+    .account-center { padding:26px 16px 10px; text-align:center; color:#222; font-size:18px; }
+    .account-list-wrap { padding:8px 12px 84px; overflow-y:auto; flex:1; min-height:0; }
+    .account-card { width:100%; border:none; background:#fff; border-radius:10px; padding:14px 12px; margin-bottom:10px; display:flex; align-items:center; gap:10px; text-align:left; cursor:pointer; }
+    .account-avatar { width:52px; height:52px; border-radius:6px; object-fit:cover; background:#ddd; }
+    .account-name { font-size:16px; color:#222; line-height:1.2; }
+    .account-id { margin-top:6px; font-size:13px; color:#9b9b9b; }
+    .account-current { margin-left:auto; font-size:14px; color:#07c160; white-space:nowrap; }
+    .account-add { width:100%; border:1px dashed #d0d0d0; background:#fff; border-radius:10px; padding:14px 12px; display:flex; align-items:center; gap:10px; color:#6f6f6f; }
+    .account-add-plus { width:52px; height:52px; border:1px dashed #cfcfcf; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:34px; color:#9d9d9d; line-height:1; }
     .detail-view {
       display: none;
       flex-direction: column;
@@ -265,7 +280,7 @@
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      padding: 12px;
+      padding: 12px 12px 84px;
     }
     .msg { display: grid; grid-template-columns: 42px 1fr; gap: 10px; margin-bottom: 14px; }
     .msg.self { grid-template-columns: 1fr 42px; }
@@ -323,7 +338,7 @@
 
     <section id="list-view" class="list-view">
       <header class="top-nav">
-        <button id="account-btn" class="account-btn" type="button">账号</button>
+        <div></div>
         <div class="center-title">微信</div>
         <div class="plus">＋</div>
       </header>
@@ -344,17 +359,17 @@
     <section id="contacts-view" class="contacts-view">
       <header class="top-nav">
         <div></div>
-        <div class="center-title">通讯录</div>
+        <div class="center-title">文章</div>
         <div></div>
       </header>
       <div id="contacts-scroll" class="contacts-scroll"></div>
     </section>
 
     <footer id="home-tabbar" class="tabbar">
-      <div id="tab-chat" class="active tab-item">微信<span id="badge-chat" class="tab-badge"></span></div>
-      <div id="tab-contacts" class="tab-item">通讯录<span id="badge-contacts" class="tab-badge"></span></div>
-      <div id="tab-moments" class="tab-item">发现<span id="badge-moments" class="tab-badge"></span></div>
-      <div id="tab-me" class="tab-item">我<span id="badge-me" class="tab-badge"></span></div>
+      <div id="tab-chat" class="active tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/></svg></span><span class="tab-label">微信</span><span id="badge-chat" class="tab-badge"></span></div>
+      <div id="tab-contacts" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></span><span class="tab-label">文章</span><span id="badge-contacts" class="tab-badge"></span></div>
+      <div id="tab-moments" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg></span><span class="tab-label">发现</span><span id="badge-moments" class="tab-badge"></span></div>
+      <div id="tab-me" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 19c1.8-3 4-4.5 7-4.5s5.2 1.5 7 4.5"/></svg></span><span class="tab-label">我</span><span id="badge-me" class="tab-badge"></span></div>
     </footer>
 
     <section id="detail-view" class="detail-view">
@@ -363,6 +378,16 @@
         <div class="chat-title" id="chat-title"></div>
       </header>
       <div class="timeline" id="timeline"></div>
+    </section>
+
+    <section id="account-view" class="account-view">
+      <header class="account-top">
+        <button id="account-back" class="account-back" type="button">‹</button>
+        <div></div>
+        <div class="account-manage">管理</div>
+      </header>
+      <div class="account-center">轻触头像以切换账号</div>
+      <div id="account-list-wrap" class="account-list-wrap"></div>
     </section>
   </main>
   <aside id="profile-modal" class="profile-modal" aria-hidden="true">
@@ -388,20 +413,15 @@
       <div id="article-images" class="article-images"></div>
     </div>
   </aside>
-  <aside id="account-modal" class="account-modal" aria-hidden="true">
-    <div class="account-sheet">
-      <div class="account-title">切换账号</div>
-      <div id="account-list"></div>
-    </div>
-  </aside>
 
-  <script id="chat-data" type="application/json">{"title":"multi","conversations":[{"id":"conv-1","title":"Room MVP 群","subtitle":"Room MVP 群","avatar":"https://picsum.photos/seed/group/100/100","self":"alice","replayIntervalMs":1000,"preview":"我先把解析器和时间逻辑补完整。","listTime":"09:34","startIndex":1,"profiles":{"users":{"alice":{"name":"Alice","nickName":"alice_pm","avatar":"https://picsum.photos/seed/alice/100/100","bio":"产品经理","moments":{"m1":{"publishAt":"2026-04-28 09:30:00","text":"今天把需求拆分完了，下午开始联调。","images":["https://picsum.photos/seed/multi-alice-m1/300/300"]}},"officialArticles":["multi-alice-a1"]},"bob":{"name":"Bob","nickName":"bob_frontend","avatar":"https://picsum.photos/seed/bob/100/100","bio":"前端工程师","moments":{"m1":{"publishAt":"2026-04-26 19:10:00","text":"语音消息、撤回、文章页都串起来了。"},"m2":{"publishAt":"2026-05-10 10:00:00","text":"未来动态，用来验证时间过滤。"}},"officialArticles":["multi-bob-a1"]},"clara":{"name":"Clara","nickName":"clara_design","avatar":"https://picsum.photos/seed/clara/100/100","bio":"设计师","moments":{"m1":{"publishAt":"2026-04-25 12:00:00","text":"把朋友圈卡片样式统一成白底圆角，阅读更舒适。"}},"officialArticles":[]}}},"articles":{"multi-alice-a1":{"id":"multi-alice-a1","title":"MVP 联调清单（可复用模板）","author":"产品方法论","publishAt":"2026-04-27 08:20:00","cover":"https://picsum.photos/seed/multi-article-a1/800/420","summary":"一份可复用的联调检查清单，减少上线前遗漏。","text":"联调前先确认接口契约，再核对异常态和兜底文案。\\n\\n最后做一轮端到端回归，记录问题和修复时点。","images":["https://picsum.photos/seed/multi-article-a1-1/800/500"]},"multi-bob-a1":{"id":"multi-bob-a1","title":"聊天回放性能优化笔记","author":"前端工程实践","publishAt":"2026-04-26 10:00:00","cover":"https://picsum.photos/seed/multi-article-b1/800/420","summary":"从定时器管理和 DOM 更新批次切入，降低掉帧。","text":"把播放定时器和撤回定时器拆分后，回放结束时不再误清撤回逻辑。\\n\\n同时减少无意义重排，列表滚动更顺滑。","images":[]}},"messages":[{"id":"g1","senderId":"alice","timeRaw":"2026-04-09 09:30:00","kind":"text","text":"今天把聊天生成框架串起来。","index":0,"timestamp":"2026-04-09T01:30:00.000Z","timeText":"2026-04-09 09:30"},{"id":"g2","senderId":"bob","timeRaw":"+1m","kind":"text","text":"我先把解析器和时间逻辑补完整。","index":1,"timestamp":"2026-04-09T01:31:00.000Z","timeText":"2026-04-09 09:31"},{"id":"g3","senderId":"clara","timeRaw":"+1m","kind":"text","text":"我这边负责引用和卡片样式。","quote":{"messageId":"g2","senderId":"bob","timeText":"2026-04-09 09:31","snippet":"我先把解析器和时间逻辑补完整。"},"index":2,"timestamp":"2026-04-09T01:32:00.000Z","timeText":"2026-04-09 09:32"},{"id":"g4","senderId":"bob","timeRaw":"+45s","kind":"link-card","linkCard":{"url":"https://example.com/design","title":"交互草图","site":"example.com","desc":"原型里有会话列表和详情页切换。"},"index":3,"timestamp":"2026-04-09T01:32:45.000Z","timeText":"2026-04-09 09:32"},{"id":"g5","senderId":"alice","timeRaw":"+1m","kind":"image","imageUrl":"https://picsum.photos/seed/room-wire/460/320","index":4,"timestamp":"2026-04-09T01:33:45.000Z","timeText":"2026-04-09 09:33"},{"id":"g6","senderId":"clara","timeRaw":"+1m","kind":"text","text":"回放结束后记得显示“当前聊天已结束”。","index":5,"timestamp":"2026-04-09T01:34:45.000Z","timeText":"2026-04-09 09:34"}]},{"id":"conv-2","title":"Bob","subtitle":"bob","avatar":"https://picsum.photos/seed/bob/100/100","self":"alice","replayIntervalMs":800,"preview":"可以，我先按 1s 间隔做默认播放。","listTime":"11:01","startIndex":1,"profiles":{"users":{"alice":{"name":"Alice","nickName":"alice_pm","avatar":"https://picsum.photos/seed/alice/100/100","bio":"产品经理","moments":{"m1":{"publishAt":"2026-04-28 09:30:00","text":"今天把需求拆分完了，下午开始联调。","images":["https://picsum.photos/seed/multi-alice-m1/300/300"]}},"officialArticles":["multi-alice-a1"]},"bob":{"name":"Bob","nickName":"bob_frontend","avatar":"https://picsum.photos/seed/bob/100/100","bio":"前端工程师","moments":{"m1":{"publishAt":"2026-04-26 19:10:00","text":"语音消息、撤回、文章页都串起来了。"},"m2":{"publishAt":"2026-05-10 10:00:00","text":"未来动态，用来验证时间过滤。"}},"officialArticles":["multi-bob-a1"]},"clara":{"name":"Clara","nickName":"clara_design","avatar":"https://picsum.photos/seed/clara/100/100","bio":"设计师","moments":{"m1":{"publishAt":"2026-04-25 12:00:00","text":"把朋友圈卡片样式统一成白底圆角，阅读更舒适。"}},"officialArticles":[]}}},"articles":{"multi-alice-a1":{"id":"multi-alice-a1","title":"MVP 联调清单（可复用模板）","author":"产品方法论","publishAt":"2026-04-27 08:20:00","cover":"https://picsum.photos/seed/multi-article-a1/800/420","summary":"一份可复用的联调检查清单，减少上线前遗漏。","text":"联调前先确认接口契约，再核对异常态和兜底文案。\\n\\n最后做一轮端到端回归，记录问题和修复时点。","images":["https://picsum.photos/seed/multi-article-a1-1/800/500"]},"multi-bob-a1":{"id":"multi-bob-a1","title":"聊天回放性能优化笔记","author":"前端工程实践","publishAt":"2026-04-26 10:00:00","cover":"https://picsum.photos/seed/multi-article-b1/800/420","summary":"从定时器管理和 DOM 更新批次切入，降低掉帧。","text":"把播放定时器和撤回定时器拆分后，回放结束时不再误清撤回逻辑。\\n\\n同时减少无意义重排，列表滚动更顺滑。","images":[]}},"messages":[{"id":"s1","senderId":"alice","timeRaw":"2026-04-09 11:00:00","kind":"text","text":"中午前能出一个可看的 demo 吗？","index":0,"timestamp":"2026-04-09T03:00:00.000Z","timeText":"2026-04-09 11:00"},{"id":"s2","senderId":"bob","timeRaw":"+30s","kind":"text","text":"可以，我先按 1s 间隔做默认播放。","index":1,"timestamp":"2026-04-09T03:00:30.000Z","timeText":"2026-04-09 11:00"},{"id":"s3","senderId":"alice","timeRaw":"+40s","kind":"text","text":"好，另外要支持每个会话单独配置间隔。","quote":{"messageId":"s2","senderId":"bob","timeText":"2026-04-09 11:00","snippet":"可以，我先按 1s 间隔做默认播放。"},"index":2,"timestamp":"2026-04-09T03:01:10.000Z","timeText":"2026-04-09 11:01"},{"id":"s4","senderId":"bob","timeRaw":"+30s","kind":"text","text":"收到，我把 replayIntervalMs 放到 frontmatter。","index":3,"timestamp":"2026-04-09T03:01:40.000Z","timeText":"2026-04-09 11:01"}]}],"ui":{"statusBar":{"carrier":"中国移动","time":"12:21","battery":"31%"},"topTitle":"微信","searchPlaceholder":"搜索","persistKey":"room_wechat_seen_v1"},"story":{}}</script>
+  <script id="chat-data" type="application/json">{"title":"multi","conversations":[{"id":"conv-1","title":"Room MVP 群","subtitle":"Room MVP 群","avatar":"https://picsum.photos/seed/group/100/100","self":"alice","replayIntervalMs":1000,"preview":"我先把解析器和时间逻辑补完整。","listTime":"09:34","startIndex":1,"chat":{"type":"group","title":"Room MVP 群","self":"alice","groupInfo":{"avatar":"https://picsum.photos/seed/group/100/100"}},"profiles":{"users":{"alice":{"name":"alice","id":"alice","avatar":"","bio":"","nickName":"alice","aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}},"bob":{"name":"bob","id":"bob","avatar":"","bio":"","nickName":"bob","aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}},"clara":{"name":"clara","id":"clara","avatar":"","bio":"","nickName":"clara","aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}}}},"articles":{"multi-alice-a1":{"id":"multi-alice-a1","title":"MVP 联调清单（可复用模板）","author":"产品方法论","publishAt":"2026-04-27 08:20:00","cover":"https://picsum.photos/seed/multi-article-a1/800/420","summary":"一份可复用的联调检查清单，减少上线前遗漏。","text":"联调前先确认接口契约，再核对异常态和兜底文案。\\n\\n最后做一轮端到端回归，记录问题和修复时点。","images":["https://picsum.photos/seed/multi-article-a1-1/800/500"]},"multi-bob-a1":{"id":"multi-bob-a1","title":"聊天回放性能优化笔记","author":"前端工程实践","publishAt":"2026-04-26 10:00:00","cover":"https://picsum.photos/seed/multi-article-b1/800/420","summary":"从定时器管理和 DOM 更新批次切入，降低掉帧。","text":"把播放定时器和撤回定时器拆分后，回放结束时不再误清撤回逻辑。\\n\\n同时减少无意义重排，列表滚动更顺滑。","images":[]}},"messages":[{"id":"g1","senderId":"alice","timeRaw":"2026-04-09 09:30:00","kind":"text","text":"今天把聊天生成框架串起来。","index":0,"timestamp":"2026-04-09T01:30:00.000Z","timeText":"2026-04-09 09:30"},{"id":"g2","senderId":"bob","timeRaw":"+1m","kind":"text","text":"我先把解析器和时间逻辑补完整。","index":1,"timestamp":"2026-04-09T01:31:00.000Z","timeText":"2026-04-09 09:31"},{"id":"g3","senderId":"clara","timeRaw":"+1m","kind":"text","text":"我这边负责引用和卡片样式。","quote":{"messageId":"g2","senderId":"bob","timeText":"2026-04-09 09:31","snippet":"我先把解析器和时间逻辑补完整。"},"index":2,"timestamp":"2026-04-09T01:32:00.000Z","timeText":"2026-04-09 09:32"},{"id":"g4","senderId":"bob","timeRaw":"+45s","kind":"link-card","linkCard":{"url":"https://example.com/design","title":"交互草图","site":"example.com","desc":"原型里有会话列表和详情页切换。"},"index":3,"timestamp":"2026-04-09T01:32:45.000Z","timeText":"2026-04-09 09:32"},{"id":"g5","senderId":"alice","timeRaw":"+1m","kind":"image","imageUrl":"https://picsum.photos/seed/room-wire/460/320","index":4,"timestamp":"2026-04-09T01:33:45.000Z","timeText":"2026-04-09 09:33"},{"id":"g6","senderId":"clara","timeRaw":"+1m","kind":"text","text":"回放结束后记得显示“当前聊天已结束”。","index":5,"timestamp":"2026-04-09T01:34:45.000Z","timeText":"2026-04-09 09:34"}]},{"id":"conv-2","title":"bob","subtitle":"bob","avatar":"","self":"alice","replayIntervalMs":800,"preview":"可以，我先按 1s 间隔做默认播放。","listTime":"11:01","startIndex":1,"chat":{"type":"single","self":"alice","peer":"bob","title":"bob"},"profiles":{"users":{"alice":{"name":"alice","id":"alice","avatar":"","bio":"","nickName":"alice","aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}},"bob":{"name":"bob","id":"bob","avatar":"","bio":"","nickName":"bob","aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}},"clara":{"name":"clara","id":"clara","avatar":"","bio":"","nickName":"clara","aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}}}},"articles":{"multi-alice-a1":{"id":"multi-alice-a1","title":"MVP 联调清单（可复用模板）","author":"产品方法论","publishAt":"2026-04-27 08:20:00","cover":"https://picsum.photos/seed/multi-article-a1/800/420","summary":"一份可复用的联调检查清单，减少上线前遗漏。","text":"联调前先确认接口契约，再核对异常态和兜底文案。\\n\\n最后做一轮端到端回归，记录问题和修复时点。","images":["https://picsum.photos/seed/multi-article-a1-1/800/500"]},"multi-bob-a1":{"id":"multi-bob-a1","title":"聊天回放性能优化笔记","author":"前端工程实践","publishAt":"2026-04-26 10:00:00","cover":"https://picsum.photos/seed/multi-article-b1/800/420","summary":"从定时器管理和 DOM 更新批次切入，降低掉帧。","text":"把播放定时器和撤回定时器拆分后，回放结束时不再误清撤回逻辑。\\n\\n同时减少无意义重排，列表滚动更顺滑。","images":[]}},"messages":[{"id":"s1","senderId":"alice","timeRaw":"2026-04-09 11:00:00","kind":"text","text":"中午前能出一个可看的 demo 吗？","index":0,"timestamp":"2026-04-09T03:00:00.000Z","timeText":"2026-04-09 11:00"},{"id":"s2","senderId":"bob","timeRaw":"+30s","kind":"text","text":"可以，我先按 1s 间隔做默认播放。","index":1,"timestamp":"2026-04-09T03:00:30.000Z","timeText":"2026-04-09 11:00"},{"id":"s3","senderId":"alice","timeRaw":"+40s","kind":"text","text":"好，另外要支持每个会话单独配置间隔。","quote":{"messageId":"s2","senderId":"bob","timeText":"2026-04-09 11:00","snippet":"可以，我先按 1s 间隔做默认播放。"},"index":2,"timestamp":"2026-04-09T03:01:10.000Z","timeText":"2026-04-09 11:01"},{"id":"s4","senderId":"bob","timeRaw":"+30s","kind":"text","text":"收到，我把 replayIntervalMs 放到 frontmatter。","index":3,"timestamp":"2026-04-09T03:01:40.000Z","timeText":"2026-04-09 11:01"}]}],"ui":{"statusBar":{"carrier":"中国移动","time":"12:21","battery":"31%"},"topTitle":"微信","searchPlaceholder":"搜索","persistKey":"room_wechat_seen_v1"},"story":{}}</script>
   <script>
     const payload = JSON.parse(document.getElementById('chat-data').textContent);
     const listView = document.getElementById('list-view');
     const momentsView = document.getElementById('moments-view');
     const contactsView = document.getElementById('contacts-view');
     const detailView = document.getElementById('detail-view');
+    const accountView = document.getElementById('account-view');
     const listScroll = document.getElementById('list-scroll');
     const momentsScroll = document.getElementById('moments-scroll');
     const contactsScroll = document.getElementById('contacts-scroll');
@@ -417,7 +437,6 @@
     const badgeContacts = document.getElementById('badge-contacts');
     const badgeMoments = document.getElementById('badge-moments');
     const badgeMe = document.getElementById('badge-me');
-    const homeTabbar = document.getElementById('home-tabbar');
     const profileModal = document.getElementById('profile-modal');
     const profileAvatar = document.getElementById('profile-avatar');
     const profileName = document.getElementById('profile-name');
@@ -431,9 +450,8 @@
     const articleCover = document.getElementById('article-cover');
     const articleText = document.getElementById('article-text');
     const articleImages = document.getElementById('article-images');
-    const accountBtn = document.getElementById('account-btn');
-    const accountModal = document.getElementById('account-modal');
-    const accountList = document.getElementById('account-list');
+    const accountBack = document.getElementById('account-back');
+    const accountListWrap = document.getElementById('account-list-wrap');
 
     const persistKey = payload.ui?.persistKey || 'chat_framework_seen_v1';
     let timer = null;
@@ -452,6 +470,7 @@
     let activeAudio = null;
     let activeVoiceBtn = null;
     let articleRows = [];
+    const debugState = { enabled: true };
 
     function parseMomentTime(raw) {
       if (!raw) return null;
@@ -487,7 +506,7 @@
             rows.push({
               id: id + "-" + (moment.id || publishRaw || rows.length),
               name: user.name || id,
-              nickName: user.nickName || user.wechatId || "",
+              nickName: user.nickName || user.name || id,
               avatar: user.avatar || "",
               text: String(moment.text || ""),
               images: normalizeMomentImages(moment),
@@ -526,10 +545,11 @@
       momentsView.style.display = 'none';
       contactsView.style.display = 'none';
       detailView.style.display = 'none';
-      homeTabbar.style.display = 'grid';
+      accountView.style.display = 'none';
       tabChat.classList.add('active');
       tabContacts.classList.remove('active');
       tabMoments.classList.remove('active');
+      renderList();
       updateUnreadBadges();
     }
 
@@ -538,8 +558,8 @@
       listView.style.display = 'none';
       detailView.style.display = 'none';
       contactsView.style.display = 'none';
+      accountView.style.display = 'none';
       momentsView.style.display = 'flex';
-      homeTabbar.style.display = 'grid';
       tabChat.classList.remove('active');
       tabContacts.classList.remove('active');
       tabMoments.classList.add('active');
@@ -647,8 +667,8 @@
       listView.style.display = 'none';
       momentsView.style.display = 'none';
       detailView.style.display = 'none';
+      accountView.style.display = 'none';
       contactsView.style.display = 'flex';
-      homeTabbar.style.display = 'grid';
       tabChat.classList.remove('active');
       tabContacts.classList.add('active');
       tabMoments.classList.remove('active');
@@ -777,17 +797,29 @@
       return "";
     }
 
-    function initTimelineStages() {
-      syncStageIndexFromAccount();
-      const msList = (payload.conversations || [])
-        .map((conv) => toDayKey(conv.messages?.[0]?.timestamp || conv.messages?.[0]?.timeText || ""))
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b, "zh-CN"));
+    function collectStageDaysForAccount(accountId) {
+      const days = [];
+      for (const conv of (payload.conversations || [])) {
+        const self = String(conv.self || "");
+        const match = (!accountId || accountId === "default")
+          ? true
+          : self === String(accountId);
+        if (!match) continue;
+        const first = conv.messages?.[0];
+        const day = toDayKey(first?.timestamp || first?.timeText || "");
+        if (day) days.push(day);
+      }
+      days.sort((a, b) => a.localeCompare(b, "zh-CN"));
       const uniq = [];
-      for (const day of msList) {
+      for (const day of days) {
         if (!uniq.length || uniq[uniq.length - 1] !== day) uniq.push(day);
       }
-      timelineStages = uniq;
+      return uniq;
+    }
+
+    function initTimelineStages() {
+      syncStageIndexFromAccount();
+      timelineStages = collectStageDaysForAccount(activeAccountId);
       if (!timelineStages.length) {
         const now = toDayKey(new Date().toISOString());
         timelineStages = [now];
@@ -831,9 +863,10 @@
       const seen = getArticleSeen(day);
       return collectArticles().filter((a) => !seen[a.id]).length;
     }
-    function setBadge(node, n) {
+    function setBadgeCount(node, n) {
       if (!node) return;
       if (n > 0) {
+        node.classList.remove("dot");
         node.style.display = "inline-block";
         node.textContent = n > 99 ? "99+" : String(n);
       } else {
@@ -841,13 +874,98 @@
         node.textContent = "";
       }
     }
+    function setBadgeDot(node, on) {
+      if (!node) return;
+      if (on) {
+        node.classList.add("dot");
+        node.style.display = "inline-block";
+        node.textContent = "";
+      } else {
+        node.style.display = "none";
+        node.textContent = "";
+      }
+    }
     function updateUnreadBadges() {
       const day = currentStageMs();
-      setBadge(badgeChat, unreadChatCount(day));
-      setBadge(badgeMoments, unreadMomentsCount(day));
-      setBadge(badgeContacts, unreadArticlesCount(day));
+      setBadgeCount(badgeChat, unreadChatCount(day));
+      setBadgeDot(badgeMoments, unreadMomentsCount(day) > 0);
+      setBadgeDot(badgeContacts, unreadArticlesCount(day) > 0);
       const meCount = Object.entries(accountNoticeMap).filter(([id, on]) => on && id !== activeAccountId && isAccountUnlocked(id)).length;
-      setBadge(badgeMe, meCount);
+      setBadgeDot(badgeMe, meCount > 0);
+    }
+    function hasStageMessages(conv, day) {
+      return (conv.messages || []).some((m) => toDayKey(m.timestamp || m.timeText || "") <= day);
+    }
+    function hasNewMessagesOnDay(conv, day) {
+      return (conv.messages || []).some((m) => toDayKey(m.timestamp || m.timeText || "") === day);
+    }
+    function hasAutoplayUnread(conv, day) {
+      const seen = getStageSeen(day);
+      return !seen[conv.id] && hasNewMessagesOnDay(conv, day);
+    }
+    function toListTimeRuntime(timeText) {
+      if (!timeText) return "";
+      const parts = String(timeText).split(" ");
+      return parts[1] || parts[0] || "";
+    }
+    function toSnippetRuntime(message, conv) {
+      if (!message) return "";
+      if (message.recall) return "[消息已撤回]";
+      if (message.kind === "image") return "[图片]";
+      if (message.kind === "voice") {
+        return ('[语音] ' + (message.durationSec ? (String(message.durationSec) + '"') : '')).trim();
+      }
+      if (message.kind === "article-card") {
+        const raw = message.articleCard || {};
+        const title = raw.title || (raw.refId ? (conv.articles?.[raw.refId]?.title || "") : "");
+        return ('[文章] ' + title).trim();
+      }
+      if (message.kind === "contact-card") {
+        const raw = message.contactCard || {};
+        const refName = raw.refId ? (conv.profiles?.users?.[raw.refId]?.name || raw.refId) : "";
+        return ('[名片] ' + (raw.name || refName || "")).trim();
+      }
+      if (message.kind === "link-card") {
+        const title = message.linkCard?.title || message.linkCard?.url || "链接";
+        return "[链接] " + title;
+      }
+      const txt = String(message.text || "").replace(/s+/g, " ").trim();
+      return txt.length > 60 ? (txt.slice(0, 60) + "...") : txt;
+    }
+    function listDisplayMessage(conv, day) {
+      const messages = conv.messages || [];
+      const visible = messages.filter((m) => toDayKey(m.timestamp || m.timeText || "") <= day);
+      if (!visible.length) return null;
+      if (hasAutoplayUnread(conv, day)) {
+        const firstToday = messages.find((m) => toDayKey(m.timestamp || m.timeText || "") === day);
+        if (firstToday) return firstToday;
+      }
+      return visible[visible.length - 1];
+    }
+    function debugLog(label, data) {
+      if (!debugState.enabled) return;
+      try {
+        console.log("[chat-debug]", label, data);
+      } catch (_) {
+        // Ignore console errors.
+      }
+    }
+    function getPeerId(conv) {
+      const self = activeAccountId || conv.self;
+      const participants = Array.from(new Set((conv.messages || []).map((m) => String(m.senderId))));
+      return participants.find((id) => id !== self) || conv.chat?.peer || "";
+    }
+    function conversationTitle(conv) {
+      if (conv.chat?.type === "single") {
+        const peerId = getPeerId(conv);
+        const selfProfile = conv.profiles?.users?.[activeAccountId || conv.self] || {};
+        return selfProfile.aliases?.contacts?.[peerId]
+          || conv.profiles?.users?.[peerId]?.name
+          || conv.title
+          || peerId
+          || "单聊";
+      }
+      return conv.title || "群聊";
     }
 
     function setStageStatusTime() {
@@ -862,7 +980,7 @@
 
     function isVisibleByAccount(conv) {
       if (!activeAccountId || activeAccountId === "default") return true;
-      return !!conv.profiles?.users?.[activeAccountId];
+      return String(conv.self || "") === String(activeAccountId);
     }
 
     function isVisibleByStage(conv) {
@@ -878,20 +996,22 @@
     }
 
     function maybeAdvanceStage() {
-      if (stageIndex >= timelineStages.length - 1) return;
       const curMs = currentStageMs();
-      const need = (payload.conversations || []).filter((c) => isCurrentStageConversation(c)).map((c) => c.id);
-      if (!need.length) return;
-      const seen = getStageSeen(curMs);
-      const allChatDone = need.every((id) => !!seen[id]);
-      const momentsDone = unreadMomentsCount(curMs) === 0;
-      const articlesDone = unreadArticlesCount(curMs) === 0;
-      if (allChatDone && momentsDone && articlesDone) {
-        stageIndex += 1;
-        persistStageIndexForAccount();
-        saveSeen();
-        setStageStatusTime();
-        renderList();
+      if (stageIndex < timelineStages.length - 1) {
+        const need = (payload.conversations || []).filter((c) => isCurrentStageConversation(c)).map((c) => c.id);
+        if (need.length) {
+          const seen = getStageSeen(curMs);
+          const allChatDone = need.every((id) => !!seen[id]);
+          const momentsDone = unreadMomentsCount(curMs) === 0;
+          const articlesDone = unreadArticlesCount(curMs) === 0;
+          if (allChatDone && momentsDone && articlesDone) {
+            stageIndex += 1;
+            persistStageIndexForAccount();
+            saveSeen();
+            setStageStatusTime();
+            renderList();
+          }
+        }
       }
       if (isAccountFullyCompleted()) {
         const next = nextLockedAccount();
@@ -966,7 +1086,7 @@
     function openProfileByDataset(data) {
       profileAvatar.src = data.avatar || '';
       profileName.textContent = data.name || '';
-      profileWechat.textContent = '昵称：' + (data.nickName || '未设置');
+      profileWechat.textContent = '昵称：' + (data.nickName || data.name || '未设置');
       profileBio.textContent = '简介：' + (data.bio || '无');
       profileModal.classList.add('show');
       profileModal.setAttribute('aria-hidden', 'false');
@@ -975,13 +1095,34 @@
       profileModal.classList.remove('show');
       profileModal.setAttribute('aria-hidden', 'true');
     }
-    function recallText(msg, conv, user) {
-      return msg.senderId === conv.self ? '你撤回了一条消息' : (user.name || msg.senderId) + ' 撤回了一条消息';
+    function resolveDisplayName(conv, senderId) {
+      const self = activeAccountId || conv.self;
+      const users = conv.profiles?.users || {};
+      const sender = users[senderId] || { name: senderId };
+      const selfProfile = users[self] || {};
+      if (conv.chat?.type === "group" && senderId === self) {
+        return selfProfile.aliases?.selfInGroups?.[conv.title] || selfProfile.name || senderId;
+      }
+      return selfProfile.aliases?.contacts?.[senderId] || sender.name || senderId;
     }
-    function renderQuote(quote, profiles) {
+    function recallText(msg, conv, user) {
+      return msg.senderId === conv.self ? '你撤回了一条消息' : (resolveDisplayName(conv, msg.senderId) || user.name || msg.senderId) + ' 撤回了一条消息';
+    }
+    function renderQuote(quote, conv) {
       if (!quote) return '';
-      const sender = profiles.users?.[quote.senderId]?.name || quote.senderId || '';
+      const sender = resolveDisplayName(conv, quote.senderId) || quote.senderId || '';
       return '<div class="quote"><div>' + esc(sender) + ' · ' + esc(quote.timeText || '') + '</div><div>' + esc(quote.snippet || '') + '</div></div>';
+    }
+    function resolveContactCard(msg, conv) {
+      const raw = msg.contactCard || {};
+      const fromProfile = raw.refId ? (conv.profiles?.users?.[raw.refId] || {}) : {};
+      return {
+        refId: raw.refId || "",
+        name: fromProfile.name || raw.name || raw.refId || "",
+        nickName: fromProfile.nickName || raw.nickName || fromProfile.name || raw.name || raw.refId || "",
+        avatar: fromProfile.avatar || raw.avatar || "",
+        bio: fromProfile.bio || raw.bio || ""
+      };
     }
 
     function renderContent(msg, conv) {
@@ -1031,7 +1172,7 @@
           + '</button>';
       }
       if (msg.kind === 'contact-card') {
-        const c = msg.contactCard || {};
+        const c = resolveContactCard(msg, conv);
         return '<div class="contact-card">'
           + '<img class="contact-avatar" src="' + esc(c.avatar || '') + '" alt="contact"/>'
           + '<div><div class="contact-name">' + esc(c.name || '') + '</div>'
@@ -1046,20 +1187,21 @@
       const opts = options || {};
       const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId, avatar: '' };
       const self = activeAccountId || conv.self;
+      const displayName = resolveDisplayName(conv, msg.senderId);
       const selfCls = msg.senderId === self ? 'msg self' : 'msg';
       const avatar = '<button class="avatar-btn" type="button"'
-        + ' data-name="' + esc(user.name || msg.senderId) + '"'
-        + ' data-nick-name="' + esc(user.nickName || user.wechatId || '') + '"'
+        + ' data-name="' + esc(displayName || msg.senderId) + '"'
+        + ' data-nick-name="' + esc(user.name || '') + '"'
         + ' data-bio="' + esc(user.bio || '') + '"'
         + ' data-avatar="' + esc(user.avatar || '') + '">'
-        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>'
+        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(displayName || msg.senderId) + '"/>'
         + '</button>';
       const bubbleCls = (msg.kind === 'image' || msg.kind === 'voice') ? 'bubble media' : 'bubble';
       const body = (opts.forceRecalled && msg.recall)
         ? '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>'
-        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg, conv) + '</div>';
+        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv) + renderContent(msg, conv) + '</div>';
       const main = '<div class="msg-main">'
-        + '<p class="meta">' + esc(user.name || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p>'
+        + '<p class="meta">' + esc(displayName || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p>'
         + '<div class="msg-body">' + body + '</div>'
         + '</div>';
       const html = msg.senderId === self ? main + avatar : avatar + main;
@@ -1098,8 +1240,10 @@
 
     function markSeen(conversationId) {
       seenMap[keyWithAccount(conversationId)] = true;
-      const seen = getStageSeen(currentStageMs());
+      const day = currentStageMs();
+      const seen = getStageSeen(day);
       seen[conversationId] = true;
+      debugLog("markSeen", { account: activeAccountId, day, conversationId, stageSeen: { ...seen } });
       saveSeen();
       updateUnreadBadges();
       maybeAdvanceStage();
@@ -1108,22 +1252,37 @@
     function finishConversation(conversationId) {
       timeline.insertAdjacentHTML('beforeend', '<div class="end-tip">当前聊天已结束</div>');
       timeline.scrollTop = timeline.scrollHeight;
+      debugLog("finishConversation", { account: activeAccountId, day: currentStageMs(), conversationId });
       markSeen(conversationId);
     }
 
     function renderList() {
       setStageStatusTime();
       updateUnreadBadges();
-      const accountName = payload.conversations.find((c) => c.profiles?.users?.[activeAccountId])?.profiles?.users?.[activeAccountId]?.name || activeAccountId;
-      accountBtn.textContent = accountName || '账号';
+      const day = currentStageMs();
       listScroll.innerHTML = payload.conversations.filter((c) => isVisibleByStage(c)).map((c) => {
+        const hasUnread = hasAutoplayUnread(c, day);
+        const dot = hasUnread ? '<span class="list-dot"></span>' : '';
+        const displayMsg = listDisplayMessage(c, day);
+        const preview = displayMsg ? toSnippetRuntime(displayMsg, c) : (c.preview || "");
+        const listTime = displayMsg ? toListTimeRuntime(displayMsg.timeText || displayMsg.timestamp || "") : (c.listTime || "");
+        debugLog("renderList:item", {
+          account: activeAccountId,
+          day,
+          conversationId: c.id,
+          hasUnread,
+          displayMid: displayMsg?.id || "",
+          displayDay: displayMsg ? toDayKey(displayMsg.timestamp || displayMsg.timeText || "") : "",
+          preview,
+          listTime
+        });
         return '<button class="list-item" data-id="' + esc(c.id) + '">'
-          + '<img class="list-avatar" src="' + esc(c.avatar || '') + '" alt="avatar"/>'
+          + '<div class="list-avatar-wrap"><img class="list-avatar" src="' + esc(c.avatar || '') + '" alt="avatar"/>' + dot + '</div>'
           + '<div class="list-main">'
-          + '<div class="list-title">' + esc(c.title || '') + '</div>'
-          + '<div class="list-preview">' + esc(c.preview || '') + '</div>'
+          + '<div class="list-title">' + esc(conversationTitle(c)) + '</div>'
+          + '<div class="list-preview">' + esc(preview) + '</div>'
           + '</div>'
-          + '<div class="list-time">' + esc(c.listTime || '') + '</div>'
+          + '<div class="list-time">' + esc(listTime) + '</div>'
           + '</button>';
       }).join('');
 
@@ -1142,7 +1301,7 @@
       momentsView.style.display = 'none';
       contactsView.style.display = 'none';
       detailView.style.display = 'flex';
-      homeTabbar.style.display = 'none';
+      accountView.style.display = 'none';
       tabChat.classList.add('active');
       tabMoments.classList.remove('active');
       chatTitle.textContent = conv.title || '';
@@ -1155,6 +1314,14 @@
       const oldMessages = prevStageMs
         ? (conv.messages || []).filter((m) => toDayKey(m.timestamp || m.timeText || "") <= prevStageMs)
         : [];
+      debugLog("openConversation", {
+        account: activeAccountId,
+        day: stageMs,
+        conversationId,
+        stageSeen: !!stageSeen[conversationId],
+        stageMessages: stageMessages.length,
+        oldMessages: oldMessages.length
+      });
       if (!stageMessages.length) {
         finishConversation(conversationId);
         return;
@@ -1199,26 +1366,30 @@
     }
 
     function renderAccountList() {
-      accountList.innerHTML = accountIds.filter((id) => isAccountUnlocked(id)).map((id) => {
-        const cls = id === activeAccountId ? "account-row active" : "account-row";
+      accountListWrap.innerHTML = accountIds.filter((id) => isAccountUnlocked(id)).map((id) => {
         const name = payload.conversations.find((c) => c.profiles?.users?.[id])?.profiles?.users?.[id]?.name || id;
-        return '<button class="' + cls + '" type="button" data-id="' + esc(id) + '">' + esc(name) + '（' + esc(id) + '）</button>';
-      }).join('');
-      accountList.querySelectorAll('.account-row').forEach((btn) => {
+        const avatar = payload.conversations.find((c) => c.profiles?.users?.[id])?.profiles?.users?.[id]?.avatar || "";
+        const current = id === activeAccountId ? '<div class="account-current">● 当前使用</div>' : '';
+        return '<button class="account-card" type="button" data-id="' + esc(id) + '">'
+          + '<img class="account-avatar" src="' + esc(avatar) + '" alt="avatar"/>'
+          + '<div><div class="account-name">' + esc(name) + '</div><div class="account-id">' + esc(id) + '</div></div>'
+          + current
+          + '</button>';
+      }).join('') + '<div class="account-add"><div class="account-add-plus">+</div><div>添加账号</div></div>';
+      accountListWrap.querySelectorAll('.account-card').forEach((btn) => {
         btn.addEventListener('click', () => {
           activeAccountId = btn.dataset.id || activeAccountId;
           accountNoticeMap[activeAccountId] = false;
           initTimelineStages();
           saveSeen();
-          closeAccountModal();
-          clearTimer();
           showChatList();
+          clearTimer();
           renderList();
         });
       });
     }
 
-    function openAccountModal() {
+    function showAccountView() {
       renderAccountList();
       accountNoticeMap[activeAccountId] = false;
       for (const id of Object.keys(accountNoticeMap)) {
@@ -1226,13 +1397,11 @@
       }
       saveSeen();
       updateUnreadBadges();
-      accountModal.classList.add('show');
-      accountModal.setAttribute('aria-hidden', 'false');
-    }
-
-    function closeAccountModal() {
-      accountModal.classList.remove('show');
-      accountModal.setAttribute('aria-hidden', 'true');
+      listView.style.display = 'none';
+      momentsView.style.display = 'none';
+      contactsView.style.display = 'none';
+      detailView.style.display = 'none';
+      accountView.style.display = 'flex';
     }
 
     backBtn.addEventListener('click', () => {
@@ -1245,8 +1414,8 @@
     });
     tabContacts.addEventListener('click', showContacts);
     tabMoments.addEventListener('click', showMoments);
-    accountBtn.addEventListener('click', openAccountModal);
-    tabMe.addEventListener('click', openAccountModal);
+    tabMe.addEventListener('click', showAccountView);
+    accountBack.addEventListener('click', showChatList);
 
     profileClose.addEventListener('click', closeProfile);
     profileModal.addEventListener('click', (e) => {
@@ -1302,9 +1471,6 @@
       openArticle(idx);
     });
     articleBack.addEventListener('click', closeArticle);
-    accountModal.addEventListener('click', (e) => {
-      if (e.target === accountModal) closeAccountModal();
-    });
 
     loadSeen();
     initAccounts();

@@ -173,8 +173,18 @@ function formatVoiceDuration(sec) {
  * @example
  * renderQuote({ senderId:'alice', snippet:'hello' }, profiles)
  */
-function renderQuote(q, profiles) {
-  const sender = profiles.users[q.senderId]?.name || q.senderId;
+function resolveDisplayName(senderId, ctx, isSelf = false) {
+  const user = ctx.profiles.users[senderId] || {};
+  const selfId = ctx.chat?.self;
+  const selfProfile = ctx.profiles.users[selfId] || {};
+  if (ctx.chat?.type === "group" && isSelf) {
+    return selfProfile.aliases?.selfInGroups?.[ctx.chat.title] || selfProfile.name || senderId;
+  }
+  return selfProfile.aliases?.contacts?.[senderId] || user.name || senderId;
+}
+
+function renderQuote(q, ctx) {
+  const sender = resolveDisplayName(q.senderId, ctx, q.senderId === ctx.chat?.self);
   return `<div class="quote"><div>${escapeHtml(sender)} · ${escapeHtml(q.timeText || "")}</div><div>${escapeHtml(q.snippet || "")}</div></div>`;
 }
 
@@ -187,7 +197,36 @@ function renderQuote(q, profiles) {
  * @example
  * renderContent({ kind:'image', imageUrl:'https://...' })
  */
-function renderContent(m) {
+function resolveArticleCard(m, ctx) {
+  const a = m.articleCard || {};
+  const refId = a.refId || "";
+  if (!refId) return a;
+  const fromRepo = ctx.articles?.[refId] || {};
+  return {
+    refId,
+    title: fromRepo.title || a.title || "",
+    author: fromRepo.author || a.author || "",
+    cover: fromRepo.cover || a.cover || "",
+    summary: fromRepo.summary || a.summary || "",
+    text: fromRepo.text || a.text || "",
+    images: Array.isArray(fromRepo.images) ? fromRepo.images : (a.images || []),
+    publishAt: fromRepo.publishAt || ""
+  };
+}
+
+function resolveContactCard(m, ctx) {
+  const raw = m.contactCard || {};
+  const fromProfile = raw.refId ? (ctx.profiles?.users?.[raw.refId] || {}) : {};
+  return {
+    refId: raw.refId || "",
+    name: fromProfile.name || raw.name || raw.refId || "",
+    nickName: fromProfile.nickName || raw.nickName || fromProfile.name || raw.name || raw.refId || "",
+    avatar: fromProfile.avatar || raw.avatar || "",
+    bio: fromProfile.bio || raw.bio || ""
+  };
+}
+
+function renderContent(m, ctx) {
   if (m.kind === "image") {
     const caption = m.text ? `<div class="img-caption">${formatText(m.text)}</div>` : "";
     return `<img class="img" src="${escapeHtml(m.imageUrl || "")}" alt="image"/>${caption}`;
@@ -207,6 +246,33 @@ function renderContent(m) {
       <div class="card-footer"><span>${escapeHtml(c.site || "")}</span><span>链接卡片</span></div>
     </a>`;
   }
+  if (m.kind === "article-card") {
+    const a = resolveArticleCard(m, ctx);
+    const cover = a.cover ? `<img class="article-cover" src="${escapeHtml(a.cover)}" alt="cover"/>` : "";
+    const summary = a.summary ? `<div class="article-summary">${formatText(a.summary)}</div>` : "";
+    return `<button class="article-card" type="button"
+      data-title="${escapeHtml(a.title || "")}"
+      data-author="${escapeHtml(a.author || "")}"
+      data-cover="${escapeHtml(a.cover || "")}"
+      data-text="${escapeHtml(a.text || "")}"
+      data-images="${escapeHtml((a.images || []).join(","))}">
+      <div class="article-title">${escapeHtml(a.title || "文章")}</div>
+      <div class="article-meta">${escapeHtml(a.author || "")}</div>
+      ${cover}
+      ${summary}
+    </button>`;
+  }
+  if (m.kind === "contact-card") {
+    const c = resolveContactCard(m, ctx);
+    return `<div class="contact-card">
+      <img class="contact-avatar" src="${escapeHtml(c.avatar || "")}" alt="contact"/>
+      <div>
+        <div class="contact-name">${escapeHtml(c.name || "")}</div>
+        <div class="contact-nick">${escapeHtml(c.nickName ? `昵称：${c.nickName}` : "")}</div>
+        <div class="contact-bio">${escapeHtml(c.bio || "")}</div>
+      </div>
+    </div>`;
+  }
   return `<div>${formatText(m.text || "")}</div>`;
 }
 
@@ -223,21 +289,22 @@ function renderContent(m) {
 function renderMessage(m, ctx) {
   const u = ctx.profiles.users[m.senderId] || { name: m.senderId, avatar: "" };
   const selfId = ctx.chat.self;
+  const displayName = resolveDisplayName(m.senderId, ctx, m.senderId === selfId);
   const cls = m.senderId === selfId ? "msg self" : "msg";
   const avatar = `<button class="avatar-btn" type="button"
-      data-name="${escapeHtml(u.name || m.senderId)}"
-      data-wechat-id="${escapeHtml(u.wechatId || "")}"
+      data-name="${escapeHtml(displayName || m.senderId)}"
+      data-nick-name="${escapeHtml(displayName || u.name || m.senderId)}"
       data-bio="${escapeHtml(u.bio || "")}"
       data-avatar="${escapeHtml(u.avatar || "")}">
       <img class="avatar" src="${escapeHtml(u.avatar || "")}" alt="${escapeHtml(u.name || m.senderId)}"/>
     </button>`;
-  const quote = m.quote ? renderQuote(m.quote, ctx.profiles) : "";
+  const quote = m.quote ? renderQuote(m.quote, ctx) : "";
   const bubbleClass = (m.kind === "image" || m.kind === "voice") ? "bubble media" : "bubble";
-  const recallText = m.senderId === selfId ? "你撤回了一条消息" : `${u.name || m.senderId} 撤回了一条消息`;
+  const recallText = m.senderId === selfId ? "你撤回了一条消息" : `${displayName || m.senderId} 撤回了一条消息`;
   const body = m.recall
     ? `<div class="recall-tip">${escapeHtml(recallText)}</div>`
-    : `<div class="${bubbleClass}">${quote}${renderContent(m)}</div>`;
-  const main = `<div class="msg-main"><p class="meta">${escapeHtml(u.name || m.senderId)} · ${escapeHtml(m.timeText)}</p>${body}</div>`;
+    : `<div class="${bubbleClass}">${quote}${renderContent(m, ctx)}</div>`;
+  const main = `<div class="msg-main"><p class="meta">${escapeHtml(displayName || m.senderId)} · ${escapeHtml(m.timeText)}</p>${body}</div>`;
   return `<article class="${cls}">${m.senderId === selfId ? `${main}${avatar}` : `${avatar}${main}`}</article>`;
 }
 
@@ -261,8 +328,8 @@ export function renderHtml(ctx) {
 
   const chatTitle = ctx.chat.title || ctx.frontmatter.title || "聊天记录";
   const subtitle = ctx.chat.type === "group"
-    ? `群聊 · ${ctx.chat.groupInfo?.name || "未命名群"}`
-    : `单聊 · ${ctx.chat.peer || ""}`;
+    ? `群聊 · ${ctx.chat.title || "未命名群"}`
+    : `单聊 · ${resolveDisplayName(ctx.chat.peer, ctx) || ctx.chat.peer || ""}`;
 
   const messages = ctx.messages.map((m) => renderMessage(m, ctx)).join("\n");
 
@@ -295,6 +362,18 @@ export function renderHtml(ctx) {
       <button id="profile-close" class="profile-close" type="button">关闭</button>
     </div>
   </aside>
+  <aside id="article-modal" class="article-modal" aria-hidden="true">
+    <header class="article-header">
+      <button id="article-back" class="article-back" type="button">返回</button>
+    </header>
+    <div class="article-body">
+      <h1 id="article-title" class="article-page-title"></h1>
+      <div id="article-sub" class="article-page-sub"></div>
+      <img id="article-cover" class="article-page-cover" src="" alt="cover"/>
+      <div id="article-text" class="article-page-text"></div>
+      <div id="article-images" class="article-page-images"></div>
+    </div>
+  </aside>
   <script>
     (() => {
       const modal = document.getElementById('profile-modal');
@@ -303,13 +382,21 @@ export function renderHtml(ctx) {
       const wechatEl = document.getElementById('profile-wechat');
       const bioEl = document.getElementById('profile-bio');
       const closeBtn = document.getElementById('profile-close');
+      const articleModal = document.getElementById('article-modal');
+      const articleBack = document.getElementById('article-back');
+      const articleTitle = document.getElementById('article-title');
+      const articleSub = document.getElementById('article-sub');
+      const articleCover = document.getElementById('article-cover');
+      const articleText = document.getElementById('article-text');
+      const articleImages = document.getElementById('article-images');
       const avatarBtns = Array.from(document.querySelectorAll('.avatar-btn'));
       const voiceBtns = Array.from(document.querySelectorAll('.voice-btn'));
+      const articleBtns = Array.from(document.querySelectorAll('.article-card'));
 
       function openProfile(btn) {
         avatar.src = btn.dataset.avatar || '';
         nameEl.textContent = btn.dataset.name || '';
-        wechatEl.textContent = '微信号：' + (btn.dataset.wechatId || '未设置');
+        wechatEl.textContent = '昵称：' + (btn.dataset.nickName || '未设置');
         bioEl.textContent = '简介：' + (btn.dataset.bio || '无');
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
@@ -317,6 +404,25 @@ export function renderHtml(ctx) {
       function closeProfile() {
         modal.classList.remove('show');
         modal.setAttribute('aria-hidden', 'true');
+      }
+      function openArticle(btn) {
+        const title = btn.dataset.title || '';
+        const author = btn.dataset.author || '';
+        const cover = btn.dataset.cover || '';
+        const text = btn.dataset.text || '';
+        const images = (btn.dataset.images || '').split(',').filter(Boolean);
+        articleTitle.textContent = title;
+        articleSub.textContent = author;
+        articleCover.style.display = cover ? 'block' : 'none';
+        articleCover.src = cover || '';
+        articleText.textContent = text;
+        articleImages.innerHTML = images.map((url) => '<img src="' + url + '" alt="image"/>').join('');
+        articleModal.classList.add('show');
+        articleModal.setAttribute('aria-hidden', 'false');
+      }
+      function closeArticle() {
+        articleModal.classList.remove('show');
+        articleModal.setAttribute('aria-hidden', 'true');
       }
 
       avatarBtns.forEach((btn) => {
@@ -326,6 +432,10 @@ export function renderHtml(ctx) {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) closeProfile();
       });
+      articleBtns.forEach((btn) => {
+        btn.addEventListener('click', () => openArticle(btn));
+      });
+      articleBack.addEventListener('click', closeArticle);
 
       let activeAudio = null;
       let activeBtn = null;

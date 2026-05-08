@@ -1,0 +1,10 @@
+profile:
+  name: "603"
+  nickName: "neighbour603"
+  avatar: "https://picsum.photos/seed/neighbour2/100/100"
+  bio: "不服就干"
+  moments:
+    n1:
+      publishAt: "2026-04-26 07:05:00"
+      text: "早起打卡，顺便测一下朋友圈图片九宫格。"
+      images: ["https://picsum.photos/seed/n2-1/300/300", "https://picsum.photos/seed/n2-2/300/300", "https://picsum.photos/seed/n2-3/300/300"]

@@ -25,7 +25,7 @@ function escapeHtml(s = "") {
  * @example
  * toSnippet({ kind: 'image' }) // => '[图片]'
  */
-function toSnippet(message, articles) {
+function toSnippet(message, articles, profiles) {
   if (!message) return "";
   if (message.recall) return "[消息已撤回]";
   if (message.kind === "image") return "[图片]";
@@ -35,7 +35,11 @@ function toSnippet(message, articles) {
     const title = raw.title || (raw.refId ? (articles?.[raw.refId]?.title || "") : "");
     return `[文章] ${title}`.trim();
   }
-  if (message.kind === "contact-card") return `[名片] ${message.contactCard?.name || ""}`.trim();
+  if (message.kind === "contact-card") {
+    const raw = message.contactCard || {};
+    const name = raw.name || (raw.refId ? (profiles?.users?.[raw.refId]?.name || raw.refId) : "");
+    return `[名片] ${name}`.trim();
+  }
   if (message.kind === "link-card") {
     const title = message.linkCard?.title || message.linkCard?.url || "链接";
     return `[链接] ${title}`;
@@ -97,8 +101,8 @@ export function buildConversationModels(conversations) {
       : (startSender?.avatar || conv.chat?.avatar || "");
 
     const subtitle = conv.chat?.type === "group"
-      ? (conv.chat?.groupInfo?.name || "未命名群")
-      : (conv.chat?.peer || "单聊");
+      ? (conv.chat?.title || "未命名群")
+      : (conv.profiles.users?.[conv.chat?.peer]?.name || conv.chat?.peer || "单聊");
 
     const listTimeSource = conv.messages.length
       ? conv.messages[conv.messages.length - 1].timeText
@@ -111,9 +115,10 @@ export function buildConversationModels(conversations) {
       avatar,
       self: selfId || "",
       replayIntervalMs: Number(conv.frontmatter?.replayIntervalMs || 1000),
-      preview: toSnippet(startMessage, conv.articles),
+      preview: toSnippet(startMessage, conv.articles, conv.profiles),
       listTime: toListTime(listTimeSource),
       startIndex,
+      chat: conv.chat || {},
       profiles: conv.profiles,
       articles: conv.articles || {},
       messages: conv.messages
@@ -203,14 +208,17 @@ export function renderWechatHubHtml(input) {
       background: #d9d9d9;
       font-family: "PingFang SC", "Helvetica Neue", sans-serif;
       color: var(--text);
+      overflow: hidden;
     }
     .phone {
       max-width: 390px;
       margin: 0 auto;
-      min-height: 100vh;
+      height: 100vh;
       background: var(--bg);
+      position: relative;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
       border-left: 1px solid #cfcfcf;
       border-right: 1px solid #cfcfcf;
     }
@@ -277,7 +285,7 @@ export function renderWechatHubHtml(input) {
       overflow-y: auto;
       flex: 1;
       min-height: 0;
-      padding: 10px 10px 20px;
+      padding: 10px 10px 84px;
     }
     .moments-empty {
       font-size: 13px;
@@ -310,7 +318,7 @@ export function renderWechatHubHtml(input) {
       overflow-y: auto;
       flex: 1;
       min-height: 0;
-      padding: 10px 10px 20px;
+      padding: 10px 10px 84px;
     }
     .contacts-empty { font-size:13px; color:#8b8b8b; text-align:center; padding:30px 0; }
     .oa-card { background:#fff; border-radius:10px; padding:12px; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
@@ -334,6 +342,7 @@ export function renderWechatHubHtml(input) {
       overflow-y: auto;
       flex: 1;
       min-height: 0;
+      padding-bottom: 84px;
       background: #fff;
     }
     .list-item {
@@ -348,6 +357,7 @@ export function renderWechatHubHtml(input) {
       text-align: left;
       cursor: pointer;
     }
+    .list-avatar-wrap { position: relative; width: 50px; height: 50px; }
     .list-avatar {
       width: 50px;
       height: 50px;
@@ -357,6 +367,7 @@ export function renderWechatHubHtml(input) {
     }
     .list-main {
       min-width: 0;
+      position: relative;
     }
     .list-title {
       font-size: 18px;
@@ -374,6 +385,7 @@ export function renderWechatHubHtml(input) {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .list-dot { position:absolute; left:-4px; top:-4px; width:10px; height:10px; border-radius:50%; background:#ff3b30; box-shadow:0 0 0 2px #fff; }
     .list-time {
       font-size: 14px;
       color: #b0b0b0;
@@ -381,9 +393,14 @@ export function renderWechatHubHtml(input) {
       padding-left: 6px;
     }
     .tabbar {
-      height: 54px;
+      height: 56px;
       border-top: 1px solid var(--line);
       background: var(--panel);
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 40;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       align-items: center;
@@ -395,14 +412,19 @@ export function renderWechatHubHtml(input) {
       color: var(--green);
       font-weight: 600;
     }
-    .tab-item { position: relative; display:inline-flex; align-items:center; justify-content:center; min-width:44px; }
-    .tab-badge { position:absolute; top:-6px; right:-10px; min-width:16px; height:16px; padding:0 4px; border-radius:10px; background:#ff3b30; color:#fff; font-size:10px; line-height:16px; display:none; text-align:center; box-sizing:border-box; }
+    .tab-item { position: relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:44px; gap:2px; }
+    .tab-icon { width:22px; height:22px; color:#8f8f8f; display:block; }
+    .tab-icon svg { width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+    .tab-label { font-size:12px; line-height:1; }
+    .tabbar .active .tab-icon, .tabbar .active .tab-label { color: var(--green); }
+    .tab-badge { position:absolute; top:2px; right:20px; min-width:16px; height:16px; padding:0 4px; border-radius:10px; background:#ff3b30; color:#fff; font-size:10px; line-height:16px; display:none; text-align:center; box-sizing:border-box; }
+    .tab-badge.dot { min-width:8px; width:8px; height:8px; padding:0; border-radius:50%; color:transparent; line-height:8px; top:6px; right:23px; }
     .account-view { display:none; flex-direction:column; flex:1; min-height:0; background:#efefef; }
     .account-top { height:46px; border-bottom:1px solid var(--line); display:grid; grid-template-columns:auto 1fr auto; align-items:center; padding:0 10px; background:var(--panel); }
     .account-back { border:none; background:transparent; color:#222; font-size:22px; cursor:pointer; padding:4px 6px; }
     .account-manage { font-size:14px; color:#1f1f1f; }
     .account-center { padding:26px 16px 10px; text-align:center; color:#222; font-size:18px; }
-    .account-list-wrap { padding:8px 12px 18px; overflow-y:auto; flex:1; min-height:0; }
+    .account-list-wrap { padding:8px 12px 84px; overflow-y:auto; flex:1; min-height:0; }
     .account-card { width:100%; border:none; background:#fff; border-radius:10px; padding:14px 12px; margin-bottom:10px; display:flex; align-items:center; gap:10px; text-align:left; cursor:pointer; }
     .account-avatar { width:52px; height:52px; border-radius:6px; object-fit:cover; background:#ddd; }
     .account-name { font-size:16px; color:#222; line-height:1.2; }
@@ -445,7 +467,7 @@ export function renderWechatHubHtml(input) {
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      padding: 12px;
+      padding: 12px 12px 84px;
     }
     .msg { display: grid; grid-template-columns: 42px 1fr; gap: 10px; margin-bottom: 14px; }
     .msg.self { grid-template-columns: 1fr 42px; }
@@ -524,17 +546,17 @@ export function renderWechatHubHtml(input) {
     <section id="contacts-view" class="contacts-view">
       <header class="top-nav">
         <div></div>
-        <div class="center-title">通讯录</div>
+        <div class="center-title">文章</div>
         <div></div>
       </header>
       <div id="contacts-scroll" class="contacts-scroll"></div>
     </section>
 
     <footer id="home-tabbar" class="tabbar">
-      <div id="tab-chat" class="active tab-item">微信<span id="badge-chat" class="tab-badge"></span></div>
-      <div id="tab-contacts" class="tab-item">通讯录<span id="badge-contacts" class="tab-badge"></span></div>
-      <div id="tab-moments" class="tab-item">发现<span id="badge-moments" class="tab-badge"></span></div>
-      <div id="tab-me" class="tab-item">我<span id="badge-me" class="tab-badge"></span></div>
+      <div id="tab-chat" class="active tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/></svg></span><span class="tab-label">微信</span><span id="badge-chat" class="tab-badge"></span></div>
+      <div id="tab-contacts" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></span><span class="tab-label">文章</span><span id="badge-contacts" class="tab-badge"></span></div>
+      <div id="tab-moments" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg></span><span class="tab-label">发现</span><span id="badge-moments" class="tab-badge"></span></div>
+      <div id="tab-me" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 19c1.8-3 4-4.5 7-4.5s5.2 1.5 7 4.5"/></svg></span><span class="tab-label">我</span><span id="badge-me" class="tab-badge"></span></div>
     </footer>
 
     <section id="detail-view" class="detail-view">
@@ -602,7 +624,6 @@ export function renderWechatHubHtml(input) {
     const badgeContacts = document.getElementById('badge-contacts');
     const badgeMoments = document.getElementById('badge-moments');
     const badgeMe = document.getElementById('badge-me');
-    const homeTabbar = document.getElementById('home-tabbar');
     const profileModal = document.getElementById('profile-modal');
     const profileAvatar = document.getElementById('profile-avatar');
     const profileName = document.getElementById('profile-name');
@@ -636,6 +657,7 @@ export function renderWechatHubHtml(input) {
     let activeAudio = null;
     let activeVoiceBtn = null;
     let articleRows = [];
+    const debugState = { enabled: true };
 
     function parseMomentTime(raw) {
       if (!raw) return null;
@@ -671,7 +693,7 @@ export function renderWechatHubHtml(input) {
             rows.push({
               id: id + "-" + (moment.id || publishRaw || rows.length),
               name: user.name || id,
-              nickName: user.nickName || user.wechatId || "",
+              nickName: user.nickName || user.name || id,
               avatar: user.avatar || "",
               text: String(moment.text || ""),
               images: normalizeMomentImages(moment),
@@ -711,10 +733,10 @@ export function renderWechatHubHtml(input) {
       contactsView.style.display = 'none';
       detailView.style.display = 'none';
       accountView.style.display = 'none';
-      homeTabbar.style.display = 'grid';
       tabChat.classList.add('active');
       tabContacts.classList.remove('active');
       tabMoments.classList.remove('active');
+      renderList();
       updateUnreadBadges();
     }
 
@@ -725,7 +747,6 @@ export function renderWechatHubHtml(input) {
       contactsView.style.display = 'none';
       accountView.style.display = 'none';
       momentsView.style.display = 'flex';
-      homeTabbar.style.display = 'grid';
       tabChat.classList.remove('active');
       tabContacts.classList.remove('active');
       tabMoments.classList.add('active');
@@ -835,7 +856,6 @@ export function renderWechatHubHtml(input) {
       detailView.style.display = 'none';
       accountView.style.display = 'none';
       contactsView.style.display = 'flex';
-      homeTabbar.style.display = 'grid';
       tabChat.classList.remove('active');
       tabContacts.classList.add('active');
       tabMoments.classList.remove('active');
@@ -1030,9 +1050,10 @@ export function renderWechatHubHtml(input) {
       const seen = getArticleSeen(day);
       return collectArticles().filter((a) => !seen[a.id]).length;
     }
-    function setBadge(node, n) {
+    function setBadgeCount(node, n) {
       if (!node) return;
       if (n > 0) {
+        node.classList.remove("dot");
         node.style.display = "inline-block";
         node.textContent = n > 99 ? "99+" : String(n);
       } else {
@@ -1040,13 +1061,98 @@ export function renderWechatHubHtml(input) {
         node.textContent = "";
       }
     }
+    function setBadgeDot(node, on) {
+      if (!node) return;
+      if (on) {
+        node.classList.add("dot");
+        node.style.display = "inline-block";
+        node.textContent = "";
+      } else {
+        node.style.display = "none";
+        node.textContent = "";
+      }
+    }
     function updateUnreadBadges() {
       const day = currentStageMs();
-      setBadge(badgeChat, unreadChatCount(day));
-      setBadge(badgeMoments, unreadMomentsCount(day));
-      setBadge(badgeContacts, unreadArticlesCount(day));
+      setBadgeCount(badgeChat, unreadChatCount(day));
+      setBadgeDot(badgeMoments, unreadMomentsCount(day) > 0);
+      setBadgeDot(badgeContacts, unreadArticlesCount(day) > 0);
       const meCount = Object.entries(accountNoticeMap).filter(([id, on]) => on && id !== activeAccountId && isAccountUnlocked(id)).length;
-      setBadge(badgeMe, meCount);
+      setBadgeDot(badgeMe, meCount > 0);
+    }
+    function hasStageMessages(conv, day) {
+      return (conv.messages || []).some((m) => toDayKey(m.timestamp || m.timeText || "") <= day);
+    }
+    function hasNewMessagesOnDay(conv, day) {
+      return (conv.messages || []).some((m) => toDayKey(m.timestamp || m.timeText || "") === day);
+    }
+    function hasAutoplayUnread(conv, day) {
+      const seen = getStageSeen(day);
+      return !seen[conv.id] && hasNewMessagesOnDay(conv, day);
+    }
+    function toListTimeRuntime(timeText) {
+      if (!timeText) return "";
+      const parts = String(timeText).split(" ");
+      return parts[1] || parts[0] || "";
+    }
+    function toSnippetRuntime(message, conv) {
+      if (!message) return "";
+      if (message.recall) return "[消息已撤回]";
+      if (message.kind === "image") return "[图片]";
+      if (message.kind === "voice") {
+        return ('[语音] ' + (message.durationSec ? (String(message.durationSec) + '"') : '')).trim();
+      }
+      if (message.kind === "article-card") {
+        const raw = message.articleCard || {};
+        const title = raw.title || (raw.refId ? (conv.articles?.[raw.refId]?.title || "") : "");
+        return ('[文章] ' + title).trim();
+      }
+      if (message.kind === "contact-card") {
+        const raw = message.contactCard || {};
+        const refName = raw.refId ? (conv.profiles?.users?.[raw.refId]?.name || raw.refId) : "";
+        return ('[名片] ' + (raw.name || refName || "")).trim();
+      }
+      if (message.kind === "link-card") {
+        const title = message.linkCard?.title || message.linkCard?.url || "链接";
+        return "[链接] " + title;
+      }
+      const txt = String(message.text || "").replace(/\s+/g, " ").trim();
+      return txt.length > 60 ? (txt.slice(0, 60) + "...") : txt;
+    }
+    function listDisplayMessage(conv, day) {
+      const messages = conv.messages || [];
+      const visible = messages.filter((m) => toDayKey(m.timestamp || m.timeText || "") <= day);
+      if (!visible.length) return null;
+      if (hasAutoplayUnread(conv, day)) {
+        const firstToday = messages.find((m) => toDayKey(m.timestamp || m.timeText || "") === day);
+        if (firstToday) return firstToday;
+      }
+      return visible[visible.length - 1];
+    }
+    function debugLog(label, data) {
+      if (!debugState.enabled) return;
+      try {
+        console.log("[chat-debug]", label, data);
+      } catch (_) {
+        // Ignore console errors.
+      }
+    }
+    function getPeerId(conv) {
+      const self = activeAccountId || conv.self;
+      const participants = Array.from(new Set((conv.messages || []).map((m) => String(m.senderId))));
+      return participants.find((id) => id !== self) || conv.chat?.peer || "";
+    }
+    function conversationTitle(conv) {
+      if (conv.chat?.type === "single") {
+        const peerId = getPeerId(conv);
+        const selfProfile = conv.profiles?.users?.[activeAccountId || conv.self] || {};
+        return selfProfile.aliases?.contacts?.[peerId]
+          || conv.profiles?.users?.[peerId]?.name
+          || conv.title
+          || peerId
+          || "单聊";
+      }
+      return conv.title || "群聊";
     }
 
     function setStageStatusTime() {
@@ -1167,7 +1273,7 @@ export function renderWechatHubHtml(input) {
     function openProfileByDataset(data) {
       profileAvatar.src = data.avatar || '';
       profileName.textContent = data.name || '';
-      profileWechat.textContent = '昵称：' + (data.nickName || '未设置');
+      profileWechat.textContent = '昵称：' + (data.nickName || data.name || '未设置');
       profileBio.textContent = '简介：' + (data.bio || '无');
       profileModal.classList.add('show');
       profileModal.setAttribute('aria-hidden', 'false');
@@ -1176,13 +1282,34 @@ export function renderWechatHubHtml(input) {
       profileModal.classList.remove('show');
       profileModal.setAttribute('aria-hidden', 'true');
     }
-    function recallText(msg, conv, user) {
-      return msg.senderId === conv.self ? '你撤回了一条消息' : (user.name || msg.senderId) + ' 撤回了一条消息';
+    function resolveDisplayName(conv, senderId) {
+      const self = activeAccountId || conv.self;
+      const users = conv.profiles?.users || {};
+      const sender = users[senderId] || { name: senderId };
+      const selfProfile = users[self] || {};
+      if (conv.chat?.type === "group" && senderId === self) {
+        return selfProfile.aliases?.selfInGroups?.[conv.title] || selfProfile.name || senderId;
+      }
+      return selfProfile.aliases?.contacts?.[senderId] || sender.name || senderId;
     }
-    function renderQuote(quote, profiles) {
+    function recallText(msg, conv, user) {
+      return msg.senderId === conv.self ? '你撤回了一条消息' : (resolveDisplayName(conv, msg.senderId) || user.name || msg.senderId) + ' 撤回了一条消息';
+    }
+    function renderQuote(quote, conv) {
       if (!quote) return '';
-      const sender = profiles.users?.[quote.senderId]?.name || quote.senderId || '';
+      const sender = resolveDisplayName(conv, quote.senderId) || quote.senderId || '';
       return '<div class="quote"><div>' + esc(sender) + ' · ' + esc(quote.timeText || '') + '</div><div>' + esc(quote.snippet || '') + '</div></div>';
+    }
+    function resolveContactCard(msg, conv) {
+      const raw = msg.contactCard || {};
+      const fromProfile = raw.refId ? (conv.profiles?.users?.[raw.refId] || {}) : {};
+      return {
+        refId: raw.refId || "",
+        name: fromProfile.name || raw.name || raw.refId || "",
+        nickName: fromProfile.nickName || raw.nickName || fromProfile.name || raw.name || raw.refId || "",
+        avatar: fromProfile.avatar || raw.avatar || "",
+        bio: fromProfile.bio || raw.bio || ""
+      };
     }
 
     function renderContent(msg, conv) {
@@ -1232,7 +1359,7 @@ export function renderWechatHubHtml(input) {
           + '</button>';
       }
       if (msg.kind === 'contact-card') {
-        const c = msg.contactCard || {};
+        const c = resolveContactCard(msg, conv);
         return '<div class="contact-card">'
           + '<img class="contact-avatar" src="' + esc(c.avatar || '') + '" alt="contact"/>'
           + '<div><div class="contact-name">' + esc(c.name || '') + '</div>'
@@ -1247,20 +1374,21 @@ export function renderWechatHubHtml(input) {
       const opts = options || {};
       const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId, avatar: '' };
       const self = activeAccountId || conv.self;
+      const displayName = resolveDisplayName(conv, msg.senderId);
       const selfCls = msg.senderId === self ? 'msg self' : 'msg';
       const avatar = '<button class="avatar-btn" type="button"'
-        + ' data-name="' + esc(user.name || msg.senderId) + '"'
-        + ' data-nick-name="' + esc(user.nickName || user.wechatId || '') + '"'
+        + ' data-name="' + esc(displayName || msg.senderId) + '"'
+        + ' data-nick-name="' + esc(user.name || '') + '"'
         + ' data-bio="' + esc(user.bio || '') + '"'
         + ' data-avatar="' + esc(user.avatar || '') + '">'
-        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>'
+        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(displayName || msg.senderId) + '"/>'
         + '</button>';
       const bubbleCls = (msg.kind === 'image' || msg.kind === 'voice') ? 'bubble media' : 'bubble';
       const body = (opts.forceRecalled && msg.recall)
         ? '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>'
-        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg, conv) + '</div>';
+        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv) + renderContent(msg, conv) + '</div>';
       const main = '<div class="msg-main">'
-        + '<p class="meta">' + esc(user.name || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p>'
+        + '<p class="meta">' + esc(displayName || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p>'
         + '<div class="msg-body">' + body + '</div>'
         + '</div>';
       const html = msg.senderId === self ? main + avatar : avatar + main;
@@ -1299,8 +1427,10 @@ export function renderWechatHubHtml(input) {
 
     function markSeen(conversationId) {
       seenMap[keyWithAccount(conversationId)] = true;
-      const seen = getStageSeen(currentStageMs());
+      const day = currentStageMs();
+      const seen = getStageSeen(day);
       seen[conversationId] = true;
+      debugLog("markSeen", { account: activeAccountId, day, conversationId, stageSeen: { ...seen } });
       saveSeen();
       updateUnreadBadges();
       maybeAdvanceStage();
@@ -1309,20 +1439,37 @@ export function renderWechatHubHtml(input) {
     function finishConversation(conversationId) {
       timeline.insertAdjacentHTML('beforeend', '<div class="end-tip">当前聊天已结束</div>');
       timeline.scrollTop = timeline.scrollHeight;
+      debugLog("finishConversation", { account: activeAccountId, day: currentStageMs(), conversationId });
       markSeen(conversationId);
     }
 
     function renderList() {
       setStageStatusTime();
       updateUnreadBadges();
+      const day = currentStageMs();
       listScroll.innerHTML = payload.conversations.filter((c) => isVisibleByStage(c)).map((c) => {
+        const hasUnread = hasAutoplayUnread(c, day);
+        const dot = hasUnread ? '<span class="list-dot"></span>' : '';
+        const displayMsg = listDisplayMessage(c, day);
+        const preview = displayMsg ? toSnippetRuntime(displayMsg, c) : (c.preview || "");
+        const listTime = displayMsg ? toListTimeRuntime(displayMsg.timeText || displayMsg.timestamp || "") : (c.listTime || "");
+        debugLog("renderList:item", {
+          account: activeAccountId,
+          day,
+          conversationId: c.id,
+          hasUnread,
+          displayMid: displayMsg?.id || "",
+          displayDay: displayMsg ? toDayKey(displayMsg.timestamp || displayMsg.timeText || "") : "",
+          preview,
+          listTime
+        });
         return '<button class="list-item" data-id="' + esc(c.id) + '">'
-          + '<img class="list-avatar" src="' + esc(c.avatar || '') + '" alt="avatar"/>'
+          + '<div class="list-avatar-wrap"><img class="list-avatar" src="' + esc(c.avatar || '') + '" alt="avatar"/>' + dot + '</div>'
           + '<div class="list-main">'
-          + '<div class="list-title">' + esc(c.title || '') + '</div>'
-          + '<div class="list-preview">' + esc(c.preview || '') + '</div>'
+          + '<div class="list-title">' + esc(conversationTitle(c)) + '</div>'
+          + '<div class="list-preview">' + esc(preview) + '</div>'
           + '</div>'
-          + '<div class="list-time">' + esc(c.listTime || '') + '</div>'
+          + '<div class="list-time">' + esc(listTime) + '</div>'
           + '</button>';
       }).join('');
 
@@ -1342,7 +1489,6 @@ export function renderWechatHubHtml(input) {
       contactsView.style.display = 'none';
       detailView.style.display = 'flex';
       accountView.style.display = 'none';
-      homeTabbar.style.display = 'none';
       tabChat.classList.add('active');
       tabMoments.classList.remove('active');
       chatTitle.textContent = conv.title || '';
@@ -1355,6 +1501,14 @@ export function renderWechatHubHtml(input) {
       const oldMessages = prevStageMs
         ? (conv.messages || []).filter((m) => toDayKey(m.timestamp || m.timeText || "") <= prevStageMs)
         : [];
+      debugLog("openConversation", {
+        account: activeAccountId,
+        day: stageMs,
+        conversationId,
+        stageSeen: !!stageSeen[conversationId],
+        stageMessages: stageMessages.length,
+        oldMessages: oldMessages.length
+      });
       if (!stageMessages.length) {
         finishConversation(conversationId);
         return;
@@ -1435,7 +1589,6 @@ export function renderWechatHubHtml(input) {
       contactsView.style.display = 'none';
       detailView.style.display = 'none';
       accountView.style.display = 'flex';
-      homeTabbar.style.display = 'none';
     }
 
     backBtn.addEventListener('click', () => {
@@ -1750,7 +1903,7 @@ export function renderWechatStoryHtml(input) {
     function openProfileByDataset(data) {
       profileAvatar.src = data.avatar || '';
       profileName.textContent = data.name || '';
-      profileWechat.textContent = '昵称：' + (data.nickName || '未设置');
+      profileWechat.textContent = '昵称：' + (data.nickName || data.name || '未设置');
       profileBio.textContent = '简介：' + (data.bio || '无');
       profileModal.classList.add('show');
       profileModal.setAttribute('aria-hidden', 'false');
@@ -1759,8 +1912,18 @@ export function renderWechatStoryHtml(input) {
       profileModal.classList.remove('show');
       profileModal.setAttribute('aria-hidden', 'true');
     }
+    function resolveStoryDisplayName(conv, senderId) {
+      const self = conv.self;
+      const users = conv.profiles?.users || {};
+      const sender = users[senderId] || { name: senderId };
+      const selfProfile = users[self] || {};
+      if (conv.chat?.type === "group" && senderId === self) {
+        return selfProfile.aliases?.selfInGroups?.[conv.title] || selfProfile.name || senderId;
+      }
+      return selfProfile.aliases?.contacts?.[senderId] || sender.name || senderId;
+    }
     function recallText(msg, conv, user) {
-      return msg.senderId === conv.self ? '你撤回了一条消息' : (user.name || msg.senderId) + ' 撤回了一条消息';
+      return msg.senderId === conv.self ? '你撤回了一条消息' : (resolveStoryDisplayName(conv, msg.senderId) || user.name || msg.senderId) + ' 撤回了一条消息';
     }
     function loadState() {
       try {
@@ -1809,10 +1972,21 @@ export function renderWechatStoryHtml(input) {
       searchText.textContent = '🔍 ' + (ui.searchPlaceholder || '搜索');
       sceneTitle.textContent = scene.title || '';
     }
-    function renderQuote(quote, profiles) {
+    function renderQuote(quote, conv) {
       if (!quote) return '';
-      const sender = profiles.users?.[quote.senderId]?.name || quote.senderId || '';
+      const sender = resolveStoryDisplayName(conv, quote.senderId) || quote.senderId || '';
       return '<div class="quote"><div>' + esc(sender) + ' · ' + esc(quote.timeText || '') + '</div><div>' + esc(quote.snippet || '') + '</div></div>';
+    }
+    function resolveStoryContactCard(msg, conv) {
+      const raw = msg.contactCard || {};
+      const fromProfile = raw.refId ? (conv.profiles?.users?.[raw.refId] || {}) : {};
+      return {
+        refId: raw.refId || "",
+        name: fromProfile.name || raw.name || raw.refId || "",
+        nickName: fromProfile.nickName || raw.nickName || fromProfile.name || raw.name || raw.refId || "",
+        avatar: fromProfile.avatar || raw.avatar || "",
+        bio: fromProfile.bio || raw.bio || ""
+      };
     }
     function renderContent(msg, conv) {
       if (msg.kind === 'image') {
@@ -1860,7 +2034,7 @@ export function renderWechatStoryHtml(input) {
           + '</button>';
       }
       if (msg.kind === 'contact-card') {
-        const c = msg.contactCard || {};
+        const c = resolveStoryContactCard(msg, conv);
         return '<div class="contact-card">'
           + '<img class="contact-avatar" src="' + esc(c.avatar || '') + '" alt="contact"/>'
           + '<div><div class="contact-name">' + esc(c.name || '') + '</div>'
@@ -1874,19 +2048,20 @@ export function renderWechatStoryHtml(input) {
       const opts = options || {};
       const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId, avatar: '' };
       const self = conv.self;
+      const displayName = resolveStoryDisplayName(conv, msg.senderId);
       const selfCls = msg.senderId === self ? 'msg self' : 'msg';
       const avatar = '<button class="avatar-btn" type="button"'
-        + ' data-name="' + esc(user.name || msg.senderId) + '"'
-        + ' data-nick-name="' + esc(user.nickName || user.wechatId || '') + '"'
+        + ' data-name="' + esc(displayName || msg.senderId) + '"'
+        + ' data-nick-name="' + esc(displayName || user.name || msg.senderId || '') + '"'
         + ' data-bio="' + esc(user.bio || '') + '"'
         + ' data-avatar="' + esc(user.avatar || '') + '">'
-        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(user.name || msg.senderId) + '"/>'
+        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(displayName || msg.senderId) + '"/>'
         + '</button>';
       const bubbleCls = (msg.kind === 'image' || msg.kind === 'voice') ? 'bubble media' : 'bubble';
       const body = (opts.forceRecalled && msg.recall)
         ? '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>'
-        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv.profiles) + renderContent(msg, conv) + '</div>';
-      const main = '<div class="msg-main"><p class="meta">' + esc(user.name || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p><div class="msg-body">' + body + '</div></div>';
+        : '<div class="' + bubbleCls + '">' + renderQuote(msg.quote, conv) + renderContent(msg, conv) + '</div>';
+      const main = '<div class="msg-main"><p class="meta">' + esc(displayName || msg.senderId) + ' · ' + esc(msg.timeText || '') + '</p><div class="msg-body">' + body + '</div></div>';
       const html = msg.senderId === self ? main + avatar : avatar + main;
       return '<article class="' + selfCls + '" data-cid="' + esc(opts.conversationId || '') + '" data-mid="' + esc(msg.id || '') + '">' + html + '</article>';
     }

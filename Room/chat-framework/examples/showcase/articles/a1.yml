@@ -1,0 +1,8 @@
+article:
+  publishAt: "2026-04-27 08:30:00"
+  title: "独立开发者如何做首个可玩 Demo"
+  author: "游戏研发周刊"
+  cover: "https://picsum.photos/seed/article-1/800/420"
+  summary: "从玩法切片、反馈循环到灰度测试，3 步完成最小可玩版本。"
+  text: "先定一个最小玩法闭环，再加引导和失败反馈，最后做 10 人小样本测试。\n\n如果 10 人里有 7 人能在 1 分钟内理解核心目标，就可以进入下一个版本。"
+  images: ["https://picsum.photos/seed/article-1a/800/500", "https://picsum.photos/seed/article-1b/800/500"]

@@ -1,13 +1,34 @@
 users:
   alice:
     name: "Alice"
+    nickName: "alice_pm"
     avatar: "https://picsum.photos/seed/alice/100/100"
     bio: "产品经理"
+    moments:
+      m1:
+        publishAt: "2026-04-28 09:30:00"
+        text: "今天把需求拆分完了，下午开始联调。"
+        images: ["https://picsum.photos/seed/multi-alice-m1/300/300"]
+    officialArticles: ["multi-alice-a1"]
   bob:
     name: "Bob"
+    nickName: "bob_frontend"
     avatar: "https://picsum.photos/seed/bob/100/100"
     bio: "前端工程师"
+    moments:
+      m1:
+        publishAt: "2026-04-26 19:10:00"
+        text: "语音消息、撤回、文章页都串起来了。"
+      m2:
+        publishAt: "2026-05-10 10:00:00"
+        text: "未来动态，用来验证时间过滤。"
+    officialArticles: ["multi-bob-a1"]
   clara:
     name: "Clara"
+    nickName: "clara_design"
     avatar: "https://picsum.photos/seed/clara/100/100"
     bio: "设计师"
+    moments:
+      m1:
+        publishAt: "2026-04-25 12:00:00"
+        text: "把朋友圈卡片样式统一成白底圆角，阅读更舒适。"

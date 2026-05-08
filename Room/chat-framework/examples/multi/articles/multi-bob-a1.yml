@@ -1,0 +1,7 @@
+article:
+  publishAt: "2026-04-26 10:00:00"
+  title: "聊天回放性能优化笔记"
+  author: "前端工程实践"
+  cover: "https://picsum.photos/seed/multi-article-b1/800/420"
+  summary: "从定时器管理和 DOM 更新批次切入，降低掉帧。"
+  text: "把播放定时器和撤回定时器拆分后，回放结束时不再误清撤回逻辑。\n\n同时减少无意义重排，列表滚动更顺滑。"

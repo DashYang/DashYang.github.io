@@ -1,0 +1,8 @@
+ui:
+  statusBar:
+    carrier: "中国移动"
+    time: "21:38"
+    battery: "76%"
+  topTitle: "微信"
+  searchPlaceholder: "搜索"
+  persistKey: "chat_framework_showcase_seen_v1"

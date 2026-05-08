@@ -1,5 +1,5 @@
 chat:
   type: "single"
   title: "周警官"
-  self: "protagonist"
+  self: "Mark"
   peer: zhou_police

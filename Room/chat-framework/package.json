@@ -10,6 +10,7 @@
     "build": "node src/build.js examples/chat.md dist/index.html",
     "build:paper": "node src/build.js examples/chat-paper.md dist/paper.html",
     "build:folder": "node src/build-folder.js examples/multi dist/wechat-hub.html",
+    "build:showcase": "node src/build-folder.js examples/showcase dist/showcase-wechat-hub.html",
     "req:gen": "bash scripts/generate-requirement-doc.sh",
     "req:check": "bash scripts/check-doc-sync.sh",
     "hooks:install": "bash scripts/install-hooks.sh"

@@ -42,7 +42,7 @@ Skill 路径：
 - `#messageId` 是否唯一
 - 首条时间是否绝对时间
 - 引用是否只引用前文
-- `chat.yml` 的 `type/self/peer/groupInfo` 是否完整
+- `chat.yml` 的 `type/self/title/groupInfo.avatar` 是否完整（单聊无需 `peer`，群聊无需 `members/groupInfo.name`）
 
 ## 5. 与构建命令衔接
 

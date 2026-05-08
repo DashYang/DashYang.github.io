@@ -1,0 +1,4 @@
+chat:
+  type: "single"
+  title: "次日解锁示例"
+  self: "protagonist"

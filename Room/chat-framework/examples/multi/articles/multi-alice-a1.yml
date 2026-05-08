@@ -1,0 +1,8 @@
+article:
+  publishAt: "2026-04-27 08:20:00"
+  title: "MVP 联调清单（可复用模板）"
+  author: "产品方法论"
+  cover: "https://picsum.photos/seed/multi-article-a1/800/420"
+  summary: "一份可复用的联调检查清单，减少上线前遗漏。"
+  text: "联调前先确认接口契约，再核对异常态和兜底文案。\n\n最后做一轮端到端回归，记录问题和修复时点。"
+  images: ["https://picsum.photos/seed/multi-article-a1-1/800/500"]

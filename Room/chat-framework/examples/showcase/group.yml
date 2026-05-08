@@ -1,0 +1,6 @@
+chat:
+  type: "group"
+  title: "Room 功能预览群"
+  self: "protagonist"
+  groupInfo:
+    avatar: "https://picsum.photos/seed/showcase-group/100/100"

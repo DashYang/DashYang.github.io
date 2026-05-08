@@ -1,0 +1,7 @@
+article:
+  publishAt: "2026-04-29 11:30:00"
+  title: "【姐姐账号】家庭采购清单模板"
+  author: "姐姐的小本本"
+  cover: "https://picsum.photos/seed/sister-article-1/800/420"
+  summary: "用于演示：文章与 sister profile 关联。"
+  text: "这篇文章只挂在 sister 的 profile 下。\n\n切换到姐姐账号时可在通讯录中看到。"

@@ -1,0 +1,20 @@
+profile:
+  name: "物业小雅"
+  nickName: "admin_room"
+  avatar: "https://picsum.photos/seed/admin/100/100"
+  bio: "竭诚为您服务"
+  moments:
+    a1:
+      publishAt: "2026-04-25 12:00:00"
+      text: "周末请注意小区停车规范，感谢配合。"
+    a2:
+      publishAt: "2026-04-28 20:10:00"
+      text: "【新内容通知演示】这是 4/28 的朋友圈未读项，需在“发现”里查看。"
+    a3:
+      publishAt: "2026-04-29 09:10:00"
+      text: "【新内容通知演示】这是 4/29 新解锁的朋友圈内容。"
+    a4:
+      publishAt: "2026-04-30 08:00:00"
+      text: "【多账号示例】这是物业账号自己的朋友圈内容。"
+  officialArticles: ["admin-a1"]
+  chatFiles: ["05-admin-account.md"]

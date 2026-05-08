@@ -19,6 +19,7 @@ export function buildSingle(inputMd, outputHtml) {
   const html = renderHtml({
     frontmatter: conv.frontmatter,
     profiles: conv.profiles,
+    articles: conv.articles,
     chat: conv.chat,
     messages: conv.messages
   });

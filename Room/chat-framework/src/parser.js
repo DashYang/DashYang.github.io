@@ -83,6 +83,52 @@ function toLinkCard(body) {
   return card;
 }
 
+function toKvMap(body) {
+  const out = {};
+  for (const line of body.split("\n")) {
+    const idx = line.indexOf(":");
+    if (idx === -1) continue;
+    const k = line.slice(0, idx).trim();
+    const v = line.slice(idx + 1).trim();
+    if (!k) continue;
+    if (v.startsWith("[") && v.endsWith("]")) {
+      const inner = v.slice(1, -1).trim();
+      out[k] = inner ? inner.split(",").map((x) => x.trim()).filter(Boolean) : [];
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
+
+function toArticleCard(body) {
+  const article = toKvMap(body);
+  const refId = article.id || article.ref || article.articleId || "";
+  if (!refId && !article.title) throw new Error("[article] message requires id or title");
+  return {
+    refId,
+    title: article.title,
+    author: article.author || "",
+    cover: article.cover || "",
+    summary: article.summary || article.desc || "",
+    text: article.text || article.content || "",
+    images: Array.isArray(article.images) ? article.images : (article.images ? [article.images] : [])
+  };
+}
+
+function toContactCard(body) {
+  const card = toKvMap(body);
+  const refId = card.id || card.ref || card.profileId || card.userId || "";
+  if (!refId && !card.name) throw new Error("[contact-card] message requires id/ref or name");
+  return {
+    refId,
+    name: card.name,
+    nickName: card.nickName || card.name || "",
+    avatar: card.avatar || "",
+    bio: card.bio || ""
+  };
+}
+
 /**
  * Parse duration text to seconds.
  *
@@ -258,6 +304,12 @@ export function parseChatMarkdown(raw) {
     if (tags.includes("voice")) {
       const voice = toVoice(bodyText);
       msg = { ...msg, kind: "voice", audioUrl: voice.audioUrl, durationSec: voice.durationSec, text: voice.text };
+    }
+    if (tags.includes("article")) {
+      msg = { ...msg, kind: "article-card", articleCard: toArticleCard(bodyText), text: undefined };
+    }
+    if (tags.includes("contact-card")) {
+      msg = { ...msg, kind: "contact-card", contactCard: toContactCard(bodyText), text: undefined };
     }
     const quoteTag = tags.find((t) => t.startsWith("quote:"));
     if (quoteTag) {
