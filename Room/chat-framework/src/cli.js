@@ -9,6 +9,9 @@ const __dirname = path.dirname(__filename);
 // Usage:
 //   chat-framework build <input.md> <output.html>
 //   chat-framework build:folder <input-folder> <output.html>
+// Root semantics:
+//   build -> relative frontmatter paths (profiles/chat/articles) resolve from the markdown file directory
+//   build:folder -> profiles/, profiles.yml, ui.yml, story.yml, chatFiles, and groupChats resolve from inputDir
 
 async function run() {
   const argv = process.argv.slice(2);
@@ -18,6 +21,7 @@ async function run() {
       const [_, input, output] = argv;
       if (!input || !output) {
         console.error("Usage: chat-framework build <input.md> <output.html>");
+        console.error("Single-file root semantics: relative frontmatter paths such as profiles, chat, and articles resolve from the input markdown file's directory.");
         process.exit(1);
       }
       const { default: buildModule } = await import(path.join(__dirname, "build.js"));
@@ -40,6 +44,7 @@ async function run() {
       const [_, input, output] = argv;
       if (!input || !output) {
         console.error("Usage: chat-framework build:folder <input-folder> <output.html>");
+        console.error("Folder-build root semantics: profiles/, profiles.yml, ui.yml, story.yml, chatFiles, and groupChats resolve from the provided inputDir.");
         process.exit(1);
       }
       const mod = await import(path.join(__dirname, "build-folder.js"));

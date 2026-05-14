@@ -1,22 +1,28 @@
 # chat-framework (MVP)
 
-根据 `chat.md` 生成类似微信聊天记录网页（支持引用、图片、链接卡片、主题切换），并支持把多个 `md` 合成为一个微信会话列表页面。
+根据 `chat.md` 生成类似微信聊天记录网页（单会话页），或将多个 `md` 聚合为功能完备的会话总览页（Conversation Hub）。
+
+## 核心能力
+
+- **单会话页 (Single Conversation Page)**: 支持引用、图片、链接卡片、语音、撤回等全量微信特性，可作为独立页面分享。
+- **会话总览页 (Conversation Hub)**: 聚合多会话、朋友圈、文章列表。支持 **账号推进 (Account Progression)** 与 **系统时间 (System Time)** 驱动的沉浸式互动体验。
+- **系统时间 (System Time)**: 位于总览页顶部的状态栏中心时间。它不是现实时钟，而是页面内部的逻辑时间；在运行过程中会随当前账号的阶段推进而更新。
 
 ## 运行
 
 ```bash
 cd /Users/dash/workspace/DashYang.github.io/Room/chat-framework
-npm run build
-npm run build:paper
-npm run build:folder
-npm run build:showcase
+npm run build           # 生成单会话页 (dist/index.html)
+npm run build:paper     # 生成单会话页 (paper 主题)
+npm run build:folder    # 生成会话总览页 (dist/wechat-hub.html)
+npm run build:showcase  # 生成全功能预览基线
 npm run hooks:install
 ```
 
 输出文件：
-- `dist/index.html`（单文件，wechat）
-- `dist/paper.html`（单文件，paper）
-- `dist/wechat-hub.html`（多会话微信界面）
+- `dist/index.html`（单会话页，wechat）
+- `dist/paper.html`（单会话页，paper）
+- `dist/wechat-hub.html`（会话总览页）
 - `dist/showcase-wechat-hub.html`（全功能预览基线）
 
 ## Markdown 格式
@@ -26,8 +32,8 @@ npm run hooks:install
 title: "项目讨论记录"
 profiles: "./profiles.yml"
 chat: "./chat.yml"
-theme: "wechat"         # 单文件可选，默认 wechat
-replayIntervalMs: 1000   # 多会话回放间隔（ms）
+theme: "wechat"
+replayIntervalMs: 1000
 specVersion: "1.0"
 ---
 
@@ -45,13 +51,13 @@ specVersion: "1.0"
 - `@用户名` 在文本中会高亮显示
 - `[image]` 支持“图 + 文字说明”（图片地址后续行作为说明）
 - `[voice]` 支持语音消息（首行是音频 URL/路径，可选 `duration: 秒数` 和转写文本）
-- `[recall]` / `[recall:+10s]` 支持撤回效果（多会话回放时会在设置延时后变为“撤回了一条消息”）
-- `[article]` 支持在聊天中转发微信文章卡片，推荐用 `id` 引用 `articles/` 目录中的文章
+- `[recall]` / `[recall:+10s]` 支持撤回效果（详情页回放时会在设置延时后变为“撤回了一条消息”）
+- `[article]` 支持在聊天中转发文章卡片，推荐用 `id` 引用 `articles/` 目录中的文章
 - `[contact-card]` 支持在聊天中发送联系人名片（头像/姓名/昵称/bio）
-- 点击聊天头像可查看 `profiles` 中的名字（`name`）和简介（`bio`）
-- 多会话页支持“发现 -> 朋友圈”，仅展示文字/图片，并按当前阶段日期过滤未来动态
-- 多会话页支持“文章 -> 微信文章”，文章正文统一来自 `articles/` 目录；profile 仅保存文章 id 引用
-- 会话列表支持“自动播放未完成红点”：当天可播放内容未看完时，会话项显示红点；当天内容播放完毕后红点立即消失
+- 点击聊天头像可查看 `profiles` 中的名字（`name` 为正式名称）和简介（`bio`）。其中 `profile.name` 是头像资料卡的标题（canonical nickname），而 `aliases.contacts` 中定义的备注名则用于聊天气泡上方、总览页预览及标题栏。
+- 总览页支持“发现 -> 朋友圈”，仅展示文字/图片，并按当前系统时间过滤未来动态
+- 总览页支持“文章 -> 文章列表”，文章正文统一来自 `articles/` 目录；profile 仅保存文章 id 引用
+- 总览页支持“自动播放未完成红点”：当天可播放内容未看完时，会话项显示红点；当天内容播放完毕后红点立即消失
 - 会话列表预览规则：
   - 有未读红点时，预览显示“当天第一条可播放消息”
   - 当天已读完时，预览显示“当前会话在当前日期下的最后一条消息”
@@ -62,7 +68,7 @@ specVersion: "1.0"
 - `articles/`：微信文章内容（每篇一个 yml，文件名即 article id）
 - `chat.yml`：会话元信息（仅群聊推荐保留；单聊可不配置）
 
-### Profile 别名规则
+### Profile 别名与名称显示规则
 
 ```yml
 profile:
@@ -72,17 +78,27 @@ profile:
       "Room 功能预览群": "瓜总"
     contacts:
       sister: "老姐"
+
+  identityTimeline:
+    2026-04-29:
+      name: "西瓜（Room 维护中）"
+      bio: "独立游戏开发者 / Room 项目维护者"
 ```
 
-- 群聊中自己发言：优先显示 `aliases.selfInGroups[群标题]`
-- 单聊/群聊中别人发言：优先显示当前账号 `aliases.contacts[对方id]`
-- 未配置时回退到对方 `name`
+- **Canonical Nickname (`profile.name`)**: 账号的正式名称，显示在点击头像弹出的资料卡标题中。
+- **Remark (`aliases.contacts`)**: 对好友的备注名。在当前账号视角下，单聊/群聊中别人的发言、会话列表预览、聊天窗口标题都会优先显示备注名。
+- **Group Alias (`aliases.selfInGroups`)**: 在特定群聊中自己的显示名称（群名片）。
+- **Date-effective identity (`profile.identityTimeline`)**: 可按日期配置生效中的 `name/bio`。系统会选取“生效日期 <= 当前参考时间”的最新一条；在会话总览页中，这个参考时间通常就是当前系统时间对应的阶段日期。
+- 未配置别名时，回退到对方的 `name`，最后回退到 `id`。
 
-## 多会话模式说明
+## 会话总览页模式说明
 
 当你用 `build-folder` 构建时：
-- 文件夹内每个 `.md` 表示一个会话
-- 首屏是会话列表，预览按“未读当天首条 / 已读当天最后一条”动态更新
+- 文件夹内每个 `.md` 表示一个会话。
+- **路径解析规则**：
+  - **单文件构建 (`npm run build`)**：Markdown 头部 frontmatter 中的 `profiles/chat/articles` 等相对路径，均相对于该 **Markdown 文件所在的目录** 解析。
+  - **文件夹构建 (`npm run build:folder`)**：`profiles/` 目录、`profiles.yml`、`ui.yml`、`story.yml` 以及 `chatFiles` 和 `groupChats` 中指定的路径，均相对于传入的 **`inputDir` 目录** 解析。
+- 首屏是会话列表，预览按“未读当天首条 / 已读当天最后一条”动态更新。
 - 点击会话后按 `replayIntervalMs` 逐条播放消息（默认 1000ms）
 - 播放完成后显示小字：`当前聊天已结束`
 - 可点击“返回”继续看其他会话
@@ -107,9 +123,9 @@ profile:
 - `self` 不再写在群聊 yml 中，由当前 profile 的 id 隐含
 - 单聊无需 `chat.yml`，系统会从消息参与者自动推断会话对象与标题（优先联系人别名）
 
-### 多账号登录/切换（story.yml）
+### 账号推进与切换 (story.yml)
 
-在多会话目录下可选放置 `story.yml`，用于开启“多账号解锁 + 切换”的微信式体验。
+在总览页目录下可选放置 `story.yml`，用于开启“账号解锁 + 切换”的沉浸式体验。
 
 ```yml
 story:
@@ -117,8 +133,12 @@ story:
 ```
 
 - `accountOrder`：账号（即 `profiles/*.yml` 的文件名 id）的解锁顺序。
-- 解锁规则：当当前账号的时间轴已到最后一天，且“微信/文章/发现”的红点全部清零后，会给下一个账号在“我”上打红点提示；进入“我”可看到已解锁账号列表并随时切换。
-- 时间轴与已读状态按账号隔离（同一个 `persistKey` 下记录多个账号的进度）。
+- 解锁规则：当当前账号的时间轴已到最后一天，且“微信/文章/发现”的红点全部清零后，会解锁下一个账号并在“我”上打红点提示；进入“我”可看到已解锁账号列表并随时切换。
+- **系统时间** 与已读状态按账号隔离（同一个 `persistKey` 下记录多个账号的进度）。
+
+补充说明：
+- `story.yml` 不是第三种独立渲染模式，而是**会话总览页**里的账号推进配置。
+- 顶部状态栏正中的时间建议统一称为 **系统时间**。它不是物理世界时间，而是页面内部随着推进变化的时间。
 
 示例：`examples/showcase/story.yml`
 

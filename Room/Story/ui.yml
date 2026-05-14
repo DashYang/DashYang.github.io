@@ -1,0 +1,8 @@
+ui:
+  statusBar:
+    carrier: "T.T.K.Y"
+    time: "22:30"
+    battery: "81%"
+  topTitle: "镜书"
+  searchPlaceholder: ""
+  persistKey: "room_wechat_seen_chapter1_mark"

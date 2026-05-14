@@ -1,5 +1,0 @@
-chat:
-  type: "single"
-  title: "周警官"
-  self: "Mark"
-  peer: zhou_police

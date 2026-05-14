@@ -4,11 +4,40 @@
 - 聊天内容文件：`chat.md`
 - 发送者配置：`profiles.yml`
 - 会话配置：`chat.yml`
-- 微信主界面配置（多会话模式）：`ui.yml`
+- 界面配置（仅会话总览页）：`ui.yml`
+- 剧情推进配置（仅会话总览页）：`story.yml`
 
-## 1. 文件组织
+## 1. 核心概念与渲染产品
 
-单会话模式（生成单页聊天）：
+`chat-framework` 提供两类主要的渲染产物：
+
+1. **单会话页 (Single Conversation Page)**:
+   - 对应 `npm run build`。
+   - 渲染单个 `chat.md`。
+   - 包含完整的聊天详情，支持回放模式。
+
+2. **会话总览页 (Conversation Hub)**:
+   - 对应 `npm run build:folder`。
+   - 聚合目录下所有的 `chat.md`。
+   - 提供类微信的主界面、会话列表、发现（朋友圈）、文章列表及账号切换能力。
+
+### 1.1 系统时间 (System Time)
+
+在会话总览页中，顶部状态栏中心显示的时间被称为 **系统时间**。
+- **非实时时间**: 它不是真实的挂钟时间，而是由当前剧情阶段驱动的逻辑时间。
+- **阶段驱动**: 在会话总览页运行时，系统时间会根据当前阶段自动更新。当用户完成当前阶段的必要互动后，系统时间会自动推移到下一阶段。
+- **与 `story.yml` 的关系**: `story.yml` 用于定义账号推进顺序；它会影响“当前账号正在走哪条推进线”，但系统时间本身来自当前账号的阶段日期，而不是来自真实物理时间。
+- **显示格式**: 会话总览页初始会显示 `ui.yml` 中的 `statusBar.time`，进入运行态后会展示当前阶段日期。
+
+### 1.2 账号推进 (Account Progression)
+
+这是一种进阶的互动机制，通过 `story.yml` 定义。它允许开发者控制多个账号的解锁顺序，并基于用户的阅读进度推进不同账号各自的系统时间与可见内容。
+
+---
+
+## 2. 文件组织
+
+**单会话页**（生成单个聊天页面）：
 
 ```text
 conversation-a/
@@ -17,7 +46,7 @@ conversation-a/
 └── chat.yml
 ```
 
-多会话模式（一个文件夹内多个会话）：
+会话总览页模式（一个文件夹内多个会话）：
 
 ```text
 multi/
@@ -50,8 +79,8 @@ specVersion: "1.0"
 - `title`：会话标题（可选）
 - `profiles`：发送者配置路径，默认 `./profiles.yml`
 - `chat`：会话配置路径，默认 `./chat.yml`
-- `theme`：单会话页面主题，默认 `wechat`
-- `replayIntervalMs`：多会话详情页的逐条播放间隔，默认 `1000`
+- `theme`：单会话页主题，默认 `wechat`
+- `replayIntervalMs`：详情页的逐条播放间隔，默认 `1000`
 - `specVersion`：规范版本，建议固定 `1.0`
 
 ### 2.2 消息头语法
@@ -181,11 +210,11 @@ bio: 社区民警
 
 - `@用户名` 会在渲染时高亮显示（`@mention` 效果）
 - 文本中的 URL 会自动转为可点击链接
-- 点击头像可查看 `profiles.yml` 中的 `name/bio`
+- 点击头像可查看用户的资料卡（包含 `name`、`bio` 等）。其中 `name` 是正式名称（Canonical Nickname），作为资料卡标题显示。
 
 ## 3. profiles.yml 规范
 
-支持两种方式：
+发送者（用户）配置定义了账号的基本信息及视角下的关系。支持两种方式：
 - 单文件：`profiles.yml`（`users` 字典）
 - 目录模式：`profiles/`，每个用户一个文件（如 `alice.yml`、`bob.yml`）
 
@@ -204,13 +233,16 @@ users:
     bio: "前端工程师"
 ```
 
-字段说明：
-- `users.<senderId>.name`：显示名
-- `users.<senderId>.avatar`：头像 URL
-- `users.<senderId>.bio`：简介
-- `users.<senderId>.aliases`：别名配置（可选）
+### 3.1 字段说明
 
-### 3.1 目录模式示例（推荐）
+- `users.<id>.name`：**正式名称 (Canonical Nickname)**。这是账号的官方昵称，用于点击头像后弹出的资料卡标题。
+- `users.<id>.avatar`：头像 URL 或路径。
+- `users.<id>.bio`：简介，显示在资料卡中。
+- `users.<id>.aliases`：别名/名称覆盖配置（可选）。
+  - `contacts.<targetId>`：**备注名 (Remark)**。当前视角账号对好友 `<targetId>` 的备注。在聊天气泡上方、标题栏、会话列表中优先显示该备注名。
+  - `selfInGroups.<groupTitle>`：**群名片**。当前账号在该群聊中的自定义昵称。
+
+### 3.2 目录模式示例（推荐）
 
 `chat.md` frontmatter:
 ```md
@@ -239,7 +271,7 @@ profile:
 
 说明：
 - 朋友圈只支持文字和图片
-- `publishAt` 晚于当前阶段日期的内容不会显示
+- `publishAt` 晚于当前系统时间（由账号推进驱动）的内容不会显示
 
 ### 3.2 微信文章配置
 
@@ -264,8 +296,8 @@ article:
 ```
 
 说明：
-- 入口在多会话页底部“文章”
-- 仅展示 `publishAt <= 当前时间` 的文章
+- 入口在会话总览页底部“文章”
+- 仅展示 `publishAt <= 当前系统时间` 的文章
 - 支持文字+图片
 
 ## 4. chat.yml 规范
@@ -310,7 +342,7 @@ profile:
 - `groupChats`：群聊 markdown 到群聊 yml 的映射（单聊无需配置）
 - 构建时会检查当前 profile id 是否出现在消息 sender 列表中，且所有 sender 都能在 profiles 中找到
 
-## 5. ui.yml 规范（多会话模式）
+## 5. ui.yml 规范（总览页模式）
 
 `build-folder` 会尝试读取输入目录下的 `ui.yml`。
 
@@ -318,7 +350,7 @@ profile:
 ui:
   statusBar:
     carrier: "中国移动"
-    time: "12:21"
+    time: "12:21"  # 仅在未启用 story.yml 的静态展示下生效
     battery: "31%"
   topTitle: "微信"
   searchPlaceholder: "搜索"
@@ -327,15 +359,15 @@ ui:
 
 字段说明：
 - `statusBar.carrier`：状态栏运营商文案
-- `statusBar.time`：状态栏时间文案
+- `statusBar.time`：状态栏初始时间文案（若启用 `story.yml`，此字段会被剧情驱动的系统时间覆盖）
 - `statusBar.battery`：状态栏电量文案
-- `topTitle`：主界面标题（默认“微信”）
+- `topTitle`：总览页主界面标题（默认“微信”）
 - `searchPlaceholder`：搜索框提示词
 - `persistKey`：回放完成状态的本地存储键
 
-## 5.2 story.yml 规范（多账号登录/切换）
+## 5.2 story.yml 规范（账号推进/切换）
 
-`build-folder` 会尝试读取输入目录下的 `story.yml`。该文件用于定义多账号解锁顺序，并在页面底部“我”中提供账号切换入口。
+`build-folder` 会尝试读取输入目录下的 `story.yml`。该文件用于定义账号推进顺序，并在页面底部“我”中提供账号切换入口。
 
 ```yml
 story:
@@ -347,8 +379,9 @@ story:
 
 运行时行为：
 - 初始仅解锁第一个账号。
-- 当当前账号时间轴推进到最后一天，且该账号在当前日期下“微信/文章/发现”的未读全部清零，会解锁下一个账号，并在“我”Tab 显示红点提示。
-- 已解锁账号可在“我”中随时切换；时间轴进度与已读状态按账号隔离。
+- 当当前账号时间轴推进到最后一天，且该账号在当前系统时间下“微信/文章/发现”的未读全部清零，会解锁下一个账号，并在“我”Tab 显示红点提示。
+- 已解锁账号可在“我”中随时切换；系统时间进度与已读状态按账号隔离。
+
 
 ## 5.3 会话自动播放红点
 
@@ -363,7 +396,25 @@ story:
 - `examples/spec-demo/chat.yml`
 - `examples/spec-demo/ui.yml`
 
-## 7. 常见错误与排查
+## 7. 路径解析规则
+
+`chat-framework` 根据构建模式的不同，采用不同的路径解析逻辑。
+
+### 7.1 单文件构建 (`npm run build`)
+
+当对单个 Markdown 文件进行构建时：
+- Frontmatter 中的 `profiles`、`chat`、`articles` 等相对路径，均相对于该 **Markdown 文件所在的目录** 解析。
+
+### 7.2 文件夹构建 (`npm run build:folder`)
+
+当对整个文件夹进行构建（生成会话总览页）时：
+- 以下路径均相对于传入的 **`inputDir` 目录** 解析：
+    - `profiles/` 目录或 `profiles.yml` 文件。
+    - `ui.yml` 与 `story.yml`。
+    - `profiles` 中 `chatFiles` 列表里的 Markdown 路径。
+    - `profiles` 中 `groupChats` 映射里的 YAML 路径。
+
+## 8. 常见错误与排查
 
 - 首条消息使用了相对时间：改成绝对时间
 - `Unknown sender`：`chat.md` 的 `@senderId` 不在 `profiles.yml`

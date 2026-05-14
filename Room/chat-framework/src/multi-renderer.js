@@ -666,6 +666,34 @@ export function renderWechatHubHtml(input) {
       return Number.isNaN(d.getTime()) ? null : d;
     }
 
+    function parseIdentityReference(raw) {
+      if (!raw) return null;
+      const text = String(raw).trim();
+      if (!text) return null;
+      const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text)
+        ? text + 'T00:00:00'
+        : text.replace(' ', 'T');
+      const time = new Date(normalized).getTime();
+      return Number.isNaN(time) ? null : time;
+    }
+
+    function resolveEffectiveProfile(user, referenceTime) {
+      const refMs = parseIdentityReference(referenceTime) ?? Date.now();
+      let name = user?.name || user?.id || '';
+      let bio = user?.bio || '';
+      const timeline = Array.isArray(user?.identityTimeline) ? user.identityTimeline : [];
+      timeline.forEach((entry) => {
+        if (!entry || typeof entry.effectiveAtMs !== 'number' || entry.effectiveAtMs > refMs) return;
+        if (entry.name !== undefined) name = entry.name;
+        if (entry.bio !== undefined) bio = entry.bio;
+      });
+      return { name, bio };
+    }
+
+    function currentRuntimeTime() {
+      return new Date().toISOString();
+    }
+
     function normalizeMomentImages(m) {
       if (!m) return [];
       if (Array.isArray(m.images)) return m.images.filter(Boolean);
@@ -1270,10 +1298,32 @@ export function renderWechatHubHtml(input) {
       setVoiceState(activeVoiceBtn, false);
       activeVoiceBtn = null;
     }
+    function parseIdentityReference(raw) {
+      if (!raw) return null;
+      const text = String(raw).trim();
+      if (!text) return null;
+      const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text)
+        ? text + 'T00:00:00'
+        : text.replace(' ', 'T');
+      const time = new Date(normalized).getTime();
+      return Number.isNaN(time) ? null : time;
+    }
+    function resolveEffectiveProfile(user, referenceTime) {
+      const refMs = parseIdentityReference(referenceTime) ?? Date.now();
+      let name = user?.name || user?.id || '';
+      let bio = user?.bio || '';
+      const timeline = Array.isArray(user?.identityTimeline) ? user.identityTimeline : [];
+      timeline.forEach((entry) => {
+        if (!entry || typeof entry.effectiveAtMs !== 'number' || entry.effectiveAtMs > refMs) return;
+        if (entry.name !== undefined) name = entry.name;
+        if (entry.bio !== undefined) bio = entry.bio;
+      });
+      return { name, bio };
+    }
     function openProfileByDataset(data) {
       profileAvatar.src = data.avatar || '';
-      profileName.textContent = data.name || '';
-      profileWechat.textContent = '昵称：' + (data.nickName || data.name || '未设置');
+      profileName.textContent = data.name || data.displayName || data.nickName || '';
+      profileWechat.textContent = '昵称：' + (data.displayName || data.nickName || data.name || '未设置');
       profileBio.textContent = '简介：' + (data.bio || '无');
       profileModal.classList.add('show');
       profileModal.setAttribute('aria-hidden', 'false');
@@ -1303,12 +1353,13 @@ export function renderWechatHubHtml(input) {
     function resolveContactCard(msg, conv) {
       const raw = msg.contactCard || {};
       const fromProfile = raw.refId ? (conv.profiles?.users?.[raw.refId] || {}) : {};
+      const resolvedProfile = resolveEffectiveProfile(fromProfile, currentStageMs());
       return {
         refId: raw.refId || "",
-        name: fromProfile.name || raw.name || raw.refId || "",
-        nickName: fromProfile.nickName || raw.nickName || fromProfile.name || raw.name || raw.refId || "",
+        name: resolvedProfile.name || raw.name || raw.refId || "",
+        nickName: fromProfile.nickName || raw.nickName || resolvedProfile.name || raw.name || raw.refId || "",
         avatar: fromProfile.avatar || raw.avatar || "",
-        bio: fromProfile.bio || raw.bio || ""
+        bio: resolvedProfile.bio || raw.bio || ""
       };
     }
 
@@ -1373,16 +1424,17 @@ export function renderWechatHubHtml(input) {
     function renderMessage(msg, conv, options) {
       const opts = options || {};
       const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId, avatar: '' };
+      const resolvedProfile = resolveEffectiveProfile(user, currentStageMs());
       const self = activeAccountId || conv.self;
       const displayName = resolveDisplayName(conv, msg.senderId);
       const selfCls = msg.senderId === self ? 'msg self' : 'msg';
-      const avatar = '<button class="avatar-btn" type="button"'
-        + ' data-name="' + esc(displayName || msg.senderId) + '"'
-        + ' data-nick-name="' + esc(user.name || '') + '"'
-        + ' data-bio="' + esc(user.bio || '') + '"'
-        + ' data-avatar="' + esc(user.avatar || '') + '">'
-        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(displayName || msg.senderId) + '"/>'
-        + '</button>';
+        const avatar = '<button class="avatar-btn" type="button"'
+         + ' data-name="' + esc(resolvedProfile.name || msg.senderId) + '"'
+         + ' data-display-name="' + esc(displayName || user.nickName || resolvedProfile.name || msg.senderId || '') + '"'
+         + ' data-bio="' + esc(resolvedProfile.bio || '') + '"'
+         + ' data-avatar="' + esc(user.avatar || '') + '">'
+         + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(displayName || resolvedProfile.name || msg.senderId) + '"/>'
+         + '</button>';
       const bubbleCls = (msg.kind === 'image' || msg.kind === 'voice') ? 'bubble media' : 'bubble';
       const body = (opts.forceRecalled && msg.recall)
         ? '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>'
@@ -1491,7 +1543,7 @@ export function renderWechatHubHtml(input) {
       accountView.style.display = 'none';
       tabChat.classList.add('active');
       tabMoments.classList.remove('active');
-      chatTitle.textContent = conv.title || '';
+      chatTitle.textContent = conversationTitle(conv) || '';
       timeline.innerHTML = '';
 
       const stageMs = currentStageMs();
@@ -1902,8 +1954,8 @@ export function renderWechatStoryHtml(input) {
     }
     function openProfileByDataset(data) {
       profileAvatar.src = data.avatar || '';
-      profileName.textContent = data.name || '';
-      profileWechat.textContent = '昵称：' + (data.nickName || data.name || '未设置');
+      profileName.textContent = data.name || data.displayName || data.nickName || '';
+      profileWechat.textContent = '昵称：' + (data.displayName || data.nickName || data.name || '未设置');
       profileBio.textContent = '简介：' + (data.bio || '无');
       profileModal.classList.add('show');
       profileModal.setAttribute('aria-hidden', 'false');
@@ -1921,6 +1973,23 @@ export function renderWechatStoryHtml(input) {
         return selfProfile.aliases?.selfInGroups?.[conv.title] || selfProfile.name || senderId;
       }
       return selfProfile.aliases?.contacts?.[senderId] || sender.name || senderId;
+    }
+    function getStoryPeerId(conv) {
+      const self = conv.self;
+      const participants = Array.from(new Set((conv.messages || []).map((m) => String(m.senderId))));
+      return participants.find((id) => id !== self) || conv.chat?.peer || '';
+    }
+    function conversationTitle(conv) {
+      if (conv.chat?.type === 'single') {
+        const peerId = getStoryPeerId(conv);
+        const selfProfile = conv.profiles?.users?.[conv.self] || {};
+        return selfProfile.aliases?.contacts?.[peerId]
+          || conv.profiles?.users?.[peerId]?.name
+          || conv.title
+          || peerId
+          || '单聊';
+      }
+      return conv.title || '群聊';
     }
     function recallText(msg, conv, user) {
       return msg.senderId === conv.self ? '你撤回了一条消息' : (resolveStoryDisplayName(conv, msg.senderId) || user.name || msg.senderId) + ' 撤回了一条消息';
@@ -1980,12 +2049,13 @@ export function renderWechatStoryHtml(input) {
     function resolveStoryContactCard(msg, conv) {
       const raw = msg.contactCard || {};
       const fromProfile = raw.refId ? (conv.profiles?.users?.[raw.refId] || {}) : {};
+      const resolvedProfile = resolveEffectiveProfile(fromProfile, msg.timestamp || msg.timeText || '');
       return {
         refId: raw.refId || "",
-        name: fromProfile.name || raw.name || raw.refId || "",
-        nickName: fromProfile.nickName || raw.nickName || fromProfile.name || raw.name || raw.refId || "",
+        name: resolvedProfile.name || raw.name || raw.refId || "",
+        nickName: fromProfile.nickName || raw.nickName || resolvedProfile.name || raw.name || raw.refId || "",
         avatar: fromProfile.avatar || raw.avatar || "",
-        bio: fromProfile.bio || raw.bio || ""
+        bio: resolvedProfile.bio || raw.bio || ""
       };
     }
     function renderContent(msg, conv) {
@@ -2047,16 +2117,17 @@ export function renderWechatStoryHtml(input) {
     function renderMessage(msg, conv, options) {
       const opts = options || {};
       const user = conv.profiles.users?.[msg.senderId] || { name: msg.senderId, avatar: '' };
+      const resolvedProfile = resolveEffectiveProfile(user, msg.timestamp || msg.timeText || '');
       const self = conv.self;
       const displayName = resolveStoryDisplayName(conv, msg.senderId);
       const selfCls = msg.senderId === self ? 'msg self' : 'msg';
-      const avatar = '<button class="avatar-btn" type="button"'
-        + ' data-name="' + esc(displayName || msg.senderId) + '"'
-        + ' data-nick-name="' + esc(displayName || user.name || msg.senderId || '') + '"'
-        + ' data-bio="' + esc(user.bio || '') + '"'
-        + ' data-avatar="' + esc(user.avatar || '') + '">'
-        + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(displayName || msg.senderId) + '"/>'
-        + '</button>';
+        const avatar = '<button class="avatar-btn" type="button"'
+         + ' data-name="' + esc(resolvedProfile.name || msg.senderId) + '"'
+         + ' data-display-name="' + esc(displayName || user.nickName || resolvedProfile.name || msg.senderId || '') + '"'
+         + ' data-bio="' + esc(resolvedProfile.bio || '') + '"'
+         + ' data-avatar="' + esc(user.avatar || '') + '">'
+         + '<img class="avatar" src="' + esc(user.avatar || '') + '" alt="' + esc(displayName || resolvedProfile.name || msg.senderId) + '"/>'
+         + '</button>';
       const bubbleCls = (msg.kind === 'image' || msg.kind === 'voice') ? 'bubble media' : 'bubble';
       const body = (opts.forceRecalled && msg.recall)
         ? '<div class="recall-tip">' + esc(recallText(msg, conv, user)) + '</div>'
@@ -2113,7 +2184,7 @@ export function renderWechatStoryHtml(input) {
 
       listView.style.display = 'none';
       detailView.style.display = 'flex';
-      chatTitle.textContent = conv.title || '';
+       chatTitle.textContent = conversationTitle(conv) || '';
       timeline.innerHTML = '';
 
       const seen = sceneSeenMap(scene.id);

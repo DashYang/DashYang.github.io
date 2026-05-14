@@ -1,0 +1,8 @@
+profile:
+  name: "张医生"
+  avatar: "https://picsum.photos/seed/ZhangJingyi/100/100"
+  bio: "欢迎添加微信沟通创新疗法"
+  chatFiles: ["./sister/1.md", "./sister/2.md", "./sister/3.md", "./sister/4.md"]
+  aliases:
+    selfInGroups:
+        sister_mom: "妈妈"  

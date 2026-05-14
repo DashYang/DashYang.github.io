@@ -1,8 +1,0 @@
-ui:
-  statusBar:
-    carrier: "一点就通"
-    time: "22:30"
-    battery: "81%"
-  topTitle: "巨信"
-  searchPlaceholder: "查询"
-  persistKey: "room_wechat_seen_chapter1"

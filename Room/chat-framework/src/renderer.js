@@ -108,6 +108,13 @@ function escapeHtml(s = "") {
     .replaceAll("'", "&#39;");
 }
 
+function safeJson(data) {
+  return JSON.stringify(data)
+    .replaceAll("<", "\\u003c")
+    .replaceAll(">", "\\u003e")
+    .replaceAll("&", "\\u0026");
+}
+
 /**
  * Convert plain URLs in text to clickable anchors.
  *
@@ -292,9 +299,8 @@ function renderMessage(m, ctx) {
   const displayName = resolveDisplayName(m.senderId, ctx, m.senderId === selfId);
   const cls = m.senderId === selfId ? "msg self" : "msg";
   const avatar = `<button class="avatar-btn" type="button"
-      data-name="${escapeHtml(displayName || m.senderId)}"
-      data-nick-name="${escapeHtml(displayName || u.name || m.senderId)}"
-      data-bio="${escapeHtml(u.bio || "")}"
+      data-user-id="${escapeHtml(m.senderId)}"
+      data-display-name="${escapeHtml(displayName || u.nickName || u.name || m.senderId)}"
       data-avatar="${escapeHtml(u.avatar || "")}">
       <img class="avatar" src="${escapeHtml(u.avatar || "")}" alt="${escapeHtml(u.name || m.senderId)}"/>
     </button>`;
@@ -325,6 +331,7 @@ function renderMessage(m, ctx) {
 export function renderHtml(ctx) {
   const themeId = ctx.frontmatter.theme || "wechat";
   const theme = themes[themeId] || themes.wechat;
+  const profileUsers = safeJson(ctx.profiles?.users || {});
 
   const chatTitle = ctx.chat.title || ctx.frontmatter.title || "聊天记录";
   const subtitle = ctx.chat.type === "group"
@@ -376,6 +383,7 @@ export function renderHtml(ctx) {
   </aside>
   <script>
     (() => {
+      const profileUsers = ${profileUsers};
       const modal = document.getElementById('profile-modal');
       const avatar = document.getElementById('profile-avatar');
       const nameEl = document.getElementById('profile-name');
@@ -393,11 +401,38 @@ export function renderHtml(ctx) {
       const voiceBtns = Array.from(document.querySelectorAll('.voice-btn'));
       const articleBtns = Array.from(document.querySelectorAll('.article-card'));
 
+      function parseIdentityReference(raw) {
+        if (!raw) return null;
+        const text = String(raw).trim();
+        if (!text) return null;
+        const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text)
+          ? text + 'T00:00:00'
+          : text.replace(' ', 'T');
+        const time = new Date(normalized).getTime();
+        return Number.isNaN(time) ? null : time;
+      }
+      function resolveActiveProfile(user, referenceTime) {
+        const refMs = parseIdentityReference(referenceTime) ?? Date.now();
+        let resolvedName = user?.name || user?.id || '';
+        let resolvedBio = user?.bio || '';
+        const timeline = Array.isArray(user?.identityTimeline) ? user.identityTimeline : [];
+        timeline.forEach((entry) => {
+          if (!entry || typeof entry.effectiveAtMs !== 'number' || entry.effectiveAtMs > refMs) return;
+          if (entry.name !== undefined) resolvedName = entry.name;
+          if (entry.bio !== undefined) resolvedBio = entry.bio;
+        });
+        return { name: resolvedName, bio: resolvedBio };
+      }
+
       function openProfile(btn) {
-        avatar.src = btn.dataset.avatar || '';
-        nameEl.textContent = btn.dataset.name || '';
-        wechatEl.textContent = '昵称：' + (btn.dataset.nickName || '未设置');
-        bioEl.textContent = '简介：' + (btn.dataset.bio || '无');
+        const userId = btn.dataset.userId || '';
+        const displayName = btn.dataset.displayName || btn.dataset.nickName || '';
+        const user = profileUsers[userId] || {};
+        const resolved = resolveActiveProfile(user, new Date().toISOString());
+        avatar.src = btn.dataset.avatar || user.avatar || '';
+        nameEl.textContent = resolved.name || displayName || userId;
+        wechatEl.textContent = '昵称：' + (displayName || resolved.name || '未设置');
+        bioEl.textContent = '简介：' + (resolved.bio || '无');
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
       }

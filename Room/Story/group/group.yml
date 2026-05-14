@@ -1,0 +1,5 @@
+chat:
+  type: "group"
+  title: "4幢一家人"
+  groupInfo:
+    avatar: "https://picsum.photos/seed/group/100/100"

@@ -28,15 +28,81 @@ export function readText(filePath) {
  * @example
  * validateMessages(messages, profiles)
  */
-export function validateMessages(messages, profiles) {
+export function validateMessages(messages, profiles, context = {}) {
   const ids = new Set();
   for (const m of messages) {
     if (ids.has(m.id)) throw new Error(`Duplicate message id: ${m.id}`);
     ids.add(m.id);
     if (!profiles.users?.[m.senderId]) {
-      throw new Error(`Unknown sender: ${m.senderId}`);
+      throw new Error(buildUnknownSenderMessage(m.senderId, profiles, context));
     }
   }
+}
+
+function formatPathForError(filePath) {
+  if (!filePath) return "";
+  const rel = path.relative(process.cwd(), filePath);
+  if (!rel || rel.startsWith("..")) return filePath;
+  return rel;
+}
+
+function buildUnknownSenderMessage(senderId, profiles, context = {}) {
+  const knownSenderIds = Object.keys(profiles.users || {}).sort((a, b) => a.localeCompare(b, "zh-CN"));
+  const shownSenderIds = knownSenderIds.slice(0, 8);
+  const suffix = knownSenderIds.length > shownSenderIds.length ? ", ..." : "";
+  const profilePath = context.profilePath ? formatPathForError(context.profilePath) : "the configured profiles source";
+  const profileSource = context.profileIsDirectory
+    ? `profile file names in ${profilePath}`
+    : `profile ids in ${profilePath}`;
+  const fixHint = context.profileIsDirectory
+    ? `Fix: add a profile file named "${senderId}.yml" in ${profilePath}, or change the markdown sender id to an existing profile id.`
+    : `Fix: add a profile entry keyed by "${senderId}" in ${profilePath}, or change the markdown sender id to an existing profile id.`;
+  const knownHint = shownSenderIds.length
+    ? ` Known sender ids: ${shownSenderIds.join(", ")}${suffix}`
+    : "";
+  return `Unknown sender "${senderId}". Sender ids must match ${profileSource}. ${fixHint}${knownHint}`;
+}
+
+function parseIdentityReference(raw) {
+  if (!raw) return null;
+  const text = String(raw).trim();
+  if (!text) return null;
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text)
+    ? `${text}T00:00:00`
+    : text.replace(" ", "T");
+  const time = new Date(normalized).getTime();
+  return Number.isNaN(time) ? null : time;
+}
+
+function normalizeIdentityTimeline(timeline) {
+  const out = [];
+  for (const [effectiveAt, identity] of Object.entries(timeline || {})) {
+    if (!identity || typeof identity !== "object" || Array.isArray(identity)) continue;
+    const effectiveAtMs = parseIdentityReference(effectiveAt);
+    if (effectiveAtMs === null) continue;
+    out.push({
+      effectiveAt,
+      effectiveAtMs,
+      name: Object.prototype.hasOwnProperty.call(identity, "name") ? String(identity.name || "") : undefined,
+      bio: Object.prototype.hasOwnProperty.call(identity, "bio") ? String(identity.bio || "") : undefined
+    });
+  }
+  out.sort((a, b) => a.effectiveAtMs - b.effectiveAtMs);
+  return out;
+}
+
+export function resolveProfileIdentity(user, referenceTime) {
+  const refMs = parseIdentityReference(referenceTime) ?? Date.now();
+  let name = user?.name || user?.id || "";
+  let bio = user?.bio || "";
+  const timeline = Array.isArray(user?.identityTimeline) ? user.identityTimeline : [];
+  for (const entry of timeline) {
+    if (!entry || typeof entry !== "object") continue;
+    if (typeof entry.effectiveAtMs !== "number" || entry.effectiveAtMs > refMs) continue;
+    if (entry.name !== undefined) name = entry.name;
+    if (entry.bio !== undefined) bio = entry.bio;
+  }
+  return { name, bio };
 }
 
 function normalizeUserProfile(id, parsed) {
@@ -51,6 +117,7 @@ function normalizeUserProfile(id, parsed) {
     avatar: profile.avatar || "",
     bio: profile.bio || "",
     nickName: profile.nickName || profile.name || id,
+    identityTimeline: normalizeIdentityTimeline(profile.identityTimeline),
     aliases: {
       selfInGroups: profile.aliases?.selfInGroups || {},
       contacts: profile.aliases?.contacts || {}
@@ -158,11 +225,15 @@ export function loadConversationFromMarkdown(markdownPath, options = {}) {
       ? path.resolve(options.articlesPath)
       : path.resolve(rootDir, parsed.frontmatter.articles || "articles");
     const profiles = options.profiles || loadProfiles(profilePath);
+    const profileStat = fs.statSync(profilePath);
     const articles = loadArticlesFromDirectory(articlesPath);
     const chatWrap = chatPath ? parseSimpleYaml(readText(chatPath)) : {};
     const chat = normalizeChat(chatWrap.chat || {}, parsed.messages, profiles, options.selfId);
 
-    validateMessages(parsed.messages, profiles);
+    validateMessages(parsed.messages, profiles, {
+      profilePath,
+      profileIsDirectory: profileStat.isDirectory()
+    });
     const withTime = resolveTimes(parsed.messages);
     const messages = resolveQuotes(withTime);
 
@@ -176,7 +247,7 @@ export function loadConversationFromMarkdown(markdownPath, options = {}) {
     };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
-    throw new Error(`[${markdownPath}] ${reason}`);
+    throw new Error(`[${formatPathForError(markdownPath)}] ${reason}`);
   }
 }
 

@@ -85,16 +85,14 @@ a.inline-link { color: #576b95; }
     </header>
     <section class="timeline">
       <article class="msg self"><div class="msg-main"><p class="meta">alice · 2026-04-09 10:00</p><div class="bubble"><div>大家早上好，今天把 Markdown 转聊天记录页面的框架先跑起来。</div></div></div><button class="avatar-btn" type="button"
-      data-name="alice"
-      data-nick-name="alice"
-      data-bio=""
+      data-user-id="alice"
+      data-display-name="alice"
       data-avatar="">
       <img class="avatar" src="" alt="alice"/>
     </button></article>
 <article class="msg"><button class="avatar-btn" type="button"
-      data-name="bob"
-      data-nick-name="bob"
-      data-bio=""
+      data-user-id="bob"
+      data-display-name="bob"
       data-avatar="">
       <img class="avatar" src="" alt="bob"/>
     </button><div class="msg-main"><p class="meta">bob · 2026-04-09 10:02</p><div class="bubble"><a class="card" href="https://example.com/spec" target="_blank" rel="noreferrer">
@@ -103,9 +101,8 @@ a.inline-link { color: #576b95; }
       <div class="card-footer"><span>example.com</span><span>链接卡片</span></div>
     </a></div></div></article>
 <article class="msg"><button class="avatar-btn" type="button"
-      data-name="clara"
-      data-nick-name="clara"
-      data-bio=""
+      data-user-id="clara"
+      data-display-name="clara"
       data-avatar="">
       <img class="avatar" src="" alt="clara"/>
     </button><div class="msg-main"><p class="meta">clara · 2026-04-09 10:02</p><div class="bubble"><div class="quote"><div>bob · 2026-04-09 10:02</div><div>[链接] example.com</div></div><div>我看了，链接里的信息可以做成卡片样式。</div></div></div></article>
@@ -114,23 +111,20 @@ a.inline-link { color: #576b95; }
       <div class="card-desc">AI research and deployment company.</div>
       <div class="card-footer"><span>openai.com</span><span>链接卡片</span></div>
     </a></div></div><button class="avatar-btn" type="button"
-      data-name="alice"
-      data-nick-name="alice"
-      data-bio=""
+      data-user-id="alice"
+      data-display-name="alice"
       data-avatar="">
       <img class="avatar" src="" alt="alice"/>
     </button></article>
 <article class="msg"><button class="avatar-btn" type="button"
-      data-name="bob"
-      data-nick-name="bob"
-      data-bio=""
+      data-user-id="bob"
+      data-display-name="bob"
       data-avatar="">
       <img class="avatar" src="" alt="bob"/>
     </button><div class="msg-main"><p class="meta">bob · 2026-04-09 10:04</p><div class="bubble media"><img class="img" src="https://picsum.photos/seed/wireframe/480/320" alt="image"/></div></div></article>
 <article class="msg self"><div class="msg-main"><p class="meta">alice · 2026-04-09 10:05</p><div class="bubble"><div class="quote"><div>clara · 2026-04-09 10:02</div><div>我看了，链接里的信息可以做成卡片样式。</div></div><div>好，我先把引用样式和主题切换接口补上。</div></div></div><button class="avatar-btn" type="button"
-      data-name="alice"
-      data-nick-name="alice"
-      data-bio=""
+      data-user-id="alice"
+      data-display-name="alice"
       data-avatar="">
       <img class="avatar" src="" alt="alice"/>
     </button></article>
@@ -161,6 +155,7 @@ a.inline-link { color: #576b95; }
   </aside>
   <script>
     (() => {
+      const profileUsers = {"alice":{"name":"alice","id":"alice","avatar":"","bio":"","nickName":"alice","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}},"bob":{"name":"bob","id":"bob","avatar":"","bio":"","nickName":"bob","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}},"clara":{"name":"clara","id":"clara","avatar":"","bio":"","nickName":"clara","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}}};
       const modal = document.getElementById('profile-modal');
       const avatar = document.getElementById('profile-avatar');
       const nameEl = document.getElementById('profile-name');
@@ -178,11 +173,38 @@ a.inline-link { color: #576b95; }
       const voiceBtns = Array.from(document.querySelectorAll('.voice-btn'));
       const articleBtns = Array.from(document.querySelectorAll('.article-card'));
 
+      function parseIdentityReference(raw) {
+        if (!raw) return null;
+        const text = String(raw).trim();
+        if (!text) return null;
+        const normalized = /^d{4}-d{2}-d{2}$/.test(text)
+          ? text + 'T00:00:00'
+          : text.replace(' ', 'T');
+        const time = new Date(normalized).getTime();
+        return Number.isNaN(time) ? null : time;
+      }
+      function resolveActiveProfile(user, referenceTime) {
+        const refMs = parseIdentityReference(referenceTime) ?? Date.now();
+        let resolvedName = user?.name || user?.id || '';
+        let resolvedBio = user?.bio || '';
+        const timeline = Array.isArray(user?.identityTimeline) ? user.identityTimeline : [];
+        timeline.forEach((entry) => {
+          if (!entry || typeof entry.effectiveAtMs !== 'number' || entry.effectiveAtMs > refMs) return;
+          if (entry.name !== undefined) resolvedName = entry.name;
+          if (entry.bio !== undefined) resolvedBio = entry.bio;
+        });
+        return { name: resolvedName, bio: resolvedBio };
+      }
+
       function openProfile(btn) {
-        avatar.src = btn.dataset.avatar || '';
-        nameEl.textContent = btn.dataset.name || '';
-        wechatEl.textContent = '昵称：' + (btn.dataset.nickName || '未设置');
-        bioEl.textContent = '简介：' + (btn.dataset.bio || '无');
+        const userId = btn.dataset.userId || '';
+        const displayName = btn.dataset.displayName || btn.dataset.nickName || '';
+        const user = profileUsers[userId] || {};
+        const resolved = resolveActiveProfile(user, new Date().toISOString());
+        avatar.src = btn.dataset.avatar || user.avatar || '';
+        nameEl.textContent = resolved.name || displayName || userId;
+        wechatEl.textContent = '昵称：' + (displayName || resolved.name || '未设置');
+        bioEl.textContent = '简介：' + (resolved.bio || '无');
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
       }

@@ -42,6 +42,7 @@ function main() {
     const [inputMd, outputHtml] = process.argv.slice(2);
     if (!inputMd || !outputHtml) {
       console.error("Usage: node src/build.js <input.md> <output.html>");
+      console.error("Single-file root semantics: relative frontmatter paths such as profiles, chat, and articles resolve from the input markdown file's directory.");
       process.exit(1);
     }
     buildSingle(inputMd, outputHtml);

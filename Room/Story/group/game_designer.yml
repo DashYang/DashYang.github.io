@@ -1,0 +1,5 @@
+chat:
+  type: "group"
+  title: "独立游戏开发者联盟"
+  groupInfo:
+    avatar: "https://picsum.photos/seed/group1/100/100"

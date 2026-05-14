@@ -1,0 +1,5 @@
+chat:
+  type: "group"
+  title: "毕业一群(500)"
+  groupInfo:
+    avatar: "https://picsum.photos/seed/group2/100/100"

@@ -4,29 +4,49 @@
 
 `chat-framework` 是一个“聊天记录到网页”的静态生成框架，支持：
 - 由 Markdown + YAML 生成聊天页面
-- 单会话渲染
-- 多会话微信主界面聚合
-- 多账号登录/解锁/切换（story.yml，可选）
-- 图片、链接卡片、引用消息
+- **单会话页 (Single Conversation Page)** 渲染
+- **会话总览页 (Conversation Hub)** 聚合
+- **账号推进 (Account Progression)** 与 **系统时间 (System Time)** 驱动的互动体验
+- 多账号解锁与快速切换（story.yml）
+- 图片、链接卡片、引用消息、语音、撤回
 - 回放式展示（按间隔逐条出现）
 - 回放完成状态本地持久化（再次进入直接全量显示）
 
-## 2. 功能详细描述
+## 2. 核心概念设计
 
-### 2.1 输入与输出
+### 2.1 系统时间 (System Time)
+
+在会话总览页模式下，系统时间（顶栏中心）不再是静态配置，而是由当前账号的阶段驱动：
+- **来源**: 消息列表中的日期分布。
+- **推进**: 用户完成当前阶段的所有互动后，系统自动推移到下一日期。
+- **隔离**: 系统时间进度按账号独立存储。
+- **初始值**: 初次渲染时可先显示 `ui.yml` 中的 `statusBar.time`，进入运行态后再切换到当前阶段日期。
+
+### 2.2 账号推进 (Account Progression)
+
+通过 `story.yml` 定义多账号的线性解锁：
+- **顺序**: 按 `accountOrder` 定义。
+- **解锁条件**: 前序账号完成所有剧情互动（阅读、朋友圈、文章）。
+- **反馈**: 下一个账号在“我”Tab 出现红点提示。
+- **定位**: `story.yml` 是会话总览页中的推进配置，而不是第三种主要渲染产物。
+
+## 3. 功能详细描述
+
+### 3.1 输入与输出
 
 输入：
 - `chat.md`：消息内容与顺序
 - `profiles.yml`：发送者画像
 - `chat.yml`：会话元信息
-- `ui.yml`：多会话主界面文案与状态栏（可选）
-- `story.yml`：多账号解锁顺序与切换入口（多会话可选）
+- `ui.yml`：总览页主界面文案与状态栏（可选）
+- `story.yml`：账号推进顺序与切换入口（总览页可选）
 
 输出：
-- 单会话：`dist/index.html` 或指定输出
-- 多会话：`dist/wechat-hub.html`（一个页面聚合多个 md）
+- 单会话页：`dist/index.html` 或指定输出
+- 会话总览页：`dist/wechat-hub.html`（一个页面聚合多个 md）
 
-### 2.2 消息能力
+
+### 3.2 消息能力
 
 - 文本消息：自动识别 URL 并转链接
 - 图片消息：`[image]`
@@ -34,18 +54,20 @@
 - 引用消息：`[quote:messageId]`（引用前文）
 - 时间：首条绝对时间，后续可相对时间
 
-### 2.3 多会话交互能力
+### 3.3 会话总览页交互能力
 
-- 主界面展示会话列表（类似微信）
+- 主界面展示会话列表
 - 点击会话进入详情回放
 - 首次进入：先显示对方第一条，再按 `replayIntervalMs` 逐条播放
 - 回放结束：显示“当前聊天已结束”
 - 再次进入：若会话已完整播放过，直接全量展示
 - 本地记忆：基于 `localStorage` 的 `persistKey`
+- **系统时间驱动**: 详情页与总览页共用阶段时间。
+- **账号隔离**: 每个账号拥有独立的已读状态与进度。
 
-## 3. 模块设计
+## 4. 模块设计
 
-### 3.1 `src/yaml.js`
+### 4.1 `src/yaml.js`
 
 职责：
 - 轻量 YAML 解析器
@@ -54,7 +76,7 @@
 关键接口：
 - `parseSimpleYaml(input)`
 
-### 3.2 `src/parser.js`
+### 4.2 `src/parser.js`
 
 职责：
 - 解析 `chat.md` frontmatter
@@ -64,7 +86,7 @@
 关键接口：
 - `parseChatMarkdown(raw)`
 
-### 3.3 `src/time.js`
+### 4.3 `src/time.js`
 
 职责：
 - 时间字符串归一化
@@ -75,7 +97,7 @@
 - `resolveTimes(messages)`
 - `resolveQuotes(messages)`
 
-### 3.4 `src/load-conversation.js`
+### 4.4 `src/load-conversation.js`
 
 职责：
 - 读取 md 与关联 yaml
@@ -85,7 +107,7 @@
 关键接口：
 - `loadConversationFromMarkdown(markdownPath)`
 
-### 3.5 `src/renderer.js`
+### 4.5 `src/renderer.js`
 
 职责：
 - 渲染单会话 HTML 页面
@@ -94,26 +116,23 @@
 关键接口：
 - `renderHtml(ctx)`
 
-### 3.6 `src/multi-renderer.js`
+### 4.6 `src/multi-renderer.js`
 
 职责：
-- 渲染微信风格多会话聚合页
-- 会话列表、详情回放、结束提示、返回
+- 渲染会话总览页聚合页
+- 包含会话列表、详情回放、朋友圈、文章列表
+- 实现 **账号推进** 与 **系统时间** 的前端逻辑
 - 本地持久化已播放状态
 
-关键接口：
-- `buildConversationModels(conversations)`
-- `renderWechatHubHtml(input)`
-
-### 3.7 `src/build.js` 与 `src/build-folder.js`
+### 4.7 `src/build.js` 与 `src/build-folder.js`
 
 职责：
-- `build.js`：单文件构建
-- `build-folder.js`：目录内多 md 构建成一个聚合界面
+- `build.js`：单会话页构建
+- `build-folder.js`：目录内多 md 构建成一个会话总览页
 
-## 4. 渲染过程
+## 5. 渲染过程
 
-### 4.1 单会话渲染流程
+### 5.1 单会话页渲染流程
 
 1. `build.js` 读取 `chat.md`
 2. `loadConversationFromMarkdown` 解析 `chat.md/profiles.yml/chat.yml`
@@ -121,19 +140,19 @@
 4. `renderHtml` 生成完整 HTML
 5. 写入 `dist/*.html`
 
-### 4.2 多会话渲染流程
+### 5.2 会话总览页渲染流程
 
 1. `build-folder.js` 扫描目录下所有 `*.md`
 2. 对每个 md 执行单会话加载与归一化
 3. 读取同目录 `ui.yml`（可选）
-4. 读取同目录 `story.yml`（可选，多账号）
-4. `buildConversationModels` 生成列表视图模型
-5. `renderWechatHubHtml` 生成聚合页面
-6. 浏览器端 JS 执行回放逻辑与本地记忆
+4. 读取同目录 `story.yml`（可选）
+5. `buildConversationModels` 生成列表视图模型
+6. `renderWechatHubHtml` 生成聚合页面
+7. 浏览器端 JS 执行回放、系统时间推移、账号切换逻辑
 
-## 5. 调用链路（调用电路）
+## 6. 调用链路（调用电路）
 
-### 5.1 单会话
+### 6.1 单会话页
 
 ```text
 CLI: node src/build.js
@@ -147,7 +166,7 @@ CLI: node src/build.js
   -> fs.writeFileSync
 ```
 
-### 5.2 多会话
+### 6.2 会话总览页
 
 ```text
 CLI: node src/build-folder.js
@@ -160,18 +179,19 @@ CLI: node src/build-folder.js
   -> fs.writeFileSync
 ```
 
-### 5.3 浏览器端运行时
+### 6.3 浏览器端运行时
 
 ```text
 open wechat-hub.html
   -> parse embedded JSON payload
+  -> init account & story progression
   -> render conversation list
-  -> multi-account: show "我" tab account switch (if story.yml + multiple self ids)
+  -> if account fully completed then unlock next account in "我" tab
   -> click list item
-      -> openConversation
+      -> openConversation (updates System Time display)
       -> if seenMap[id] then full render
       -> else interval replay + end tip
-      -> mark seen in localStorage
+      -> mark seen in localStorage & check for progression
 ```
 
 ## 6. 技术栈

@@ -3,6 +3,10 @@ profile:
   nickName: "melongame"
   avatar: "https://picsum.photos/seed/protagonist/100/100"
   bio: "独立游戏开发者"
+  identityTimeline:
+    2026-04-29:
+      name: "西瓜（Room 维护中）"
+      bio: "独立游戏开发者 / Room 项目维护者"
   aliases:
     selfInGroups:
       "Room 功能预览群": "瓜总"

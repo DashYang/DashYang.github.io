@@ -132,6 +132,7 @@ function main() {
     const [inputDir, outputHtml] = process.argv.slice(2);
     if (!inputDir || !outputHtml) {
       console.error("Usage: node src/build-folder.js <input-folder> <output.html>");
+      console.error("Folder-build root semantics: profiles/, profiles.yml, ui.yml, story.yml, chatFiles, and groupChats resolve from the provided inputDir.");
       process.exit(1);
     }
     buildFolder(inputDir, outputHtml);
