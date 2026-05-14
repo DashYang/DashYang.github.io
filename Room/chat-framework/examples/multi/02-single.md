@@ -2,7 +2,6 @@
 title: "和 Bob 的对话"
 profiles: "./profiles.yml"
 chat: "./single.yml"
-replayIntervalMs: 800
 ---
 
 @alice #s1 [2026-04-09 11:00:00]
@@ -15,4 +14,4 @@ replayIntervalMs: 800
 好，另外要支持每个会话单独配置间隔。
 
 @bob #s4 [+30s]
-收到，我把 replayIntervalMs 放到 frontmatter。
+收到，我让回放节奏自动按内容长度推算。

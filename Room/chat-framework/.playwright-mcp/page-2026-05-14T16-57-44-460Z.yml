@@ -1,0 +1,36 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: 中国移动
+    - generic [ref=e5]: 2026-04-28
+    - generic [ref=e6]: 76%
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]: 微信
+      - generic [ref=e10]: ＋
+    - generic [ref=e12]: 🔍 搜索
+    - generic [ref=e13]:
+      - button "avatar Room 功能预览群 [名片] 周警官 20:01" [ref=e14] [cursor=pointer]:
+        - img "avatar" [ref=e16]
+        - generic [ref=e17]:
+          - generic [ref=e18]: Room 功能预览群
+          - generic [ref=e19]: "[名片] 周警官"
+        - generic [ref=e20]: 20:01
+      - button "avatar 老姐 [链接] 版本更新记录 21:10" [ref=e21] [cursor=pointer]:
+        - img "avatar" [ref=e23]
+        - generic [ref=e24]:
+          - generic [ref=e25]: 老姐
+          - generic [ref=e26]: "[链接] 版本更新记录"
+        - generic [ref=e27]: 21:10
+  - generic [ref=e28]:
+    - generic [ref=e29]:
+      - img [ref=e31]
+      - generic [ref=e33]: 微信
+    - generic [ref=e34]:
+      - img [ref=e36]
+      - generic [ref=e39]: 文章
+    - generic [ref=e41]:
+      - img [ref=e43]
+      - generic [ref=e46]: 发现
+    - generic [ref=e48]:
+      - img [ref=e50]
+      - generic [ref=e53]: 我

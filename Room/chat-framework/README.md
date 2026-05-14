@@ -33,7 +33,6 @@ title: "项目讨论记录"
 profiles: "./profiles.yml"
 chat: "./chat.yml"
 theme: "wechat"
-replayIntervalMs: 1000
 specVersion: "1.0"
 ---
 
@@ -99,7 +98,7 @@ profile:
   - **单文件构建 (`npm run build`)**：Markdown 头部 frontmatter 中的 `profiles/chat/articles` 等相对路径，均相对于该 **Markdown 文件所在的目录** 解析。
   - **文件夹构建 (`npm run build:folder`)**：`profiles/` 目录、`profiles.yml`、`ui.yml`、`story.yml` 以及 `chatFiles` 和 `groupChats` 中指定的路径，均相对于传入的 **`inputDir` 目录** 解析。
 - 首屏是会话列表，预览按“未读当天首条 / 已读当天最后一条”动态更新。
-- 点击会话后按 `replayIntervalMs` 逐条播放消息（默认 1000ms）
+- 点击会话后会按消息内容自动估算阅读节奏逐条播放；文本越长，停留越久
 - 播放完成后显示小字：`当前聊天已结束`
 - 可点击“返回”继续看其他会话
 - 聊天窗口支持滚动查看历史与最新消息

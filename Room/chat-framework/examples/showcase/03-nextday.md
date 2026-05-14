@@ -1,7 +1,6 @@
 ---
 title: "次日解锁示例"
 profiles: "./profiles"
-replayIntervalMs: 800
 specVersion: "1.0"
 ---
 

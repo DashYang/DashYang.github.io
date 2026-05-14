@@ -1,0 +1,91 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: 中国移动
+    - generic [ref=e5]: 2026-04-28
+    - generic [ref=e6]: 76%
+  - generic [ref=e29]:
+    - generic [ref=e30]:
+      - img [ref=e32]
+      - generic [ref=e34]: 微信
+    - generic [ref=e36]:
+      - img [ref=e38]
+      - generic [ref=e41]: 文章
+    - generic [ref=e43]:
+      - img [ref=e45]
+      - generic [ref=e48]: 发现
+    - generic [ref=e50]:
+      - img [ref=e52]
+      - generic [ref=e55]: 我
+  - generic [ref=e56]:
+    - generic [ref=e57]:
+      - button "返回" [ref=e58] [cursor=pointer]
+      - generic [ref=e59]: Room 功能预览群
+    - generic [ref=e60]:
+      - article [ref=e61]:
+        - button "物业小雅（备注）" [ref=e62] [cursor=pointer]:
+          - img "物业小雅（备注）" [ref=e63]
+        - generic [ref=e64]:
+          - paragraph [ref=e65]: 物业小雅（备注） · 2026-04-28 20:00
+          - generic [ref=e68]: 今晚这条用于展示全部能力，大家随便发 🙂
+      - article [ref=e69]:
+        - button "603" [ref=e70] [cursor=pointer]:
+          - img "603" [ref=e71]
+        - generic [ref=e72]:
+          - paragraph [ref=e73]: 603 · 2026-04-28 20:00
+          - generic [ref=e76]: 我先来一条普通文本，顺便@protagonist 看看 mention 效果
+      - article [ref=e77]:
+        - generic [ref=e78]:
+          - paragraph [ref=e79]: 奋斗的西瓜 · 2026-04-28 20:00
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - generic [ref=e83]: 603 · 2026-04-28 20:00
+              - generic [ref=e84]: 我先来一条普通文本，顺便@protagonist 看看 mention 效果
+            - generic [ref=e85]: 收到，引用和 emoji 都 OK 👍
+        - button "奋斗的西瓜" [ref=e86] [cursor=pointer]:
+          - img "奋斗的西瓜" [ref=e87]
+      - article [ref=e88]:
+        - button "老姐" [ref=e89] [cursor=pointer]:
+          - img "老姐" [ref=e90]
+        - generic [ref=e91]:
+          - paragraph [ref=e92]: 老姐 · 2026-04-28 20:00
+          - generic [ref=e94]:
+            - img "image" [ref=e95]
+            - generic [ref=e96]: 图 + 文的消息说明在这里，支持换行。 第二行说明。
+      - article [ref=e97]:
+        - generic [ref=e98]:
+          - paragraph [ref=e99]: 奋斗的西瓜 · 2026-04-28 20:01
+          - generic [ref=e101]:
+            - button "▶ 9\"" [ref=e102] [cursor=pointer]:
+              - generic [ref=e103]: ▶
+              - generic [ref=e104]: 9"
+            - generic [ref=e105]: 这是语音转写示例，点一下可以播放。
+        - button "奋斗的西瓜" [ref=e106] [cursor=pointer]:
+          - img "奋斗的西瓜" [ref=e107]
+      - article [ref=e108]:
+        - button "603" [ref=e109] [cursor=pointer]:
+          - img "603" [ref=e110]
+        - generic [ref=e111]:
+          - paragraph [ref=e112]: 603 · 2026-04-28 20:01
+          - generic [ref=e114]: 603 撤回了一条消息
+      - article [ref=e115]:
+        - generic [ref=e116]:
+          - paragraph [ref=e117]: 奋斗的西瓜 · 2026-04-28 20:01
+          - button "独立开发者如何做首个可玩 Demo 游戏研发周刊 cover 从玩法切片、反馈循环到灰度测试，3 步完成最小可玩版本。" [ref=e120] [cursor=pointer]:
+            - generic [ref=e121]: 独立开发者如何做首个可玩 Demo
+            - generic [ref=e122]: 游戏研发周刊
+            - img "cover" [ref=e123]
+            - generic [ref=e124]: 从玩法切片、反馈循环到灰度测试，3 步完成最小可玩版本。
+        - button "奋斗的西瓜" [ref=e125] [cursor=pointer]:
+          - img "奋斗的西瓜" [ref=e126]
+      - article [ref=e127]:
+        - button "老姐" [ref=e128] [cursor=pointer]:
+          - img "老姐" [ref=e129]
+        - generic [ref=e130]:
+          - paragraph [ref=e131]: 老姐 · 2026-04-28 20:01
+          - generic [ref=e134]:
+            - img "contact" [ref=e135]
+            - generic [ref=e136]:
+              - generic [ref=e137]: 周警官
+              - generic [ref=e138]: 昵称：zhou_police
+              - generic [ref=e139]: 社区民警，负责周边治安巡查。
+      - generic [ref=e140]: 当前聊天已结束

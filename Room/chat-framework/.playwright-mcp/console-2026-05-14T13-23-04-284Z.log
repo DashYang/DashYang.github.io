@@ -1,0 +1,11 @@
+[      72ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-2, hasUnread: true, displayMid: g1} @ http://127.0.0.1:4173/showcase-wechat-hub.html:975
+[      72ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/showcase-wechat-hub.html:975
+[      73ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-2, hasUnread: true, displayMid: g1} @ http://127.0.0.1:4173/showcase-wechat-hub.html:975
+[      73ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/showcase-wechat-hub.html:975
+[    1668ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:4173/favicon.ico:0
+[  103869ms] [LOG] [chat-debug] openConversation {account: protagonist, day: 2026-04-28, conversationId: conv-2, stageSeen: false, stageMessages: 8} @ http://127.0.0.1:4173/showcase-wechat-hub.html:975
+[  111074ms] [LOG] [chat-debug] finishConversation {account: protagonist, day: 2026-04-28, conversationId: conv-2} @ http://127.0.0.1:4173/showcase-wechat-hub.html:975
+[  111074ms] [LOG] [chat-debug] markSeen {account: protagonist, day: 2026-04-28, conversationId: conv-2, stageSeen: Object} @ http://127.0.0.1:4173/showcase-wechat-hub.html:975
+[  255523ms] [WARNING] Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users. Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus. For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+Element with focus: <button.profile-close#profile-close>
+Ancestor with aria-hidden: <aside.profile-modal#profile-modal> @ http://127.0.0.1:4173/showcase-wechat-hub.html:0

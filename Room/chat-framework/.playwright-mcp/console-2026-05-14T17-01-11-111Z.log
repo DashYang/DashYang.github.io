@@ -1,0 +1,44 @@
+[      74ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-2, hasUnread: true, displayMid: g9} @ http://127.0.0.1:4173/wechat-hub.html:974
+[      74ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[      74ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-4, hasUnread: true, displayMid: n1} @ http://127.0.0.1:4173/wechat-hub.html:974
+[      75ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-2, hasUnread: true, displayMid: g9} @ http://127.0.0.1:4173/wechat-hub.html:974
+[      77ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[      77ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-4, hasUnread: true, displayMid: n1} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   32477ms] [LOG] [chat-debug] openConversation {account: protagonist, day: 2026-04-29, conversationId: conv-2, stageSeen: false, stageMessages: 10} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   34592ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-2, hasUnread: true, displayMid: g9} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   34592ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   34592ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-4, hasUnread: true, displayMid: n1} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   35437ms] [LOG] [chat-debug] openConversation {account: protagonist, day: 2026-04-29, conversationId: conv-4, stageSeen: false, stageMessages: 2} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   37045ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-2, hasUnread: true, displayMid: g9} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   37045ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   37045ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-4, hasUnread: true, displayMid: n1} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   38052ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-2, hasUnread: true, displayMid: g9} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   38052ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   38052ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-4, hasUnread: true, displayMid: n1} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   38053ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-2, hasUnread: true, displayMid: g9} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   38053ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   38053ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-4, hasUnread: true, displayMid: n1} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   38501ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:4173/favicon.ico:0
+[   39012ms] [LOG] [chat-debug] openConversation {account: protagonist, day: 2026-04-29, conversationId: conv-4, stageSeen: false, stageMessages: 2} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   46378ms] [LOG] [chat-debug] finishConversation {account: protagonist, day: 2026-04-29, conversationId: conv-4} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   46378ms] [LOG] [chat-debug] markSeen {account: protagonist, day: 2026-04-29, conversationId: conv-4, stageSeen: Object} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   48126ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-2, hasUnread: true, displayMid: g9} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   48126ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   48126ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-4, hasUnread: false, displayMid: n2} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   48925ms] [LOG] [chat-debug] openConversation {account: protagonist, day: 2026-04-29, conversationId: conv-2, stageSeen: false, stageMessages: 10} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   50631ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-2, hasUnread: true, displayMid: g9} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   50631ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   50631ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-4, hasUnread: false, displayMid: n2} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   51308ms] [LOG] [chat-debug] openConversation {account: protagonist, day: 2026-04-29, conversationId: conv-2, stageSeen: false, stageMessages: 10} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   58794ms] [LOG] [chat-debug] finishConversation {account: protagonist, day: 2026-04-29, conversationId: conv-2} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   58794ms] [LOG] [chat-debug] markSeen {account: protagonist, day: 2026-04-29, conversationId: conv-2, stageSeen: Object} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   60584ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-2, hasUnread: false, displayMid: g10} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   60584ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   60584ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-4, hasUnread: false, displayMid: n2} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   61313ms] [LOG] [chat-debug] openConversation {account: protagonist, day: 2026-04-29, conversationId: conv-3, stageSeen: false, stageMessages: 3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   61314ms] [LOG] [chat-debug] finishConversation {account: protagonist, day: 2026-04-29, conversationId: conv-3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   61314ms] [LOG] [chat-debug] markSeen {account: protagonist, day: 2026-04-29, conversationId: conv-3, stageSeen: Object} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   64337ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-2, hasUnread: false, displayMid: g10} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   64337ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   64337ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-29, conversationId: conv-4, hasUnread: false, displayMid: n2} @ http://127.0.0.1:4173/wechat-hub.html:974
+[   64973ms] [LOG] [chat-debug] openConversation {account: protagonist, day: 2026-04-29, conversationId: conv-2, stageSeen: true, stageMessages: 10} @ http://127.0.0.1:4173/wechat-hub.html:974

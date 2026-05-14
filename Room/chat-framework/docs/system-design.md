@@ -9,7 +9,7 @@
 - **账号推进 (Account Progression)** 与 **系统时间 (System Time)** 驱动的互动体验
 - 多账号解锁与快速切换（story.yml）
 - 图片、链接卡片、引用消息、语音、撤回
-- 回放式展示（按间隔逐条出现）
+- 回放式展示（按消息内容自动估算节奏逐条出现）
 - 回放完成状态本地持久化（再次进入直接全量显示）
 
 ## 2. 核心概念设计
@@ -58,7 +58,7 @@
 
 - 主界面展示会话列表
 - 点击会话进入详情回放
-- 首次进入：先显示对方第一条，再按 `replayIntervalMs` 逐条播放
+- 首次进入：先显示对方第一条，再按消息内容自动估算的阅读节奏逐条播放
 - 回放结束：显示“当前聊天已结束”
 - 再次进入：若会话已完整播放过，直接全量展示
 - 本地记忆：基于 `localStorage` 的 `persistKey`
@@ -190,7 +190,7 @@ open wechat-hub.html
   -> click list item
       -> openConversation (updates System Time display)
       -> if seenMap[id] then full render
-      -> else interval replay + end tip
+      -> else content-paced replay + end tip
       -> mark seen in localStorage & check for progression
 ```
 

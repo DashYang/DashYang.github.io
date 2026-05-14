@@ -1,0 +1,9 @@
+[      37ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-2, hasUnread: true, displayMid: g1} @ http://127.0.0.1:4173/showcase-wechat-hub.html:947
+[      37ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-3, hasUnread: true, displayMid: s1} @ http://127.0.0.1:4173/showcase-wechat-hub.html:947
+[      38ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-2, hasUnread: true, displayMid: g1} @ http://127.0.0.1:4173/showcase-wechat-hub.html:947
+[      38ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-3, hasUnread: true, displayMid: s1} @ http://127.0.0.1:4173/showcase-wechat-hub.html:947
+[   18779ms] [LOG] [chat-debug] openConversation {account: protagonist, day: 2026-04-28, conversationId: conv-3, stageSeen: false, stageMessages: 3} @ http://127.0.0.1:4173/showcase-wechat-hub.html:947
+[   21186ms] [LOG] [chat-debug] finishConversation {account: protagonist, day: 2026-04-28, conversationId: conv-3} @ http://127.0.0.1:4173/showcase-wechat-hub.html:947
+[   21187ms] [LOG] [chat-debug] markSeen {account: protagonist, day: 2026-04-28, conversationId: conv-3, stageSeen: Object} @ http://127.0.0.1:4173/showcase-wechat-hub.html:947
+[   70326ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-2, hasUnread: true, displayMid: g1} @ http://127.0.0.1:4173/showcase-wechat-hub.html:947
+[   70326ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/showcase-wechat-hub.html:947

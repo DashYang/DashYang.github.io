@@ -80,7 +80,6 @@ title: "<会话标题>"
 profiles: "./profiles.yml"
 chat: "./chat.yml"
 theme: "wechat"
-replayIntervalMs: 1000
 specVersion: "1.0"
 ---
 

@@ -2,7 +2,6 @@
 title: "Room 功能预览群"
 profiles: "./profiles"
 chat: "./group.yml"
-replayIntervalMs: 900
 specVersion: "1.0"
 ---
 

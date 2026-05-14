@@ -1,0 +1,63 @@
+{
+  "active_plan": "/Users/dash/workspace/DashYang.github.io/Room/chat-framework/.sisyphus/plans/todo-open-items.md",
+  "started_at": "2026-05-12T08:54:43.274Z",
+  "session_ids": [
+    "ses_1e4d859c1ffe22wjsat2O07qCO"
+  ],
+  "session_origins": {
+    "ses_1e4d859c1ffe22wjsat2O07qCO": "direct"
+  },
+  "plan_name": "todo-open-items",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Fix single-chat renderer name/remark contract",
+      "session_id": "ses_1e497b9f8ffeIBzuqj5Jqw1J2s",
+      "agent": "Sisyphus-Junior",
+      "updated_at": "2026-05-12T09:14:20.474Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "Fix multi-chat renderer parity for name/remark behavior",
+      "session_id": "ses_1e4876731ffeSHejySvssumRyt",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-12T09:20:52.627Z"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "Clarify build-root semantics in CLI/help/error surfaces",
+      "session_id": "ses_1e47e76f6ffeufkT7vitmtcMQT",
+      "agent": "Sisyphus-Junior",
+      "updated_at": "2026-05-12T09:30:20.755Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Update README for canonical nickname/remark and build-root rules",
+      "session_id": "ses_1e4791df0ffe8if4foHfAyo1BU",
+      "agent": "Sisyphus-Junior",
+      "updated_at": "2026-05-12T09:33:03.294Z"
+    },
+    "todo:5": {
+      "task_key": "todo:5",
+      "task_label": "5",
+      "task_title": "Update formal spec to encode the same semantics",
+      "session_id": "ses_1e4768ee2ffejvUZLmeRn98IhW",
+      "agent": "Sisyphus-Junior",
+      "updated_at": "2026-05-12T09:36:02.212Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "Plan Compliance Audit — oracle",
+      "session_id": "ses_1e4740fbaffeoofLrm0cR73SgQ",
+      "agent": "Sisyphus-Junior",
+      "updated_at": "2026-05-12T11:23:10.593Z"
+    }
+  }
+}

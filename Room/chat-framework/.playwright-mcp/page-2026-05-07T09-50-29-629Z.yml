@@ -1,0 +1,34 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: 中国移动
+    - generic [ref=e5]: 2026-04-28
+    - generic [ref=e6]: 76%
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]: 微信
+      - generic [ref=e10]: ＋
+    - generic [ref=e12]: 🔍 搜索
+    - generic [ref=e13]:
+      - button "avatar Room 功能预览群 今晚这条用于展示全部能力，大家随便发 [微笑] 09:05" [ref=e14] [cursor=pointer]:
+        - img "avatar" [ref=e15]
+        - generic [ref=e16]:
+          - generic [ref=e17]: Room 功能预览群
+          - generic [ref=e18]: 今晚这条用于展示全部能力，大家随便发 [微笑]
+        - generic [ref=e19]: 09:05
+      - button "avatar 姐姐 今天把预览页也补齐了，后续新功能都放这里回归。 21:10" [ref=e20] [cursor=pointer]:
+        - img "avatar" [ref=e21]
+        - generic [ref=e22]:
+          - generic [ref=e23]: 姐姐
+          - generic [ref=e24]: 今天把预览页也补齐了，后续新功能都放这里回归。
+        - generic [ref=e25]: 21:10
+  - generic [ref=e26]:
+    - generic [ref=e27]:
+      - text: 微信
+      - generic [ref=e28]: "2"
+    - generic [ref=e29]:
+      - text: 通讯录
+      - generic [ref=e30]: "6"
+    - generic [ref=e31]:
+      - text: 发现
+      - generic [ref=e32]: "5"
+    - generic [ref=e33]: 我

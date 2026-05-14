@@ -1,7 +1,6 @@
 ---
 title: "物业账号会话"
 profiles: "./profiles"
-replayIntervalMs: 900
 specVersion: "1.0"
 ---
 

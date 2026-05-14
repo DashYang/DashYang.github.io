@@ -2,7 +2,6 @@
 title: "MVP 项目群"
 profiles: "./profiles.yml"
 chat: "./group.yml"
-replayIntervalMs: 1000
 ---
 
 @alice #g1 [2026-04-09 09:30:00]

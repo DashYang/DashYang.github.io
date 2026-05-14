@@ -70,7 +70,6 @@ title: "会话标题"
 profiles: "./profiles.yml"
 chat: "./chat.yml"
 theme: "wechat"
-replayIntervalMs: 1000
 specVersion: "1.0"
 ---
 ```
@@ -80,7 +79,6 @@ specVersion: "1.0"
 - `profiles`：发送者配置路径，默认 `./profiles.yml`
 - `chat`：会话配置路径，默认 `./chat.yml`
 - `theme`：单会话页主题，默认 `wechat`
-- `replayIntervalMs`：详情页的逐条播放间隔，默认 `1000`
 - `specVersion`：规范版本，建议固定 `1.0`
 
 ### 2.2 消息头语法

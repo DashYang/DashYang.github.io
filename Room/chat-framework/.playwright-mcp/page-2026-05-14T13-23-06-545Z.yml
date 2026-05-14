@@ -1,0 +1,61 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - heading "项目讨论" [level=1] [ref=e4]
+    - paragraph [ref=e5]: 群聊 · 项目讨论
+  - generic [ref=e6]:
+    - article [ref=e7]:
+      - generic [ref=e8]:
+        - paragraph [ref=e9]: alice · 2026-04-09 10:00
+        - generic [ref=e11]: 大家早上好，今天把 Markdown 转聊天记录页面的框架先跑起来。
+      - button "alice" [ref=e12] [cursor=pointer]:
+        - img "alice" [ref=e13]
+    - article [ref=e14]:
+      - button "bob" [ref=e15] [cursor=pointer]:
+        - img "bob" [ref=e16]
+      - generic [ref=e17]:
+        - paragraph [ref=e18]: bob · 2026-04-09 10:02
+        - link "example.com https://example.com/spec example.com 链接卡片" [ref=e20] [cursor=pointer]:
+          - /url: https://example.com/spec
+          - generic [ref=e21]: example.com
+          - generic [ref=e22]: https://example.com/spec
+          - generic [ref=e23]:
+            - generic [ref=e24]: example.com
+            - generic [ref=e25]: 链接卡片
+    - article [ref=e26]:
+      - button "clara" [ref=e27] [cursor=pointer]:
+        - img "clara" [ref=e28]
+      - generic [ref=e29]:
+        - paragraph [ref=e30]: clara · 2026-04-09 10:02
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - generic [ref=e33]: bob · 2026-04-09 10:02
+            - generic [ref=e34]: "[链接] example.com"
+          - generic [ref=e35]: 我看了，链接里的信息可以做成卡片样式。
+    - article [ref=e36]:
+      - generic [ref=e37]:
+        - paragraph [ref=e38]: alice · 2026-04-09 10:03
+        - link "OpenAI AI research and deployment company. openai.com 链接卡片" [ref=e40] [cursor=pointer]:
+          - /url: https://openai.com
+          - generic [ref=e41]: OpenAI
+          - generic [ref=e42]: AI research and deployment company.
+          - generic [ref=e43]:
+            - generic [ref=e44]: openai.com
+            - generic [ref=e45]: 链接卡片
+      - button "alice" [ref=e46] [cursor=pointer]:
+        - img "alice" [ref=e47]
+    - article [ref=e48]:
+      - button "bob" [ref=e49] [cursor=pointer]:
+        - img "bob" [ref=e50]
+      - generic [ref=e51]:
+        - paragraph [ref=e52]: bob · 2026-04-09 10:04
+        - img "image" [ref=e64]
+    - article [ref=e54]:
+      - generic [ref=e55]:
+        - paragraph [ref=e56]: alice · 2026-04-09 10:05
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e59]: clara · 2026-04-09 10:02
+            - generic [ref=e60]: 我看了，链接里的信息可以做成卡片样式。
+          - generic [ref=e61]: 好，我先把引用样式和主题切换接口补上。
+      - button "alice" [ref=e62] [cursor=pointer]:
+        - img "alice" [ref=e63]

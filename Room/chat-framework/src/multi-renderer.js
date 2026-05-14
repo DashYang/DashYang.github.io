@@ -16,6 +16,45 @@ function escapeHtml(s = "") {
     .replaceAll("'", "&#39;");
 }
 
+function inferReplayDelayMs(message) {
+  function readingChars(value) {
+    return String(value || '').replace(/\s/g, '').length;
+  }
+  function collectReplayText(msg) {
+    if (!msg || typeof msg !== 'object') return '';
+    const parts = [];
+    if (msg.text) parts.push(String(msg.text));
+    if (msg.kind === 'link-card') {
+      parts.push(msg.linkCard?.title || '');
+      parts.push(msg.linkCard?.desc || '');
+      parts.push(msg.linkCard?.site || '');
+    }
+    if (msg.kind === 'article-card') {
+      parts.push(msg.articleCard?.title || '');
+      parts.push(msg.articleCard?.summary || msg.articleCard?.desc || '');
+    }
+    if (msg.kind === 'contact-card') {
+      parts.push(msg.contactCard?.name || '');
+      parts.push(msg.contactCard?.nickName || '');
+      parts.push(msg.contactCard?.bio || '');
+    }
+    return parts.filter(Boolean).join(' ');
+  }
+  const textChars = readingChars(collectReplayText(message));
+  const readingMs = 800 + textChars * 120;
+  if (message?.kind === 'voice') {
+    const voiceMs = Math.max(1500, Number(message.durationSec || 0) * 1000);
+    return Math.max(voiceMs, Math.min(12000, readingMs));
+  }
+  if (message?.kind === 'image') {
+    return Math.max(1800, Math.min(9000, readingMs));
+  }
+  if (message?.kind === 'article-card' || message?.kind === 'contact-card' || message?.kind === 'link-card') {
+    return Math.max(2000, Math.min(10000, readingMs));
+  }
+  return Math.max(900, Math.min(12000, readingMs));
+}
+
 /**
  * Build a short message preview text for list cards.
  *
@@ -114,7 +153,6 @@ export function buildConversationModels(conversations) {
       subtitle,
       avatar,
       self: selfId || "",
-      replayIntervalMs: Number(conv.frontmatter?.replayIntervalMs || 1000),
       preview: toSnippet(startMessage, conv.articles, conv.profiles),
       listTime: toListTime(listTimeSource),
       startIndex,
@@ -428,7 +466,6 @@ export function renderWechatHubHtml(input) {
     .account-card { width:100%; border:none; background:#fff; border-radius:10px; padding:14px 12px; margin-bottom:10px; display:flex; align-items:center; gap:10px; text-align:left; cursor:pointer; }
     .account-avatar { width:52px; height:52px; border-radius:6px; object-fit:cover; background:#ddd; }
     .account-name { font-size:16px; color:#222; line-height:1.2; }
-    .account-id { margin-top:6px; font-size:13px; color:#9b9b9b; }
     .account-current { margin-left:auto; font-size:14px; color:#07c160; white-space:nowrap; }
     .account-add { width:100%; border:1px dashed #d0d0d0; background:#fff; border-radius:10px; padding:14px 12px; display:flex; align-items:center; gap:10px; color:#6f6f6f; }
     .account-add-plus { width:52px; height:52px; border:1px dashed #cfcfcf; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:34px; color:#9d9d9d; line-height:1; }
@@ -1255,6 +1292,45 @@ export function renderWechatHubHtml(input) {
         .replaceAll("'", '&#39;');
     }
 
+    function inferReplayDelayMs(message) {
+      function readingChars(value) {
+        return String(value || '').replace(/\s/g, '').length;
+      }
+      function collectReplayText(msg) {
+        if (!msg || typeof msg !== 'object') return '';
+        const parts = [];
+        if (msg.text) parts.push(String(msg.text));
+        if (msg.kind === 'link-card') {
+          parts.push(msg.linkCard?.title || '');
+          parts.push(msg.linkCard?.desc || '');
+          parts.push(msg.linkCard?.site || '');
+        }
+        if (msg.kind === 'article-card') {
+          parts.push(msg.articleCard?.title || '');
+          parts.push(msg.articleCard?.summary || msg.articleCard?.desc || '');
+        }
+        if (msg.kind === 'contact-card') {
+          parts.push(msg.contactCard?.name || '');
+          parts.push(msg.contactCard?.nickName || '');
+          parts.push(msg.contactCard?.bio || '');
+        }
+        return parts.filter(Boolean).join(' ');
+      }
+      const textChars = readingChars(collectReplayText(message));
+      const readingMs = 800 + textChars * 120;
+      if (message?.kind === 'voice') {
+        const voiceMs = Math.max(1500, Number(message.durationSec || 0) * 1000);
+        return Math.max(voiceMs, Math.min(12000, readingMs));
+      }
+      if (message?.kind === 'image') {
+        return Math.max(1800, Math.min(9000, readingMs));
+      }
+      if (message?.kind === 'article-card' || message?.kind === 'contact-card' || message?.kind === 'link-card') {
+        return Math.max(2000, Math.min(10000, readingMs));
+      }
+      return Math.max(900, Math.min(12000, readingMs));
+    }
+
     const emojiMap = {
       "微笑":"🙂","撇嘴":"😒","色":"😍","发呆":"😳","得意":"😎","流泪":"😢","害羞":"☺️","闭嘴":"🤐","睡":"😴","大哭":"😭",
       "尴尬":"😅","发怒":"😠","调皮":"😜","呲牙":"😁","惊讶":"😮","难过":"😞","酷":"😎","冷汗":"😓","抓狂":"😫","吐":"🤮",
@@ -1463,7 +1539,7 @@ export function renderWechatHubHtml(input) {
 
     function clearTimer() {
       if (timer) {
-        window.clearInterval(timer);
+        window.clearTimeout(timer);
         timer = null;
       }
       recallTimers.forEach((t) => window.clearTimeout(t));
@@ -1472,9 +1548,14 @@ export function renderWechatHubHtml(input) {
     }
     function stopPlaybackTimer() {
       if (timer) {
-        window.clearInterval(timer);
+        window.clearTimeout(timer);
         timer = null;
       }
+    }
+
+    function schedulePlayback(nextStep, delay) {
+      stopPlaybackTimer();
+      timer = window.setTimeout(nextStep, Math.max(0, Number(delay || 0)));
     }
 
     function markSeen(conversationId) {
@@ -1590,8 +1671,7 @@ export function renderWechatHubHtml(input) {
       timeline.scrollTop = timeline.scrollHeight;
       current += 1;
 
-      const step = Math.max(100, Number(conv.replayIntervalMs || 1000));
-      timer = window.setInterval(() => {
+      schedulePlayback(function playNext() {
         if (current >= stageMessages.length) {
           stopPlaybackTimer();
           finishConversation(conversationId);
@@ -1600,8 +1680,10 @@ export function renderWechatHubHtml(input) {
         timeline.insertAdjacentHTML('beforeend', renderMessage(stageMessages[current], conv, { conversationId }));
         queueRecall(conversationId, stageMessages[current], conv);
         timeline.scrollTop = timeline.scrollHeight;
+        const delay = inferReplayDelayMs(stageMessages[current]);
         current += 1;
-      }, step);
+        schedulePlayback(playNext, delay);
+      }, inferReplayDelayMs(stageMessages[current - 1]));
     }
 
     function renderAccountList() {
@@ -1611,7 +1693,7 @@ export function renderWechatHubHtml(input) {
         const current = id === activeAccountId ? '<div class="account-current">● 当前使用</div>' : '';
         return '<button class="account-card" type="button" data-id="' + esc(id) + '">'
           + '<img class="account-avatar" src="' + esc(avatar) + '" alt="avatar"/>'
-          + '<div><div class="account-name">' + esc(name) + '</div><div class="account-id">' + esc(id) + '</div></div>'
+          + '<div><div class="account-name">' + esc(name) + '</div></div>'
           + current
           + '</button>';
       }).join('') + '<div class="account-add"><div class="account-add-plus">+</div><div>添加账号</div></div>';
@@ -1910,6 +1992,44 @@ export function renderWechatStoryHtml(input) {
     function esc(s) {
       return String(s || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
     }
+    function inferReplayDelayMs(message) {
+      function readingChars(value) {
+        return String(value || '').replace(/\s/g, '').length;
+      }
+      function collectReplayText(msg) {
+        if (!msg || typeof msg !== 'object') return '';
+        const parts = [];
+        if (msg.text) parts.push(String(msg.text));
+        if (msg.kind === 'link-card') {
+          parts.push(msg.linkCard?.title || '');
+          parts.push(msg.linkCard?.desc || '');
+          parts.push(msg.linkCard?.site || '');
+        }
+        if (msg.kind === 'article-card') {
+          parts.push(msg.articleCard?.title || '');
+          parts.push(msg.articleCard?.summary || msg.articleCard?.desc || '');
+        }
+        if (msg.kind === 'contact-card') {
+          parts.push(msg.contactCard?.name || '');
+          parts.push(msg.contactCard?.nickName || '');
+          parts.push(msg.contactCard?.bio || '');
+        }
+        return parts.filter(Boolean).join(' ');
+      }
+      const textChars = readingChars(collectReplayText(message));
+      const readingMs = 800 + textChars * 120;
+      if (message?.kind === 'voice') {
+        const voiceMs = Math.max(1500, Number(message.durationSec || 0) * 1000);
+        return Math.max(voiceMs, Math.min(12000, readingMs));
+      }
+      if (message?.kind === 'image') {
+        return Math.max(1800, Math.min(9000, readingMs));
+      }
+      if (message?.kind === 'article-card' || message?.kind === 'contact-card' || message?.kind === 'link-card') {
+        return Math.max(2000, Math.min(10000, readingMs));
+      }
+      return Math.max(900, Math.min(12000, readingMs));
+    }
     const emojiMap = {
       "微笑":"🙂","撇嘴":"😒","色":"😍","发呆":"😳","得意":"😎","流泪":"😢","害羞":"☺️","闭嘴":"🤐","睡":"😴","大哭":"😭",
       "尴尬":"😅","发怒":"😠","调皮":"😜","呲牙":"😁","惊讶":"😮","难过":"😞","酷":"😎","冷汗":"😓","抓狂":"😫","吐":"🤮",
@@ -2024,13 +2144,17 @@ export function renderWechatStoryHtml(input) {
       return Number(storyState.currentScene || 0) < payload.scenes.length - 1;
     }
     function clearTimer() {
-      if (timer) { window.clearInterval(timer); timer = null; }
+      if (timer) { window.clearTimeout(timer); timer = null; }
       recallTimers.forEach((t) => window.clearTimeout(t));
       recallTimers = [];
       stopActiveAudio();
     }
     function stopPlaybackTimer() {
-      if (timer) { window.clearInterval(timer); timer = null; }
+      if (timer) { window.clearTimeout(timer); timer = null; }
+    }
+    function schedulePlayback(nextStep, delay) {
+      stopPlaybackTimer();
+      timer = window.setTimeout(nextStep, Math.max(0, Number(delay || 0)));
     }
     function applySceneUi(scene) {
       const ui = scene.ui || {};
@@ -2199,8 +2323,7 @@ export function renderWechatStoryHtml(input) {
       queueRecall(conversationId, conv.messages[current], conv);
       timeline.scrollTop = timeline.scrollHeight;
       current += 1;
-      const step = Math.max(100, Number(conv.replayIntervalMs || 1000));
-      timer = window.setInterval(() => {
+      schedulePlayback(function playNext() {
         if (current >= conv.messages.length) {
           stopPlaybackTimer();
           finishConversation(scene, conversationId);
@@ -2209,8 +2332,10 @@ export function renderWechatStoryHtml(input) {
         timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
         queueRecall(conversationId, conv.messages[current], conv);
         timeline.scrollTop = timeline.scrollHeight;
+        const delay = inferReplayDelayMs(conv.messages[current]);
         current += 1;
-      }, step);
+        schedulePlayback(playNext, delay);
+      }, inferReplayDelayMs(conv.messages[current - 1]));
     }
     function goNextScene() {
       if (!hasNextScene()) return;

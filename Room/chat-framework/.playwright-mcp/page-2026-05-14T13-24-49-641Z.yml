@@ -1,0 +1,36 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: 中国移动
+    - generic [ref=e5]: 2026-04-28
+    - generic [ref=e6]: 76%
+  - generic [ref=e29]:
+    - generic [ref=e30]:
+      - img [ref=e32]
+      - generic [ref=e34]: 微信
+      - generic [ref=e35]: "1"
+    - generic [ref=e36]:
+      - img [ref=e38]
+      - generic [ref=e41]: 文章
+    - generic [ref=e43]:
+      - img [ref=e45]
+      - generic [ref=e48]: 发现
+    - generic [ref=e50]:
+      - img [ref=e52]
+      - generic [ref=e55]: 我
+  - generic [ref=e56]:
+    - generic [ref=e57]:
+      - button "返回" [ref=e58] [cursor=pointer]
+      - generic [ref=e59]: Room 功能预览群
+    - generic [ref=e60]:
+      - article [ref=e61]:
+        - button "物业小雅（备注）" [ref=e62] [cursor=pointer]:
+          - img "物业小雅（备注）" [ref=e63]
+        - generic [ref=e64]:
+          - paragraph [ref=e65]: 物业小雅（备注） · 2026-04-28 20:00
+          - generic [ref=e68]: 今晚这条用于展示全部能力，大家随便发 🙂
+      - article [ref=e69]:
+        - button "603" [ref=e70] [cursor=pointer]:
+          - img "603" [ref=e71]
+        - generic [ref=e72]:
+          - paragraph [ref=e73]: 603 · 2026-04-28 20:00
+          - generic [ref=e76]: 我先来一条普通文本，顺便@protagonist 看看 mention 效果

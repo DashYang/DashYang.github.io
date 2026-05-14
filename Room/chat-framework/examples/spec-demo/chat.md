@@ -3,7 +3,6 @@ title: "需求讨论（示例）"
 profiles: "./profiles.yml"
 chat: "./chat.yml"
 theme: "wechat"
-replayIntervalMs: 1000
 specVersion: "1.0"
 ---
 

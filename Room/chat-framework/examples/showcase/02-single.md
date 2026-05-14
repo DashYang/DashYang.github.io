@@ -1,7 +1,6 @@
 ---
 title: "姐姐"
 profiles: "./profiles"
-replayIntervalMs: 800
 specVersion: "1.0"
 ---
 

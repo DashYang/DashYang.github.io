@@ -1,7 +1,6 @@
 ---
 title: "姐姐账号会话"
 profiles: "./profiles"
-replayIntervalMs: 850
 specVersion: "1.0"
 ---
 
