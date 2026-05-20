@@ -91,6 +91,20 @@ function normalizeIdentityTimeline(timeline) {
   return out;
 }
 
+function hasNonEmptyIdentityTimeline(timeline) {
+  if (!timeline) return false;
+  if (Array.isArray(timeline)) return timeline.length > 0;
+  if (typeof timeline !== "object") return false;
+  return Object.keys(timeline).length > 0;
+}
+
+function validateRawProfile(id, profile) {
+  if (!profile || typeof profile !== "object" || Array.isArray(profile)) return;
+  if (Object.prototype.hasOwnProperty.call(profile, "name") && hasNonEmptyIdentityTimeline(profile.identityTimeline)) {
+    throw new Error(`Profile "${id}" violates the exclusivity rule: profile.name and identityTimeline cannot coexist.`);
+  }
+}
+
 export function resolveProfileIdentity(user, referenceTime) {
   const refMs = parseIdentityReference(referenceTime) ?? Date.now();
   let name = user?.name || user?.id || "";
@@ -107,6 +121,7 @@ export function resolveProfileIdentity(user, referenceTime) {
 
 function normalizeUserProfile(id, parsed) {
   const profile = parsed.profile || {};
+  validateRawProfile(id, profile);
   const officialArticles = profile.officialArticles || {};
   const articleRefs = Array.isArray(officialArticles)
     ? officialArticles.map((x) => String(x))
@@ -139,7 +154,7 @@ function normalizeArticle(id, parsed) {
     publishAt: article.publishAt || article.time || "",
     cover: article.cover || "",
     summary: article.summary || article.desc || "",
-    text: article.text || article.content || "",
+    text: article.markdown || article.body || article.text || article.content || "",
     images
   };
 }

@@ -53,10 +53,10 @@ specVersion: "1.0"
 - `[recall]` / `[recall:+10s]` 支持撤回效果（详情页回放时会在设置延时后变为“撤回了一条消息”）
 - `[article]` 支持在聊天中转发文章卡片，推荐用 `id` 引用 `articles/` 目录中的文章
 - `[contact-card]` 支持在聊天中发送联系人名片（头像/姓名/昵称/bio）
-- 点击聊天头像可查看 `profiles` 中的名字（`name` 为正式名称）和简介（`bio`）。其中 `profile.name` 是头像资料卡的标题（canonical nickname），而 `aliases.contacts` 中定义的备注名则用于聊天气泡上方、总览页预览及标题栏。
+- 点击聊天头像可查看 `profiles` 中的名字（`name` 为正式名称）和简介（`bio`）；当配置了 `identityTimeline` 时，系统以其按参考时间解析出的生效名称为准，不再使用顶层的 `profile.name`。`aliases.contacts` 中定义的备注名则用于聊天气泡上方、总览页预览及标题栏。
 - 总览页支持“发现 -> 朋友圈”，仅展示文字/图片，并按当前系统时间过滤未来动态
-- 总览页支持“文章 -> 文章列表”，文章正文统一来自 `articles/` 目录；profile 仅保存文章 id 引用
-- 总览页支持“自动播放未完成红点”：当天可播放内容未看完时，会话项显示红点；当天内容播放完毕后红点立即消失
+- 总览页支持“文章 -> 文章列表”，文章正文统一来自 `articles/` 目录；profile 仅保存文章 id 引用。文章正文可用 `markdown`/`body`/`text`/`content` 字段，支持标题、段落、引用、列表、粗体/斜体、链接和图片
+- 总览页支持“自动播放未完成红点”：当天可播放内容未看完时，会话项显示红点；当天内容播放完毕后红点立即消失。底部“微信”tab 的数字按待播放会话数统计，不按消息条数统计；历史已有消息不计入当天数字
 - 会话列表预览规则：
   - 有未读红点时，预览显示“当天第一条可播放消息”
   - 当天已读完时，预览显示“当前会话在当前日期下的最后一条消息”
@@ -67,11 +67,32 @@ specVersion: "1.0"
 - `articles/`：微信文章内容（每篇一个 yml，文件名即 article id）
 - `chat.yml`：会话元信息（仅群聊推荐保留；单聊可不配置）
 
+文章示例：
+
+```yml
+article:
+  publishAt: "2026-04-29 09:15:00"
+  title: "一篇支持 Markdown 的文章"
+  author: "Room"
+  summary: "列表页摘要仍然用独立字段。"
+  markdown: |
+    # 正文标题
+
+    第一段正文，支持 **粗体**、*斜体* 和 [链接](https://example.com)。
+
+    > 这里是一段引用。
+
+    - 第一条
+    - 第二条
+
+    ![正文图片](https://picsum.photos/seed/article-md/800/420)
+```
+
 ### Profile 别名与名称显示规则
 
 ```yml
 profile:
-  name: "奋斗的西瓜"
+  # name: "奋斗的西瓜" # 与 identityTimeline 互斥，不建议混合使用
   aliases:
     selfInGroups:
       "Room 功能预览群": "瓜总"
@@ -79,16 +100,21 @@ profile:
       sister: "老姐"
 
   identityTimeline:
+    2026-04-01:
+      name: "奋斗的西瓜"
+      bio: "独立游戏开发者"
     2026-04-29:
       name: "西瓜（Room 维护中）"
       bio: "独立游戏开发者 / Room 项目维护者"
 ```
 
-- **Canonical Nickname (`profile.name`)**: 账号的正式名称，显示在点击头像弹出的资料卡标题中。
+- **Naming Source Exclusivity**: 账号身份名称必须从 `profile.name` 或 `profile.identityTimeline` 中**择一使用**。若配置了非空的 `identityTimeline`，则必须删除顶层的 `profile.name`。
+- **Canonical Nickname**: 账号的正式名称。系统会根据当前参考时间从 `name` 或 `identityTimeline` 中解析。它显示在点击头像弹出的资料卡标题中。
 - **Remark (`aliases.contacts`)**: 对好友的备注名。在当前账号视角下，单聊/群聊中别人的发言、会话列表预览、聊天窗口标题都会优先显示备注名。
 - **Group Alias (`aliases.selfInGroups`)**: 在特定群聊中自己的显示名称（群名片）。
-- **Date-effective identity (`profile.identityTimeline`)**: 可按日期配置生效中的 `name/bio`。系统会选取“生效日期 <= 当前参考时间”的最新一条；在会话总览页中，这个参考时间通常就是当前系统时间对应的阶段日期。
-- 未配置别名时，回退到对方的 `name`，最后回退到 `id`。
+- **Date-effective identity (`profile.identityTimeline`)**: 可按日期配置生效中的 `name/bio`。系统会选取“生效日期 <= 当前参考时间”的最新一条。
+- **System-time Naming**: 在会话总览页中，账号资料卡的参考时间为当前账号的**系统时间**。特别地，在“我”界面的账号切换列表中，每个账号卡片的名称都根据**该账号自身的系统时间**（即该账号当前持久化的阶段日期）解析，从而确保每个账号都以其当前的剧情身份呈现。
+- 未配置别名时，回退到解析出的正式名称，最后回退到 `id`。
 
 ## 会话总览页模式说明
 
@@ -98,7 +124,7 @@ profile:
   - **单文件构建 (`npm run build`)**：Markdown 头部 frontmatter 中的 `profiles/chat/articles` 等相对路径，均相对于该 **Markdown 文件所在的目录** 解析。
   - **文件夹构建 (`npm run build:folder`)**：`profiles/` 目录、`profiles.yml`、`ui.yml`、`story.yml` 以及 `chatFiles` 和 `groupChats` 中指定的路径，均相对于传入的 **`inputDir` 目录** 解析。
 - 首屏是会话列表，预览按“未读当天首条 / 已读当天最后一条”动态更新。
-- 点击会话后会按消息内容自动估算阅读节奏逐条播放；文本越长，停留越久
+- 点击会话后会按消息内容自动估算阅读节奏逐条播放；文本越长，停留越久。播放中点击聊天记录区域可立即刷出下一条消息
 - 播放完成后显示小字：`当前聊天已结束`
 - 可点击“返回”继续看其他会话
 - 聊天窗口支持滚动查看历史与最新消息
@@ -159,13 +185,11 @@ ui:
     time: "12:21"
     battery: "31%"
   topTitle: "微信"
-  searchPlaceholder: "搜索"
   persistKey: "room_wechat_seen_v1"
 ```
 
 - `carrier/time/battery`：顶部状态栏文案
 - `topTitle`：顶部标题（如“微信”）
-- `searchPlaceholder`：搜索栏提示词
 - `persistKey`：浏览器本地记忆键名（用于“已播放会话直接完整展示”）
 
 ## 文档导航

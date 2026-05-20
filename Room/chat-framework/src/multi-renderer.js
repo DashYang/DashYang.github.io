@@ -16,45 +16,6 @@ function escapeHtml(s = "") {
     .replaceAll("'", "&#39;");
 }
 
-function inferReplayDelayMs(message) {
-  function readingChars(value) {
-    return String(value || '').replace(/\s/g, '').length;
-  }
-  function collectReplayText(msg) {
-    if (!msg || typeof msg !== 'object') return '';
-    const parts = [];
-    if (msg.text) parts.push(String(msg.text));
-    if (msg.kind === 'link-card') {
-      parts.push(msg.linkCard?.title || '');
-      parts.push(msg.linkCard?.desc || '');
-      parts.push(msg.linkCard?.site || '');
-    }
-    if (msg.kind === 'article-card') {
-      parts.push(msg.articleCard?.title || '');
-      parts.push(msg.articleCard?.summary || msg.articleCard?.desc || '');
-    }
-    if (msg.kind === 'contact-card') {
-      parts.push(msg.contactCard?.name || '');
-      parts.push(msg.contactCard?.nickName || '');
-      parts.push(msg.contactCard?.bio || '');
-    }
-    return parts.filter(Boolean).join(' ');
-  }
-  const textChars = readingChars(collectReplayText(message));
-  const readingMs = 800 + textChars * 120;
-  if (message?.kind === 'voice') {
-    const voiceMs = Math.max(1500, Number(message.durationSec || 0) * 1000);
-    return Math.max(voiceMs, Math.min(12000, readingMs));
-  }
-  if (message?.kind === 'image') {
-    return Math.max(1800, Math.min(9000, readingMs));
-  }
-  if (message?.kind === 'article-card' || message?.kind === 'contact-card' || message?.kind === 'link-card') {
-    return Math.max(2000, Math.min(10000, readingMs));
-  }
-  return Math.max(900, Math.min(12000, readingMs));
-}
-
 /**
  * Build a short message preview text for list cards.
  *
@@ -195,7 +156,6 @@ function normalizeUi(ui) {
       battery: source.statusBar?.battery || "31%"
     },
     topTitle: source.topTitle || "微信",
-    searchPlaceholder: source.searchPlaceholder || "搜索",
     persistKey: source.persistKey || "chat_framework_seen_v1"
   };
 }
@@ -284,28 +244,6 @@ export function renderWechatHubHtml(input) {
       font-size: 20px;
       letter-spacing: 0.5px;
     }
-    .top-nav .plus {
-      justify-self: end;
-      font-size: 22px;
-      color: #444;
-    }
-    .search-wrap {
-      padding: 9px 12px 10px;
-      border-bottom: 1px solid var(--line);
-      background: var(--panel);
-    }
-    .search {
-      height: 34px;
-      border-radius: 6px;
-      border: 1px solid #ededed;
-      background: #fff;
-      color: #a3a3a3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      gap: 6px;
-    }
     .list-view {
       display: flex;
       flex-direction: column;
@@ -373,7 +311,17 @@ export function renderWechatHubHtml(input) {
     .article-title { font-size:24px; font-weight:700; line-height:1.35; margin:0; }
     .article-sub { margin-top:8px; font-size:12px; color:#8f8f8f; }
     .article-cover { width:100%; border-radius:8px; margin-top:12px; }
-    .article-text { margin-top:14px; font-size:16px; line-height:1.8; color:#222; white-space:pre-wrap; word-break:break-word; }
+    .article-text { margin-top:14px; font-size:16px; line-height:1.8; color:#222; word-break:break-word; }
+    .article-text h1, .article-text h2, .article-text h3 { margin:18px 0 8px; line-height:1.35; }
+    .article-text h1 { font-size:22px; }
+    .article-text h2 { font-size:20px; }
+    .article-text h3 { font-size:18px; }
+    .article-text p { margin:0 0 12px; }
+    .article-text blockquote { margin:12px 0; padding:8px 12px; border-left:3px solid #d0d0d0; background:#f7f7f7; color:#555; }
+    .article-text ul { margin:0 0 12px 20px; padding:0; }
+    .article-text li { margin:4px 0; }
+    .article-text img { width:100%; border-radius:8px; margin:10px 0; background:#ddd; }
+    .article-text a { color:#576b95; text-decoration:none; }
     .article-images { margin-top:12px; display:grid; gap:8px; }
     .article-images img { width:100%; border-radius:8px; background:#ddd; }
     .list-scroll {
@@ -458,17 +406,15 @@ export function renderWechatHubHtml(input) {
     .tab-badge { position:absolute; top:2px; right:20px; min-width:16px; height:16px; padding:0 4px; border-radius:10px; background:#ff3b30; color:#fff; font-size:10px; line-height:16px; display:none; text-align:center; box-sizing:border-box; }
     .tab-badge.dot { min-width:8px; width:8px; height:8px; padding:0; border-radius:50%; color:transparent; line-height:8px; top:6px; right:23px; }
     .account-view { display:none; flex-direction:column; flex:1; min-height:0; background:#efefef; }
-    .account-top { height:46px; border-bottom:1px solid var(--line); display:grid; grid-template-columns:auto 1fr auto; align-items:center; padding:0 10px; background:var(--panel); }
+    .account-top { height:46px; border-bottom:1px solid var(--line); display:grid; grid-template-columns:auto 1fr; align-items:center; padding:0 10px; background:var(--panel); }
     .account-back { border:none; background:transparent; color:#222; font-size:22px; cursor:pointer; padding:4px 6px; }
-    .account-manage { font-size:14px; color:#1f1f1f; }
     .account-center { padding:26px 16px 10px; text-align:center; color:#222; font-size:18px; }
     .account-list-wrap { padding:8px 12px 84px; overflow-y:auto; flex:1; min-height:0; }
     .account-card { width:100%; border:none; background:#fff; border-radius:10px; padding:14px 12px; margin-bottom:10px; display:flex; align-items:center; gap:10px; text-align:left; cursor:pointer; }
     .account-avatar { width:52px; height:52px; border-radius:6px; object-fit:cover; background:#ddd; }
     .account-name { font-size:16px; color:#222; line-height:1.2; }
     .account-current { margin-left:auto; font-size:14px; color:#07c160; white-space:nowrap; }
-    .account-add { width:100%; border:1px dashed #d0d0d0; background:#fff; border-radius:10px; padding:14px 12px; display:flex; align-items:center; gap:10px; color:#6f6f6f; }
-    .account-add-plus { width:52px; height:52px; border:1px dashed #cfcfcf; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:34px; color:#9d9d9d; line-height:1; }
+    .account-reset { width:100%; border:none; background:#fff; border-radius:10px; padding:14px 12px; margin-top:10px; text-align:center; cursor:pointer; color:#d93025; font-size:16px; }
     .detail-view {
       display: none;
       flex-direction: column;
@@ -479,7 +425,7 @@ export function renderWechatHubHtml(input) {
       height: 46px;
       border-bottom: 1px solid var(--line);
       display: grid;
-      grid-template-columns: auto 1fr;
+      grid-template-columns: 1fr minmax(0, auto) 1fr;
       align-items: center;
       background: var(--panel);
       padding: 0 8px;
@@ -492,6 +438,7 @@ export function renderWechatHubHtml(input) {
       font-size: 15px;
       cursor: pointer;
       padding: 6px 8px;
+      justify-self: start;
     }
     .chat-title {
       font-size: 17px;
@@ -499,7 +446,12 @@ export function renderWechatHubHtml(input) {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      justify-self: center;
+      text-align: center;
+      min-width: 0;
+      max-width: 100%;
     }
+    .chat-top-spacer { justify-self: end; width: 44px; height: 1px; }
     .timeline {
       flex: 1;
       min-height: 0;
@@ -512,10 +464,11 @@ export function renderWechatHubHtml(input) {
     .avatar { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; background: #ddd; }
     .msg-main { width: fit-content; max-width: 80%; }
     .msg.self .msg-main { margin-left: auto; }
+    .msg.self .msg-body { display: flex; justify-content: flex-end; }
     .meta { font-size: 12px; color: var(--muted); margin: 0 0 4px; }
     .msg.self .meta { text-align: right; }
     .bubble { display: inline-block; max-width: 100%; border-radius: 10px; padding: 10px 12px; background: var(--incoming); word-break: break-word; line-height: 1.45; white-space: pre-wrap; }
-    .msg.self .bubble { background: var(--outgoing); }
+    .msg.self .bubble { background: var(--outgoing); text-align: left; }
     .bubble.media { padding: 4px; background: transparent; }
     .recall-tip { font-size:12px; color:var(--muted); text-align:center; padding:4px 0; }
     .quote { margin-bottom: 8px; background: rgba(0,0,0,0.06); border-left: 3px solid rgba(0,0,0,0.18); border-radius: 6px; padding: 6px 8px; font-size: 12px; color: #333; }
@@ -534,11 +487,11 @@ export function renderWechatHubHtml(input) {
     .article-meta { margin-top:4px; font-size:11px; color:var(--muted); }
     .article-cover { width:100%; margin-top:8px; border-radius:6px; max-height:150px; object-fit:cover; background:#ddd; }
     .article-summary { margin-top:7px; font-size:12px; color:#4c4c4c; line-height:1.45; }
-    .contact-card { border-radius:8px; background:#f8f8f8; padding:10px; display:flex; gap:9px; align-items:center; }
+    .contact-card { width:min(240px, 100%); border-radius:8px; background:#f8f8f8; padding:10px; display:flex; gap:9px; align-items:center; }
     .contact-avatar { width:42px; height:42px; border-radius:8px; object-fit:cover; background:#ddd; }
     .contact-name { font-size:14px; font-weight:600; }
     .contact-nick { margin-top:2px; font-size:11px; color:var(--muted); }
-    .contact-bio { margin-top:6px; font-size:12px; color:#4c4c4c; line-height:1.35; }
+    .contact-bio { margin-top:6px; font-size:12px; color:#4c4c4c; line-height:1.35; white-space:normal; word-break:break-word; }
     .inline-link { color: #576b95; }
     .mention { color: #576b95; font-weight: 600; }
     .end-tip { font-size: 12px; color: var(--muted); text-align: center; margin: 16px 0 4px; }
@@ -564,11 +517,7 @@ export function renderWechatHubHtml(input) {
       <header class="top-nav">
         <div></div>
         <div class="center-title">${escapeHtml(ui.topTitle)}</div>
-        <div class="plus">＋</div>
       </header>
-      <div class="search-wrap">
-        <div class="search">🔍 ${escapeHtml(ui.searchPlaceholder)}</div>
-      </div>
       <div id="list-scroll" class="list-scroll"></div>
     </section>
 
@@ -600,6 +549,7 @@ export function renderWechatHubHtml(input) {
       <header class="chat-top">
         <button id="back-btn" class="back-btn">返回</button>
         <div class="chat-title" id="chat-title"></div>
+        <div class="chat-top-spacer" aria-hidden="true"></div>
       </header>
       <div class="timeline" id="timeline"></div>
     </section>
@@ -608,7 +558,6 @@ export function renderWechatHubHtml(input) {
       <header class="account-top">
         <button id="account-back" class="account-back" type="button">‹</button>
         <div></div>
-        <div class="account-manage">管理</div>
       </header>
       <div class="account-center">轻触头像以切换账号</div>
       <div id="account-list-wrap" class="account-list-wrap"></div>
@@ -653,6 +602,7 @@ export function renderWechatHubHtml(input) {
     const timeline = document.getElementById('timeline');
     const chatTitle = document.getElementById('chat-title');
     const statusTime = document.getElementById('status-time');
+    const statusBattery = document.getElementById('status-battery');
     const tabChat = document.getElementById('tab-chat');
     const tabContacts = document.getElementById('tab-contacts');
     const tabMoments = document.getElementById('tab-moments');
@@ -693,6 +643,7 @@ export function renderWechatHubHtml(input) {
     let accountIds = [];
     let activeAudio = null;
     let activeVoiceBtn = null;
+    let activePlayback = null;
     let articleRows = [];
     const debugState = { enabled: true };
 
@@ -725,6 +676,30 @@ export function renderWechatHubHtml(input) {
         if (entry.bio !== undefined) bio = entry.bio;
       });
       return { name, bio };
+    }
+
+    function resolveAccountCardName(user, accountId) {
+      const stageDays = collectStageDaysForAccount(accountId);
+      const rawStageIndex = Number(stageIndexMap[accountId] || 0);
+      const stageIndex = stageDays.length
+        ? Math.max(0, Math.min(Number.isFinite(rawStageIndex) ? rawStageIndex : 0, stageDays.length - 1))
+        : 0;
+      const stageDay = stageDays[stageIndex] || currentStageMs();
+      const resolvedProfile = resolveEffectiveProfile(user, stageDay);
+      const timeline = Array.isArray(user?.identityTimeline) ? user.identityTimeline : [];
+      const earliestTimelineEntry = timeline.reduce((earliest, entry) => {
+        if (!entry || typeof entry.effectiveAtMs !== 'number') return earliest;
+        if (!earliest || entry.effectiveAtMs < earliest.effectiveAtMs) return entry;
+        return earliest;
+      }, null);
+      const stageMs = parseIdentityReference(stageDay) ?? Date.now();
+      const hasActiveTimelineEntry = timeline.some((entry) => (
+        entry
+        && typeof entry.effectiveAtMs === 'number'
+        && entry.effectiveAtMs <= stageMs
+      ));
+      if (!hasActiveTimelineEntry && earliestTimelineEntry?.name) return earliestTimelineEntry.name;
+      return resolvedProfile.name || earliestTimelineEntry?.name || user?.id || accountId || '';
     }
 
     function currentRuntimeTime() {
@@ -820,6 +795,7 @@ export function renderWechatHubHtml(input) {
       for (const m of collectMoments()) seen[m.id] = true;
       saveSeen();
       updateUnreadBadges();
+      updateStatusProgress();
       maybeAdvanceStage();
     }
 
@@ -849,7 +825,7 @@ export function renderWechatHubHtml(input) {
             publishRaw: publishRaw,
             cover: String(item.cover || imgs[0] || ""),
             desc: String(item.desc || item.summary || ""),
-            text: String(item.text || item.content || ""),
+            text: String(item.markdown || item.body || item.text || item.content || ""),
             images: imgs,
             dayKey: day
           });
@@ -884,7 +860,7 @@ export function renderWechatHubHtml(input) {
       articleSub.textContent = a.author + " · " + a.publishRaw;
       articleCover.style.display = a.cover ? "block" : "none";
       articleCover.src = a.cover || "";
-      articleText.textContent = a.text || "";
+      articleText.innerHTML = renderMarkdown(a.text || "");
       articleImages.innerHTML = (a.images || []).map((url) => '<img src="' + esc(url) + '" alt="image"/>').join('');
       articleModal.classList.add('show');
       articleModal.setAttribute('aria-hidden', 'false');
@@ -903,7 +879,7 @@ export function renderWechatHubHtml(input) {
       articleSub.textContent = [a.author, a.publishRaw].filter(Boolean).join(" · ");
       articleCover.style.display = a.cover ? "block" : "none";
       articleCover.src = a.cover || "";
-      articleText.textContent = a.text || "";
+      articleText.innerHTML = renderMarkdown(a.text || "");
       articleImages.innerHTML = (a.images || []).map((url) => '<img src="' + esc(url) + '" alt="image"/>').join('');
       articleModal.classList.add('show');
       articleModal.setAttribute('aria-hidden', 'false');
@@ -929,6 +905,7 @@ export function renderWechatHubHtml(input) {
       for (const a of articleRows) seen[a.id] = true;
       saveSeen();
       updateUnreadBadges();
+      updateStatusProgress();
       maybeAdvanceStage();
     }
 
@@ -1049,24 +1026,83 @@ export function renderWechatHubHtml(input) {
       return "";
     }
 
-    function collectStageDaysForAccount(accountId) {
-      const days = [];
+    function conversationMatchesAccount(conv, accountId) {
+      if (!accountId || accountId === "default") return true;
+      return String(conv.self || "") === String(accountId);
+    }
+
+    function articleRefsForUser(user) {
+      return Array.isArray(user?.officialArticles || user?.articles)
+        ? (user.officialArticles || user.articles)
+        : Object.keys(user?.officialArticles || user?.articles || {});
+    }
+
+    function collectContentUnitsForAccount(accountId) {
+      const units = new Map();
       for (const conv of (payload.conversations || [])) {
-        const self = String(conv.self || "");
-        const match = (!accountId || accountId === "default")
-          ? true
-          : self === String(accountId);
-        if (!match) continue;
-        const first = conv.messages?.[0];
-        const day = toDayKey(first?.timestamp || first?.timeText || "");
-        if (day) days.push(day);
+        if (!conversationMatchesAccount(conv, accountId)) continue;
+
+        const messageDays = new Set();
+        for (const msg of (conv.messages || [])) {
+          const day = toDayKey(msg.timestamp || msg.timeText || "");
+          if (day) messageDays.add(day);
+        }
+        for (const day of messageDays) {
+          units.set("chat|" + conv.id + "|" + day, { type: "chat", day });
+        }
+
+        const users = conv.profiles?.users || {};
+        const repo = conv.articles || {};
+        const selfId = (!accountId || accountId === "default") ? conv.self : accountId;
+        const selfUser = users[selfId];
+        for (const refId of articleRefsForUser(selfUser)) {
+          const item = repo[String(refId)];
+          const day = toDayKey(item?.publishAt || item?.time || "");
+          if (day) units.set("article|" + String(refId), { type: "article", day });
+        }
+
+        for (const [id, user] of Object.entries(users)) {
+          const moments = user?.moments || {};
+          for (const moment of Object.values(moments)) {
+            const publishRaw = moment?.publishAt || moment?.time || "";
+            const day = toDayKey(publishRaw);
+            if (!day) continue;
+            units.set("moment|" + id + "|" + (moment.id || publishRaw), { type: "moment", day });
+          }
+        }
       }
+      return Array.from(units.values());
+    }
+
+    function collectStageDaysForAccount(accountId) {
+      const days = collectContentUnitsForAccount(accountId).map((unit) => unit.day).filter(Boolean);
       days.sort((a, b) => a.localeCompare(b, "zh-CN"));
       const uniq = [];
       for (const day of days) {
         if (!uniq.length || uniq[uniq.length - 1] !== day) uniq.push(day);
       }
       return uniq;
+    }
+
+    function contentProgressPercent(accountId, day) {
+      const units = collectContentUnitsForAccount(accountId);
+      if (!units.length) return 100;
+      const current = units.filter((unit) => unit.day <= day).length;
+      return Math.max(0, Math.min(100, Math.floor((current / units.length) * 100)));
+    }
+
+    function accountUnlockProgressPercent() {
+      if (!accountIds.length) return 100;
+      const current = accountIds.filter((id) => isAccountUnlocked(id)).length;
+      return Math.max(0, Math.min(100, Math.floor((current / accountIds.length) * 100)));
+    }
+
+    function updateStatusProgress(scope) {
+      if (!statusBattery) return;
+      const value = scope === "accounts"
+        ? accountUnlockProgressPercent()
+        : contentProgressPercent(activeAccountId, currentStageMs());
+      statusBattery.textContent = String(value) + "%";
     }
 
     function initTimelineStages() {
@@ -1105,7 +1141,7 @@ export function renderWechatHubHtml(input) {
     }
     function unreadChatCount(day) {
       const seen = getStageSeen(day);
-      return (payload.conversations || []).filter((c) => isVisibleByStage(c) && !seen[c.id]).length;
+      return (payload.conversations || []).filter((c) => isVisibleByStage(c) && hasNewMessagesOnDay(c, day) && !seen[c.id]).length;
     }
     function unreadMomentsCount(day) {
       const seen = getMomentSeen(day);
@@ -1144,6 +1180,7 @@ export function renderWechatHubHtml(input) {
       setBadgeDot(badgeContacts, unreadArticlesCount(day) > 0);
       const meCount = Object.entries(accountNoticeMap).filter(([id, on]) => on && id !== activeAccountId && isAccountUnlocked(id)).length;
       setBadgeDot(badgeMe, meCount > 0);
+      updateStatusProgress(accountView.style.display === 'flex' ? "accounts" : undefined);
     }
     function hasStageMessages(conv, day) {
       return (conv.messages || []).some((m) => toDayKey(m.timestamp || m.timeText || "") <= day);
@@ -1223,6 +1260,7 @@ export function renderWechatHubHtml(input) {
     function setStageStatusTime() {
       if (!statusTime) return;
       statusTime.textContent = currentStageMs();
+      updateStatusProgress();
     }
 
     function conversationUnlockMs(conv) {
@@ -1231,8 +1269,7 @@ export function renderWechatHubHtml(input) {
     }
 
     function isVisibleByAccount(conv) {
-      if (!activeAccountId || activeAccountId === "default") return true;
-      return String(conv.self || "") === String(activeAccountId);
+      return conversationMatchesAccount(conv, activeAccountId);
     }
 
     function isVisibleByStage(conv) {
@@ -1243,15 +1280,15 @@ export function renderWechatHubHtml(input) {
 
     function isCurrentStageConversation(conv) {
       if (!isVisibleByAccount(conv)) return false;
-      const unlock = conversationUnlockMs(conv);
-      return !!unlock && unlock === currentStageMs();
+      return hasNewMessagesOnDay(conv, currentStageMs());
     }
 
     function maybeAdvanceStage() {
       const curMs = currentStageMs();
       if (stageIndex < timelineStages.length - 1) {
         const need = (payload.conversations || []).filter((c) => isCurrentStageConversation(c)).map((c) => c.id);
-        if (need.length) {
+        const hasStageContent = collectContentUnitsForAccount(activeAccountId).some((unit) => unit.day === curMs);
+        if (hasStageContent) {
           const seen = getStageSeen(curMs);
           const allChatDone = need.every((id) => !!seen[id]);
           const momentsDone = unreadMomentsCount(curMs) === 0;
@@ -1356,6 +1393,86 @@ export function renderWechatHubHtml(input) {
     function formatText(text) {
       return mentionify(linkify(emojify(text || '')));
     }
+    function safeMarkdownUrl(raw) {
+      const value = String(raw || "").trim();
+      if (/^(https?:)?\\/\\//i.test(value) || value.startsWith("/") || value.startsWith("./") || value.startsWith("../")) return value;
+      return "#";
+    }
+    function renderMarkdownInline(raw) {
+      let html = esc(raw || "");
+      html = html.replace(/!\\[([^\\]]*)\\]\\(([^)]+)\\)/g, (_m, alt, url) => (
+        '<img src="' + esc(safeMarkdownUrl(url)) + '" alt="' + esc(alt) + '"/>'
+      ));
+      html = html.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, (_m, text, url) => (
+        '<a href="' + esc(safeMarkdownUrl(url)) + '" target="_blank" rel="noreferrer">' + text + '</a>'
+      ));
+      html = html.replace(/\\*\\*([^*]+)\\*\\*/g, '<strong>$1</strong>');
+      html = html.replace(/\\*([^*]+)\\*/g, '<em>$1</em>');
+      return html;
+    }
+    function renderMarkdown(markdown) {
+      const lines = String(markdown || "").replace(/\\r\\n/g, "\\n").split("\\n");
+      const html = [];
+      let paragraph = [];
+      let list = [];
+      let quote = [];
+      function flushParagraph() {
+        if (!paragraph.length) return;
+        html.push('<p>' + renderMarkdownInline(paragraph.join(" ")) + '</p>');
+        paragraph = [];
+      }
+      function flushList() {
+        if (!list.length) return;
+        html.push('<ul>' + list.map((item) => '<li>' + renderMarkdownInline(item) + '</li>').join('') + '</ul>');
+        list = [];
+      }
+      function flushQuote() {
+        if (!quote.length) return;
+        html.push('<blockquote>' + quote.map((line) => '<p>' + renderMarkdownInline(line) + '</p>').join('') + '</blockquote>');
+        quote = [];
+      }
+      function flushAll() {
+        flushParagraph();
+        flushList();
+        flushQuote();
+      }
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) {
+          flushAll();
+          continue;
+        }
+        const heading = line.match(/^(#{1,3})\\s+(.+)$/);
+        if (heading) {
+          flushAll();
+          const level = heading[1].length;
+          html.push('<h' + level + '>' + renderMarkdownInline(heading[2]) + '</h' + level + '>');
+          continue;
+        }
+        if (/^>\\s?/.test(line)) {
+          flushParagraph();
+          flushList();
+          quote.push(line.replace(/^>\\s?/, ""));
+          continue;
+        }
+        if (/^[-*]\\s+/.test(line)) {
+          flushParagraph();
+          flushQuote();
+          list.push(line.replace(/^[-*]\\s+/, ""));
+          continue;
+        }
+        if (/^!\\[[^\\]]*\\]\\([^)]+\\)$/.test(line)) {
+          flushAll();
+          html.push(renderMarkdownInline(line));
+          continue;
+        }
+        flushList();
+        flushQuote();
+        paragraph.push(line);
+      }
+      flushAll();
+      return html.join('');
+    }
     function formatVoiceDuration(sec) {
       const n = Number(sec || 0);
       return n > 0 ? n + '"' : '语音';
@@ -1413,10 +1530,14 @@ export function renderWechatHubHtml(input) {
       const users = conv.profiles?.users || {};
       const sender = users[senderId] || { name: senderId };
       const selfProfile = users[self] || {};
+      
+      const resolveSenderName = () => resolveEffectiveProfile(sender, currentStageMs()).name || sender.name || senderId;
+      const resolveSelfName = () => resolveEffectiveProfile(selfProfile, currentStageMs()).name || selfProfile.name || senderId;
+
       if (conv.chat?.type === "group" && senderId === self) {
-        return selfProfile.aliases?.selfInGroups?.[conv.title] || selfProfile.name || senderId;
+        return selfProfile.aliases?.selfInGroups?.[conv.title] || resolveSelfName();
       }
-      return selfProfile.aliases?.contacts?.[senderId] || sender.name || senderId;
+      return selfProfile.aliases?.contacts?.[senderId] || resolveSenderName();
     }
     function recallText(msg, conv, user) {
       return msg.senderId === conv.self ? '你撤回了一条消息' : (resolveDisplayName(conv, msg.senderId) || user.name || msg.senderId) + ' 撤回了一条消息';
@@ -1466,9 +1587,10 @@ export function renderWechatHubHtml(input) {
         const a = {
           title: fromRepo.title || raw.title || "",
           author: fromRepo.author || raw.author || "",
+          publishRaw: fromRepo.publishAt || raw.publishAt || "",
           cover: fromRepo.cover || raw.cover || "",
           summary: fromRepo.summary || raw.summary || "",
-          text: fromRepo.text || raw.text || "",
+          text: fromRepo.markdown || fromRepo.body || fromRepo.text || raw.markdown || raw.body || raw.text || "",
           images: Array.isArray(fromRepo.images) ? fromRepo.images : (raw.images || [])
         };
         const cover = a.cover ? '<img class="article-cover" src="' + esc(a.cover) + '" alt="cover"/>' : '';
@@ -1476,6 +1598,7 @@ export function renderWechatHubHtml(input) {
         return '<button class="article-card" type="button"'
           + ' data-title="' + esc(a.title || '') + '"'
           + ' data-author="' + esc(a.author || '') + '"'
+          + ' data-publish-raw="' + esc(a.publishRaw || '') + '"'
           + ' data-cover="' + esc(a.cover || '') + '"'
           + ' data-text="' + esc(a.text || '') + '"'
           + ' data-images="' + esc((a.images || []).join(",")) + '"'
@@ -1542,6 +1665,7 @@ export function renderWechatHubHtml(input) {
         window.clearTimeout(timer);
         timer = null;
       }
+      activePlayback = null;
       recallTimers.forEach((t) => window.clearTimeout(t));
       recallTimers = [];
       stopActiveAudio();
@@ -1570,7 +1694,17 @@ export function renderWechatHubHtml(input) {
     }
 
     function finishConversation(conversationId) {
-      timeline.insertAdjacentHTML('beforeend', '<div class="end-tip">当前聊天已结束</div>');
+      if (activePlayback?.conversationId === conversationId) {
+        activePlayback.finished = true;
+        activePlayback = null;
+      }
+      if (timer) {
+        window.clearTimeout(timer);
+        timer = null;
+      }
+      if (!timeline.querySelector('.end-tip')) {
+        timeline.insertAdjacentHTML('beforeend', '<div class="end-tip">当前聊天已结束</div>');
+      }
       timeline.scrollTop = timeline.scrollHeight;
       debugLog("finishConversation", { account: activeAccountId, day: currentStageMs(), conversationId });
       markSeen(conversationId);
@@ -1625,6 +1759,7 @@ export function renderWechatHubHtml(input) {
       tabChat.classList.add('active');
       tabMoments.classList.remove('active');
       chatTitle.textContent = conversationTitle(conv) || '';
+      setStageStatusTime();
       timeline.innerHTML = '';
 
       const stageMs = currentStageMs();
@@ -1660,35 +1795,55 @@ export function renderWechatHubHtml(input) {
         timeline.innerHTML = '';
       }
 
-      let current = oldMessages.length;
-      if (current >= stageMessages.length) {
+      const playback = {
+        conversationId,
+        stageMessages,
+        current: oldMessages.length,
+        finished: false,
+        playNext: null
+      };
+      activePlayback = playback;
+
+      if (playback.current >= stageMessages.length) {
         finishConversation(conversationId);
         return;
       }
 
-      timeline.insertAdjacentHTML('beforeend', renderMessage(stageMessages[current], conv, { conversationId }));
-      queueRecall(conversationId, stageMessages[current], conv);
-      timeline.scrollTop = timeline.scrollHeight;
-      current += 1;
-
-      schedulePlayback(function playNext() {
-        if (current >= stageMessages.length) {
+      function revealNextMessage() {
+        if (activePlayback !== playback || playback.finished) return;
+        if (playback.current >= stageMessages.length) {
           stopPlaybackTimer();
           finishConversation(conversationId);
           return;
         }
-        timeline.insertAdjacentHTML('beforeend', renderMessage(stageMessages[current], conv, { conversationId }));
-        queueRecall(conversationId, stageMessages[current], conv);
+        const msg = stageMessages[playback.current];
+        timeline.insertAdjacentHTML('beforeend', renderMessage(msg, conv, { conversationId }));
+        queueRecall(conversationId, msg, conv);
         timeline.scrollTop = timeline.scrollHeight;
-        const delay = inferReplayDelayMs(stageMessages[current]);
-        current += 1;
-        schedulePlayback(playNext, delay);
-      }, inferReplayDelayMs(stageMessages[current - 1]));
+        playback.current += 1;
+        if (playback.current >= stageMessages.length) {
+          schedulePlayback(() => {
+            if (activePlayback === playback && !playback.finished) finishConversation(conversationId);
+          }, inferReplayDelayMs(msg));
+          return;
+        }
+        schedulePlayback(revealNextMessage, inferReplayDelayMs(msg));
+      }
+
+      playback.playNext = revealNextMessage;
+      revealNextMessage();
+    }
+
+    function acceleratePlayback() {
+      if (!activePlayback || activePlayback.finished || typeof activePlayback.playNext !== "function") return;
+      stopPlaybackTimer();
+      activePlayback.playNext();
     }
 
     function renderAccountList() {
       accountListWrap.innerHTML = accountIds.filter((id) => isAccountUnlocked(id)).map((id) => {
-        const name = payload.conversations.find((c) => c.profiles?.users?.[id])?.profiles?.users?.[id]?.name || id;
+        const user = payload.conversations.find((c) => c.profiles?.users?.[id])?.profiles?.users?.[id] || {};
+        const name = resolveAccountCardName(user, id);
         const avatar = payload.conversations.find((c) => c.profiles?.users?.[id])?.profiles?.users?.[id]?.avatar || "";
         const current = id === activeAccountId ? '<div class="account-current">● 当前使用</div>' : '';
         return '<button class="account-card" type="button" data-id="' + esc(id) + '">'
@@ -1696,7 +1851,7 @@ export function renderWechatHubHtml(input) {
           + '<div><div class="account-name">' + esc(name) + '</div></div>'
           + current
           + '</button>';
-      }).join('') + '<div class="account-add"><div class="account-add-plus">+</div><div>添加账号</div></div>';
+      }).join('') + '<button class="account-reset" type="button">重置数据</button>';
       accountListWrap.querySelectorAll('.account-card').forEach((btn) => {
         btn.addEventListener('click', () => {
           activeAccountId = btn.dataset.id || activeAccountId;
@@ -1708,6 +1863,13 @@ export function renderWechatHubHtml(input) {
           renderList();
         });
       });
+      const resetBtn = accountListWrap.querySelector('.account-reset');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          localStorage.clear();
+          window.location.reload();
+        });
+      }
     }
 
     function showAccountView() {
@@ -1723,6 +1885,7 @@ export function renderWechatHubHtml(input) {
       contactsView.style.display = 'none';
       detailView.style.display = 'none';
       accountView.style.display = 'flex';
+      updateStatusProgress("accounts");
     }
 
     backBtn.addEventListener('click', () => {
@@ -1753,6 +1916,7 @@ export function renderWechatHubHtml(input) {
         const data = {
           title: articleBtn.dataset.title || "",
           author: articleBtn.dataset.author || "",
+          publishRaw: articleBtn.dataset.publishRaw || "",
           cover: articleBtn.dataset.cover || "",
           text: articleBtn.dataset.text || "",
           images: (articleBtn.dataset.images || "").split(",").filter(Boolean)
@@ -1761,21 +1925,26 @@ export function renderWechatHubHtml(input) {
         return;
       }
       const voiceBtn = e.target.closest('.voice-btn');
-      if (!voiceBtn) return;
-      const src = voiceBtn.dataset.audioUrl || '';
-      if (!src) return;
+      if (voiceBtn) {
+        const src = voiceBtn.dataset.audioUrl || '';
+        if (!src) return;
 
-      if (activeVoiceBtn === voiceBtn && activeAudio && !activeAudio.paused) {
+        if (activeVoiceBtn === voiceBtn && activeAudio && !activeAudio.paused) {
+          stopActiveAudio();
+          return;
+        }
+
         stopActiveAudio();
+        activeAudio = new Audio(src);
+        activeVoiceBtn = voiceBtn;
+        setVoiceState(voiceBtn, true);
+        activeAudio.addEventListener('ended', stopActiveAudio);
+        activeAudio.play().catch(() => stopActiveAudio());
         return;
       }
 
-      stopActiveAudio();
-      activeAudio = new Audio(src);
-      activeVoiceBtn = voiceBtn;
-      setVoiceState(voiceBtn, true);
-      activeAudio.addEventListener('ended', stopActiveAudio);
-      activeAudio.play().catch(() => stopActiveAudio());
+      if (e.target.closest('a, button')) return;
+      acceleratePlayback();
     });
     contactsScroll.addEventListener('click', (e) => {
       const btn = e.target.closest('.oa-open');
@@ -1849,8 +2018,6 @@ export function renderWechatStoryHtml(input) {
     .top-nav { height: 46px; border-bottom: 1px solid var(--line); display: grid; align-items: center; grid-template-columns: 1fr auto 1fr; padding: 0 12px; background: var(--panel); font-weight: 600; }
     .center-title { justify-self: center; font-size: 20px; letter-spacing: .5px; }
     .top-right { justify-self: end; font-size: 13px; color: #666; }
-    .search-wrap { padding: 9px 12px 10px; border-bottom: 1px solid var(--line); background: var(--panel); }
-    .search { height: 34px; border-radius: 6px; border: 1px solid #ededed; background: #fff; color: #a3a3a3; display: flex; align-items: center; justify-content: center; font-size: 15px; gap: 6px; }
     .scene-tip { display:none; margin: 8px 12px 0; padding: 8px 10px; border-radius: 8px; background: #e8fff2; color: #0f7f4a; font-size: 12px; }
     .scene-tip.show { display: block; }
     .scene-next-btn { border: none; background: transparent; color: #0f7f4a; margin-left: 6px; cursor: pointer; font-size: 12px; text-decoration: underline; }
@@ -1864,18 +2031,19 @@ export function renderWechatStoryHtml(input) {
     .tabbar { height:54px; border-top:1px solid var(--line); background:var(--panel); display:grid; grid-template-columns:repeat(4,1fr); align-items:center; text-align:center; font-size:12px; color:#8f8f8f; }
     .tabbar .active { color: var(--green); font-weight: 600; }
     .detail-view { display:none; flex-direction:column; flex:1; min-height:0; }
-    .chat-top { height:46px; border-bottom:1px solid var(--line); display:grid; grid-template-columns:auto 1fr; align-items:center; background:var(--panel); padding:0 8px; gap:8px; }
-    .back-btn { border:none; background:transparent; color:#4f4f4f; font-size:15px; cursor:pointer; padding:6px 8px; }
-    .chat-title { font-size:17px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .chat-top { height:46px; border-bottom:1px solid var(--line); display:grid; grid-template-columns:1fr minmax(0, auto) 1fr; align-items:center; background:var(--panel); padding:0 8px; gap:8px; }
+    .back-btn { border:none; background:transparent; color:#4f4f4f; font-size:15px; cursor:pointer; padding:6px 8px; justify-self:start; }
+    .chat-title { font-size:17px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; justify-self:center; text-align:center; min-width:0; max-width:100%; }
+    .chat-top-spacer { justify-self:end; width:44px; height:1px; }
     .timeline { flex:1; min-height:0; overflow-y:auto; padding:12px; }
     .msg { display:grid; grid-template-columns:42px 1fr; gap:10px; margin-bottom:14px; }
     .msg.self { grid-template-columns:1fr 42px; }
     .avatar-btn { border:none; padding:0; background:transparent; cursor:pointer; width:42px; height:42px; border-radius:8px; }
     .avatar { width:42px; height:42px; border-radius:8px; object-fit:cover; background:#ddd; }
-    .msg-main { width:fit-content; max-width:80%; } .msg.self .msg-main { margin-left:auto; }
+    .msg-main { width:fit-content; max-width:80%; } .msg.self .msg-main { margin-left:auto; } .msg.self .msg-body { display:flex; justify-content:flex-end; }
     .meta { font-size:12px; color:var(--muted); margin:0 0 4px; } .msg.self .meta { text-align:right; }
     .bubble { display:inline-block; max-width:100%; border-radius:10px; padding:10px 12px; background:var(--incoming); word-break:break-word; line-height:1.45; white-space:pre-wrap; }
-    .msg.self .bubble { background:var(--outgoing); }
+    .msg.self .bubble { background:var(--outgoing); text-align:left; }
     .bubble.media { padding:4px; background:transparent; }
     .recall-tip { font-size:12px; color:var(--muted); text-align:center; padding:4px 0; }
     .quote { margin-bottom:8px; background:rgba(0,0,0,.06); border-left:3px solid rgba(0,0,0,.18); border-radius:6px; padding:6px 8px; font-size:12px; color:#333; }
@@ -1926,7 +2094,6 @@ export function renderWechatStoryHtml(input) {
         <div class="center-title" id="top-title">微信</div>
         <div class="top-right" id="scene-title"></div>
       </header>
-      <div class="search-wrap"><div class="search" id="search-text">🔍 搜索</div></div>
       <div id="scene-tip" class="scene-tip">
         当前幕已全部看完，可右滑进入下一幕
         <button id="next-scene-btn" class="scene-next-btn">进入下一幕</button>
@@ -1939,6 +2106,7 @@ export function renderWechatStoryHtml(input) {
       <header class="chat-top">
         <button id="back-btn" class="back-btn">返回</button>
         <div class="chat-title" id="chat-title"></div>
+        <div class="chat-top-spacer" aria-hidden="true"></div>
       </header>
       <div class="timeline" id="timeline"></div>
     </section>
@@ -1970,7 +2138,6 @@ export function renderWechatStoryHtml(input) {
     const statusBattery = document.getElementById('status-battery');
     const topTitle = document.getElementById('top-title');
     const sceneTitle = document.getElementById('scene-title');
-    const searchText = document.getElementById('search-text');
     const sceneTip = document.getElementById('scene-tip');
     const nextSceneBtn = document.getElementById('next-scene-btn');
     const profileModal = document.getElementById('profile-modal');
@@ -2085,14 +2252,18 @@ export function renderWechatStoryHtml(input) {
       profileModal.setAttribute('aria-hidden', 'true');
     }
     function resolveStoryDisplayName(conv, senderId) {
-      const self = conv.self;
+      const self = activeAccountId || conv.self;
       const users = conv.profiles?.users || {};
       const sender = users[senderId] || { name: senderId };
       const selfProfile = users[self] || {};
+      
+      const resolveSenderName = () => resolveEffectiveProfile(sender, currentStageMs()).name || sender.name || senderId;
+      const resolveSelfName = () => resolveEffectiveProfile(selfProfile, currentStageMs()).name || selfProfile.name || senderId;
+
       if (conv.chat?.type === "group" && senderId === self) {
-        return selfProfile.aliases?.selfInGroups?.[conv.title] || selfProfile.name || senderId;
+        return selfProfile.aliases?.selfInGroups?.[conv.title] || resolveSelfName();
       }
-      return selfProfile.aliases?.contacts?.[senderId] || sender.name || senderId;
+      return selfProfile.aliases?.contacts?.[senderId] || resolveSenderName();
     }
     function getStoryPeerId(conv) {
       const self = conv.self;
@@ -2162,7 +2333,6 @@ export function renderWechatStoryHtml(input) {
       statusTime.textContent = ui.statusBar?.time || '12:21';
       statusBattery.textContent = ui.statusBar?.battery || '31%';
       topTitle.textContent = ui.topTitle || '微信';
-      searchText.textContent = '🔍 ' + (ui.searchPlaceholder || '搜索');
       sceneTitle.textContent = scene.title || '';
     }
     function renderQuote(quote, conv) {

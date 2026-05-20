@@ -24,5 +24,15 @@ desc: AI research and deployment company.
 @bob #m5 [+1m] [image]
 https://picsum.photos/seed/wireframe/480/320
 
-@alice #m6 [+30s] [quote:m3]
+@bob
+我把 parser 的边界逻辑先理一下。
+
+同一个发送者连续两条纯文本，现在可以省掉重复的 @bob。
+
+@bob [2026-04-09 10:05:00]
+这是新时间下的第一段纯文本。
+
+这是同一个发送者在同一 header 下自动拆开的第二段。
+
+@alice #m11 [+30s] [quote:m3]
 好，我先把引用样式和主题切换接口补上。

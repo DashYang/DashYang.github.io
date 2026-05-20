@@ -1,9 +1,17 @@
 profile:
-  name: "Mark"
   avatar: "https://picsum.photos/seed/Mark/100/100"
-  bio: "新人独立游戏开发者，求关注!"
+  2017-10-23:
+      name: "奋斗的西瓜"
+      bio: "勇敢追梦，大胆向前"
+  2018-06-30:
+      name: "Mark"
+      bio: "一枚研发"
+  2025-12-01:
+      name: "Mark"
+      bio: "新人独立游戏开发者，求关注!"
   aliases:
-    selfInGroups:                                                           "4幢一家人": "503"
+    selfInGroups:                                                           
+        "4幢一家人": "503"
     contacts:                                                           
         ZhangJingyi: "姐姐"  
         Panny: "603"

@@ -83,11 +83,36 @@ specVersion: "1.0"
 
 ### 2.2 消息头语法
 
-每条消息必须以消息头开始：
+每条消息默认以消息头开始：
 
 ```text
 @senderId #messageId [optional-timeRaw] [optional-tags...]
 ```
+
+也支持一种**仅限纯文本**的简化写法：
+
+```text
+@senderId
+text block 1
+
+text block 2
+```
+
+或者给第一条显式写时间：
+
+```text
+@senderId [2026-04-10 09:00:00]
+text block 1
+
+text block 2
+```
+
+在这种简化写法里：
+- 同一个 `@senderId` 头下面，**每个用空行分隔的文本块**都会被解析成一条独立消息
+- 该形式只适用于纯文本消息（包括纯 URL 文本，它仍会自动转为链接卡片）
+- 该形式允许第一条显式写时间；拆分后**只有第一段**继承这个时间，后续段落按现有规则自动推导时间
+- 如果某条消息需要 `#messageId`、或任意 tag（如 `[quote]`、`[image]`、`[voice]`、`[link-card]`），则仍然必须为该消息单独写完整消息头
+- 在简化写法里，空行不再表示“同一条消息的分段”，而是表示“下一条同发送者消息”
 
 示例：
 
@@ -97,6 +122,16 @@ specVersion: "1.0"
 
 @bob #m2 [+2m] [quote:m1]
 收到
+
+@alice
+我先补 parser。
+
+然后补文档说明。
+
+@alice [2026-04-10 09:30:00]
+这是新日期下的第一段。
+
+这是同一发送者在新日期下自动拆开的第二段。
 ```
 
 约束：
@@ -233,12 +268,19 @@ users:
 
 ### 3.1 字段说明
 
-- `users.<id>.name`：**正式名称 (Canonical Nickname)**。这是账号的官方昵称，用于点击头像后弹出的资料卡标题。
-- `users.<id>.avatar`：头像 URL 或路径。
-- `users.<id>.bio`：简介，显示在资料卡中。
-- `users.<id>.aliases`：别名/名称覆盖配置（可选）。
-  - `contacts.<targetId>`：**备注名 (Remark)**。当前视角账号对好友 `<targetId>` 的备注。在聊天气泡上方、标题栏、会话列表中优先显示该备注名。
-  - `selfInGroups.<groupTitle>`：**群名片**。当前账号在该群聊中的自定义昵称。
+- **`users.<id>.name`**: **正式名称 (Canonical Nickname)**。这是账号的官方昵称，用于点击头像后弹出的资料卡标题。
+- **互斥规则**: `name` 与 `identityTimeline` 必须**择一使用**。若定义了 `identityTimeline`，则不得在顶层定义 `name`，否则加载时会报错。
+- `users.<id>.avatar`: 头像 URL 或路径。
+- `users.<id>.bio`: 简介，显示在资料卡中。
+- `users.<id>.aliases`: 别名/名称覆盖配置（可选）。
+  - `contacts.<targetId>`: **备注名 (Remark)**。当前视角账号对好友 `<targetId>` 的备注。在聊天气泡上方、标题栏、会话列表中优先显示该备注名。
+  - `selfInGroups.<groupTitle>`: **群名片**。当前账号在该群聊中的自定义昵称。
+- **`users.<id>.identityTimeline`**: 随日期变化的身份信息。
+  - **时间基准**: 
+    - 在单会话页回放中，随当前消息的时间戳动态变化。
+    - 在会话总览页中，随当前账号的**系统时间**动态变化。
+    - 在账号切换列表（“我”Tab）中，每个账号卡片根据**该账号自身当前系统时间**解析身份。
+
 
 ### 3.2 目录模式示例（推荐）
 

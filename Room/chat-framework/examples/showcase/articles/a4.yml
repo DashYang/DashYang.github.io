@@ -4,4 +4,14 @@ article:
   author: "Room 演示号"
   cover: "https://picsum.photos/seed/article-demo-429/800/420"
   summary: "用于演示：进入新日期后，通讯录会出现新的未读红点。"
-  text: "当阶段推进到 2026-04-29 后，这篇文章才会出现。\n\n读完后可观察未读计数变化。"
+  markdown: |
+    # 4/29 新解锁文章
+
+    当阶段推进到 2026-04-29 后，这篇文章才会出现。
+
+    > 这段用于验证 Markdown 引用框。
+
+    - 文章仍保留 publishAt、title、author、summary 等元信息
+    - 正文可以使用 Markdown 分段、列表和图片
+
+    ![Markdown 正文图片](https://picsum.photos/seed/article-demo-429-inline/800/420)

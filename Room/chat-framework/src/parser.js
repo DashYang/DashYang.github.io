@@ -40,6 +40,101 @@ function parseHeaderLine(line) {
   return { senderId, idRaw, timeRaw, tags: pureTags };
 }
 
+function nextAutoMessageId(usedIds, autoIdRef) {
+  while (usedIds.has(`m${autoIdRef.value}`)) autoIdRef.value += 1;
+  const id = `m${autoIdRef.value}`;
+  autoIdRef.value += 1;
+  return id;
+}
+
+function finalizeDraftMessage(drafts, usedIds, autoIdRef, senderId, timeRaw, tags, bodyText, idRaw) {
+  if (!bodyText.trim()) return;
+
+  let id = idRaw;
+  if (!id) {
+    id = nextAutoMessageId(usedIds, autoIdRef);
+  }
+  if (usedIds.has(id)) {
+    throw new Error(`Duplicate message id in markdown parse stage: ${id}`);
+  }
+  usedIds.add(id);
+
+  let msg = { id, senderId, timeRaw, kind: "text", text: bodyText.trim() };
+  if (tags.includes("image")) {
+    const imgLines = bodyText.split("\n").map((x) => x.trim()).filter(Boolean);
+    const imageUrl = imgLines[0] || "";
+    const imageText = imgLines.slice(1).join("\n").trim();
+    msg = { ...msg, kind: "image", imageUrl, text: imageText || undefined };
+  }
+  if (tags.includes("link-card")) {
+    msg = { ...msg, kind: "link-card", linkCard: toLinkCard(bodyText), text: undefined };
+  }
+  if (tags.includes("voice")) {
+    const voice = toVoice(bodyText);
+    msg = { ...msg, kind: "voice", audioUrl: voice.audioUrl, durationSec: voice.durationSec, text: voice.text };
+  }
+  if (tags.includes("article")) {
+    msg = { ...msg, kind: "article-card", articleCard: toArticleCard(bodyText), text: undefined };
+  }
+  if (tags.includes("contact-card")) {
+    msg = { ...msg, kind: "contact-card", contactCard: toContactCard(bodyText), text: undefined };
+  }
+  const quoteTag = tags.find((t) => t.startsWith("quote:"));
+  if (quoteTag) {
+    msg.quote = { messageId: quoteTag.slice("quote:".length) };
+  }
+  const recallTag = tags.find((t) => t === "recall" || t.startsWith("recall:"));
+  if (recallTag) {
+    msg.recall = { delayMs: parseRecallDelayMs(recallTag) };
+  }
+
+  drafts.push(enrichAutoLinkCard(msg));
+}
+
+function parseCompactTextBlocks(lines, startIndex) {
+  const blocks = [];
+  let i = startIndex;
+  let current = [];
+
+  while (i < lines.length) {
+    const rawLine = lines[i];
+    const trimmed = rawLine.trim();
+    if (trimmed && parseHeaderLine(trimmed)) break;
+
+    if (!trimmed) {
+      if (current.length) {
+        blocks.push(current.join("\n").trim());
+        current = [];
+      }
+      i += 1;
+      continue;
+    }
+
+    current.push(rawLine);
+    i += 1;
+  }
+
+  if (current.length) {
+    blocks.push(current.join("\n").trim());
+  }
+
+  return { blocks: blocks.filter(Boolean), nextIndex: i };
+}
+
+function buildCompactTextMessages(drafts, usedIds, autoIdRef, senderId, timeRaw, blocks) {
+  blocks.forEach((block, index) => {
+    finalizeDraftMessage(
+      drafts,
+      usedIds,
+      autoIdRef,
+      senderId,
+      index === 0 ? timeRaw : undefined,
+      [],
+      block
+    );
+  });
+}
+
 /**
  * Parse YAML frontmatter from markdown text.
  *
@@ -254,7 +349,7 @@ export function parseChatMarkdown(raw) {
   const lines = body.replace(/\r\n/g, "\n").split("\n");
   const drafts = [];
   const usedIds = new Set();
-  let autoId = 1;
+  const autoIdRef = { value: 1 };
 
   let i = 0;
   while (i < lines.length) {
@@ -270,6 +365,17 @@ export function parseChatMarkdown(raw) {
     const { senderId, idRaw, timeRaw, tags } = header;
     i += 1;
 
+    const isCompactPlainTextHeader = !idRaw && tags.length === 0;
+    if (isCompactPlainTextHeader) {
+      const { blocks, nextIndex } = parseCompactTextBlocks(lines, i);
+      if (!blocks.length) {
+        throw new Error(`Empty compact message block for sender ${senderId} at line ${i}`);
+      }
+      buildCompactTextMessages(drafts, usedIds, autoIdRef, senderId, timeRaw, blocks);
+      i = nextIndex;
+      continue;
+    }
+
     const bodyLines = [];
     while (i < lines.length) {
       const nextTrimmed = lines[i].trim();
@@ -279,48 +385,7 @@ export function parseChatMarkdown(raw) {
     }
 
     const bodyText = bodyLines.join("\n").trim();
-
-    let id = idRaw;
-    if (!id) {
-      while (usedIds.has(`m${autoId}`)) autoId += 1;
-      id = `m${autoId}`;
-      autoId += 1;
-    }
-    if (usedIds.has(id)) {
-      throw new Error(`Duplicate message id in markdown parse stage: ${id}`);
-    }
-    usedIds.add(id);
-
-    let msg = { id, senderId, timeRaw, kind: "text", text: bodyText };
-    if (tags.includes("image")) {
-      const imgLines = bodyText.split("\n").map((x) => x.trim()).filter(Boolean);
-      const imageUrl = imgLines[0] || "";
-      const imageText = imgLines.slice(1).join("\n").trim();
-      msg = { ...msg, kind: "image", imageUrl, text: imageText || undefined };
-    }
-    if (tags.includes("link-card")) {
-      msg = { ...msg, kind: "link-card", linkCard: toLinkCard(bodyText), text: undefined };
-    }
-    if (tags.includes("voice")) {
-      const voice = toVoice(bodyText);
-      msg = { ...msg, kind: "voice", audioUrl: voice.audioUrl, durationSec: voice.durationSec, text: voice.text };
-    }
-    if (tags.includes("article")) {
-      msg = { ...msg, kind: "article-card", articleCard: toArticleCard(bodyText), text: undefined };
-    }
-    if (tags.includes("contact-card")) {
-      msg = { ...msg, kind: "contact-card", contactCard: toContactCard(bodyText), text: undefined };
-    }
-    const quoteTag = tags.find((t) => t.startsWith("quote:"));
-    if (quoteTag) {
-      msg.quote = { messageId: quoteTag.slice("quote:".length) };
-    }
-    const recallTag = tags.find((t) => t === "recall" || t.startsWith("recall:"));
-    if (recallTag) {
-      msg.recall = { delayMs: parseRecallDelayMs(recallTag) };
-    }
-
-    drafts.push(enrichAutoLinkCard(msg));
+    finalizeDraftMessage(drafts, usedIds, autoIdRef, senderId, timeRaw, tags, bodyText, idRaw);
   }
 
   return { frontmatter, messages: drafts };

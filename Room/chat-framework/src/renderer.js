@@ -180,14 +180,25 @@ function formatVoiceDuration(sec) {
  * @example
  * renderQuote({ senderId:'alice', snippet:'hello' }, profiles)
  */
+function resolveEffectiveProfileName(user) {
+  if (user.name) return user.name;
+  const timeline = Array.isArray(user.identityTimeline) ? user.identityTimeline : [];
+  if (timeline.length > 0) {
+    const last = timeline[timeline.length - 1];
+    if (last && last.name !== undefined) return last.name;
+  }
+  return "";
+}
+
 function resolveDisplayName(senderId, ctx, isSelf = false) {
   const user = ctx.profiles.users[senderId] || {};
   const selfId = ctx.chat?.self;
   const selfProfile = ctx.profiles.users[selfId] || {};
+  
   if (ctx.chat?.type === "group" && isSelf) {
-    return selfProfile.aliases?.selfInGroups?.[ctx.chat.title] || selfProfile.name || senderId;
+    return selfProfile.aliases?.selfInGroups?.[ctx.chat.title] || resolveEffectiveProfileName(selfProfile) || senderId;
   }
-  return selfProfile.aliases?.contacts?.[senderId] || user.name || senderId;
+  return selfProfile.aliases?.contacts?.[senderId] || resolveEffectiveProfileName(user) || senderId;
 }
 
 function renderQuote(q, ctx) {
