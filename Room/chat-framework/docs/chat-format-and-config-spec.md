@@ -9,7 +9,7 @@
 
 ## 1. 核心概念与渲染产品
 
-`chat-framework` 提供两类主要的渲染产物：
+`chat-framework` 提供三类主要的渲染产物：
 
 1. **单会话页 (Single Conversation Page)**:
    - 对应 `npm run build`。
@@ -20,6 +20,10 @@
    - 对应 `npm run build:folder`。
    - 聚合目录下所有的 `chat.md`。
    - 提供类微信的主界面、会话列表、发现（朋友圈）、文章列表及账号切换能力。
+
+3. **剧情页 (Story Page)**:
+   - 通过 `renderWechatStoryHtml` 以编程方式调用。
+   - 串联多个会话总览场景，当前场景看完后支持触屏右滑或按钮点击进入下一幕。
 
 ### 1.1 系统时间 (System Time)
 
@@ -69,6 +73,7 @@ multi/
 title: "会话标题"
 profiles: "./profiles.yml"
 chat: "./chat.yml"
+articles: "./articles"
 theme: "wechat"
 specVersion: "1.0"
 ---
@@ -78,6 +83,7 @@ specVersion: "1.0"
 - `title`：会话标题（可选）
 - `profiles`：发送者配置路径，默认 `./profiles.yml`
 - `chat`：会话配置路径，默认 `./chat.yml`
+- `articles`：文章目录路径，默认 `./articles`（单会话页中用于解析文章中引用的 `[article]` 消息）
 - `theme`：单会话页主题，默认 `wechat`
 - `specVersion`：规范版本，建议固定 `1.0`
 
@@ -255,6 +261,7 @@ bio: 社区民警
 users:
   alice:
     name: "Alice"
+    nickName: "小A"
     avatar: "https://example.com/a.jpg"
     bio: "产品经理"
     aliases:
@@ -272,6 +279,7 @@ users:
 - **互斥规则**: `name` 与 `identityTimeline` 必须**择一使用**。若定义了 `identityTimeline`，则不得在顶层定义 `name`，否则加载时会报错。
 - `users.<id>.avatar`: 头像 URL 或路径。
 - `users.<id>.bio`: 简介，显示在资料卡中。
+- `users.<id>.nickName`: 展示昵称（可选）。资料卡中的"昵称"字段，默认为 `name`。
 - `users.<id>.aliases`: 别名/名称覆盖配置（可选）。
   - `contacts.<targetId>`: **备注名 (Remark)**。当前视角账号对好友 `<targetId>` 的备注。在聊天气泡上方、标题栏、会话列表中优先显示该备注名。
   - `selfInGroups.<groupTitle>`: **群名片**。当前账号在该群聊中的自定义昵称。
@@ -357,14 +365,16 @@ chat:
 ```yml
 chat:
   type: "single"
+  self: "alice"
   title: "Bob"
 ```
 
 字段说明：
 - `type`：`group` 或 `single`
 - `title`：会话标题（列表和详情头部）
+- `self`：当前用户视角的 sender id（**单文件构建时必须指定**；folder 模式下由 profile id 自动推断）
 - 群聊 yml 只需保留 `title/groupInfo`；`self` 由当前 profile 视角隐含
-- 单聊可不配置 `chat.yml`，自动由消息参与者推断 `peer/title`
+- 单聊**在 folder 构建模式下**可不配置 `chat.yml`，自动由消息参与者推断 `peer/title`；**单文件构建模式下必须配置** `self`
 - 单聊不需要配置 `peer`（自动由消息参与者推断）
 - 群聊不需要配置 `members`，`groupInfo.name` 也不需要（直接使用 `title`）
 
@@ -393,8 +403,7 @@ ui:
     time: "12:21"  # 仅在未启用 story.yml 的静态展示下生效
     battery: "31%"
   topTitle: "微信"
-  searchPlaceholder: "搜索"
-  persistKey: "room_wechat_seen_v1"
+  persistKey: "chat_framework_seen_v1"
 ```
 
 字段说明：
@@ -402,8 +411,7 @@ ui:
 - `statusBar.time`：状态栏初始时间文案（若启用 `story.yml`，此字段会被剧情驱动的系统时间覆盖）
 - `statusBar.battery`：状态栏电量文案
 - `topTitle`：总览页主界面标题（默认“微信”）
-- `searchPlaceholder`：搜索框提示词
-- `persistKey`：回放完成状态的本地存储键
+- `persistKey`：回放完成状态的本地存储键（默认 `"chat_framework_seen_v1"`）
 
 ## 5.2 story.yml 规范（账号推进/切换）
 

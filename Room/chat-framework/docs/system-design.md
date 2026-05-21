@@ -6,6 +6,7 @@
 - 由 Markdown + YAML 生成聊天页面
 - **单会话页 (Single Conversation Page)** 渲染
 - **会话总览页 (Conversation Hub)** 聚合
+- **剧情页 (Story Page)** 多场景串联
 - **账号推进 (Account Progression)** 与 **系统时间 (System Time)** 驱动的互动体验
 - 多账号解锁与快速切换（story.yml）
 - 图片、链接卡片、引用消息、语音、撤回
@@ -31,7 +32,7 @@
 - **顺序**: 按 `accountOrder` 定义。
 - **解锁条件**: 前序账号完成所有剧情互动（阅读、朋友圈、文章）。
 - **反馈**: 下一个账号在“我”Tab 出现红点提示。
-- **定位**: `story.yml` 是会话总览页中的推进配置，而不是第三种主要渲染产物。
+- **定位**: `story.yml` 是会话总览页中的推进配置。剧情页 (`renderWechatStoryHtml`) 则是第三种主要渲染产物，支持多场景串联。
 
 ## 3. 功能详细描述
 
@@ -47,6 +48,7 @@
 输出：
 - 单会话页：`dist/index.html` 或指定输出
 - 会话总览页：`dist/wechat-hub.html`（一个页面聚合多个 md）
+- 剧情页：一个 HTML 页面串联多个会话总览场景，支持右滑进入下一幕
 
 
 ### 3.2 消息能力
@@ -67,6 +69,13 @@
 - 本地记忆：基于 `localStorage` 的 `persistKey`
 - **系统时间驱动**: 详情页与总览页共用阶段时间。
 - **账号隔离**: 每个账号拥有独立的已读状态与进度。
+
+### 3.4 剧情页交互能力
+
+- 按场景串联多个会话总览体验
+- 当前场景所有聊天回放完成后，顶部提示"当前幕已全部看完"
+- 可通过触屏右滑手势或点击按钮进入下一幕
+- 场景播放进度通过 `localStorage` 持久化
 
 ## 4. 模块设计
 
@@ -124,6 +133,7 @@
 职责：
 - 渲染会话总览页聚合页
 - 包含会话列表、详情回放、朋友圈、文章列表
+- 实现 **剧情页 (Story Page)** 多场景串联
 - 实现 **账号推进** 与 **系统时间** 的前端逻辑
 - 本地持久化已播放状态
 
@@ -152,6 +162,13 @@
 5. `buildConversationModels` 生成列表视图模型
 6. `renderWechatHubHtml` 生成聚合页面
 7. 浏览器端 JS 执行回放、系统时间推移、账号切换逻辑
+
+### 5.3 剧情页渲染流程
+
+1. 调用 `renderWechatStoryHtml` 并传入多场景配置
+2. 对每个场景独立调用 `normalizeUi` 和嵌入会话数据
+3. 生成包含全部场景 payload 的 HTML
+4. 浏览器端 JS 按场景索引展示当前场景，监听右滑事件切换
 
 ## 6. 调用链路（调用电路）
 
@@ -182,7 +199,16 @@ CLI: node src/build-folder.js
   -> fs.writeFileSync
 ```
 
-### 6.3 浏览器端运行时
+### 6.3 剧情页
+
+```text
+调用: renderWechatStoryHtml({ title, scenes, persistKey })
+  -> 生成包含多个会话总览场景的串联 HTML 页面
+  -> 浏览器端支持触屏右滑或按钮点击切换到下一场景
+  -> 场景进度通过 localStorage 持久化
+```
+
+### 6.4 浏览器端运行时
 
 ```text
 open wechat-hub.html
