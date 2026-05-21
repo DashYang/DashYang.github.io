@@ -1,8 +1,0 @@
-[      70ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-2, hasUnread: true, displayMid: g1} @ http://127.0.0.1:4173/showcase-story.html:975
-[      70ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/showcase-story.html:975
-[      71ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-2, hasUnread: true, displayMid: g1} @ http://127.0.0.1:4173/showcase-story.html:975
-[      71ms] [LOG] [chat-debug] renderList:item {account: protagonist, day: 2026-04-28, conversationId: conv-3, hasUnread: false, displayMid: s3} @ http://127.0.0.1:4173/showcase-story.html:975
-[    1669ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://127.0.0.1:4173/favicon.ico:0
-[  359922ms] [LOG] [chat-debug] openConversation {account: protagonist, day: 2026-04-28, conversationId: conv-2, stageSeen: false, stageMessages: 8} @ http://127.0.0.1:4173/showcase-story.html:975
-[  367126ms] [LOG] [chat-debug] finishConversation {account: protagonist, day: 2026-04-28, conversationId: conv-2} @ http://127.0.0.1:4173/showcase-story.html:975
-[  367126ms] [LOG] [chat-debug] markSeen {account: protagonist, day: 2026-04-28, conversationId: conv-2, stageSeen: Object} @ http://127.0.0.1:4173/showcase-story.html:975

@@ -1,9 +1,0 @@
-ui:
-  statusBar:
-    carrier: "中国移动"
-    time: "21:38"
-    battery: "76%"
-  topTitle: "微信"
-  # 取消注释下面这行启用绿黑终端风格
-  theme: "iterms"
-  persistKey: "chat_framework_showcase_seen_v1"

@@ -1,6 +1,0 @@
-chat:
-  type: "group"
-  title: "Room MVP 群"
-  self: "alice"
-  groupInfo:
-    avatar: "https://picsum.photos/seed/group/100/100"
