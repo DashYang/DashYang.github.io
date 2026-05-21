@@ -5,4 +5,5 @@ ui:
     battery: "81%"
   topTitle: "镜书"
   searchPlaceholder: ""
+  theme: "iterms"
   persistKey: "room_wechat_seen_chapter1_mark"

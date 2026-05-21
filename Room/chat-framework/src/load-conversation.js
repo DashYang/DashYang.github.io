@@ -120,7 +120,7 @@ export function resolveProfileIdentity(user, referenceTime) {
 }
 
 function normalizeUserProfile(id, parsed) {
-  const profile = parsed.profile || {};
+  const profile = parsed.profile || parsed || {};
   validateRawProfile(id, profile);
   const officialArticles = profile.officialArticles || {};
   const articleRefs = Array.isArray(officialArticles)

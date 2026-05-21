@@ -14,7 +14,7 @@ specVersion: "1.0"
 @protagonist #g3 [+12s] [quote:g2]
 收到，引用和 emoji 都 OK [强]
 
-@sister #g4 [+14s] [image]
+@sister #g4 [+14s] [image] [heartbeat:1]
 https://picsum.photos/seed/showcase-image/460/320
 图 + 文的消息说明在这里，支持换行。
 第二行说明。
@@ -24,13 +24,13 @@ https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
 duration: 9
 这是语音转写示例，点一下可以播放。
 
-@neighbour2 #g6 [+12s] [recall:+8s]
+@neighbour2 #g6 [+12s] [recall:+8s] [heartbeat:2]
 这条消息会在 8 秒后撤回，请观察回放过程。
 
 @protagonist #g7 [+14s] [article]
 id: a1
 
-@sister #g8 [+12s] [contact-card]
+@sister #g8 [+12s] [contact-card] [heartbeat:end]
 name: 周警官
 nickName: zhou_police
 avatar: https://picsum.photos/seed/policeman/100/100

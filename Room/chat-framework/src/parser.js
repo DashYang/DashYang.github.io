@@ -87,6 +87,11 @@ function finalizeDraftMessage(drafts, usedIds, autoIdRef, senderId, timeRaw, tag
   if (recallTag) {
     msg.recall = { delayMs: parseRecallDelayMs(recallTag) };
   }
+  const heartbeatTag = tags.find((t) => t.startsWith("heartbeat:"));
+  if (heartbeatTag) {
+    const val = heartbeatTag.slice("heartbeat:".length);
+    msg.heartbeat = val === "end" ? 0 : Number(val) || 0;
+  }
 
   drafts.push(enrichAutoLinkCard(msg));
 }

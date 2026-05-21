@@ -4,5 +4,6 @@ ui:
     time: "12:21"
     battery: "31%"
   topTitle: "微信"
-  searchPlaceholder: "搜索"
+  # 可选 "iterms"（绿黑终端风格）
+  theme: "wechat"
   persistKey: "room_wechat_seen_v1"

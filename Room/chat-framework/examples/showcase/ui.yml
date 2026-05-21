@@ -4,5 +4,6 @@ ui:
     time: "21:38"
     battery: "76%"
   topTitle: "微信"
-  searchPlaceholder: "搜索"
+  # 取消注释下面这行启用绿黑终端风格
+  theme: "iterms"
   persistKey: "chat_framework_showcase_seen_v1"

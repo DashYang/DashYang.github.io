@@ -319,9 +319,10 @@
     .profile-item { font-size:13px; color:#444; line-height:1.45; margin-top:4px; word-break:break-word; }
     .profile-close { margin-top:12px; width:100%; border:none; border-radius:8px; background:#f2f2f2; padding:8px 0; cursor:pointer; }
   </style>
+  
 </head>
 <body>
-  <main class="phone">
+  <main class="phone" data-theme="wechat">
     <div class="status-bar">
       <div id="status-carrier">中国移动</div>
       <div id="status-time">12:21</div>
@@ -339,7 +340,7 @@
     <section id="moments-view" class="moments-view">
       <header class="top-nav">
         <div></div>
-        <div class="center-title">朋友圈</div>
+        <div class="center-title">社交圈</div>
         <div></div>
       </header>
       <div id="moments-scroll" class="moments-scroll"></div>
@@ -347,17 +348,17 @@
     <section id="contacts-view" class="contacts-view">
       <header class="top-nav">
         <div></div>
-        <div class="center-title">文章</div>
+        <div class="center-title">文档</div>
         <div></div>
       </header>
       <div id="contacts-scroll" class="contacts-scroll"></div>
     </section>
 
     <footer id="home-tabbar" class="tabbar">
-      <div id="tab-chat" class="active tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/></svg></span><span class="tab-label">微信</span><span id="badge-chat" class="tab-badge"></span></div>
-      <div id="tab-contacts" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></span><span class="tab-label">文章</span><span id="badge-contacts" class="tab-badge"></span></div>
-      <div id="tab-moments" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg></span><span class="tab-label">发现</span><span id="badge-moments" class="tab-badge"></span></div>
-      <div id="tab-me" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 19c1.8-3 4-4.5 7-4.5s5.2 1.5 7 4.5"/></svg></span><span class="tab-label">我</span><span id="badge-me" class="tab-badge"></span></div>
+      <div id="tab-chat" class="active tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/></svg></span><span class="tab-label">对话</span><span id="badge-chat" class="tab-badge"></span></div>
+      <div id="tab-contacts" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></span><span class="tab-label">文档</span><span id="badge-contacts" class="tab-badge"></span></div>
+      <div id="tab-moments" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg></span><span class="tab-label">社交</span><span id="badge-moments" class="tab-badge"></span></div>
+      <div id="tab-me" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 19c1.8-3 4-4.5 7-4.5s5.2 1.5 7 4.5"/></svg></span><span class="tab-label">账号</span><span id="badge-me" class="tab-badge"></span></div>
     </footer>
 
     <section id="detail-view" class="detail-view">
@@ -402,7 +403,7 @@
     </div>
   </aside>
 
-  <script id="chat-data" type="application/json">{"title":"multi","conversations":[{"id":"conv-1","title":"Room MVP 群","subtitle":"Room MVP 群","avatar":"https://picsum.photos/seed/group/100/100","self":"alice","preview":"我先把解析器和时间逻辑补完整。","listTime":"09:34","startIndex":1,"chat":{"type":"group","title":"Room MVP 群","self":"alice","groupInfo":{"avatar":"https://picsum.photos/seed/group/100/100"}},"profiles":{"users":{"alice":{"name":"alice","id":"alice","avatar":"","bio":"","nickName":"alice","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}},"bob":{"name":"bob","id":"bob","avatar":"","bio":"","nickName":"bob","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}},"clara":{"name":"clara","id":"clara","avatar":"","bio":"","nickName":"clara","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}}}},"articles":{"multi-alice-a1":{"id":"multi-alice-a1","title":"MVP 联调清单（可复用模板）","author":"产品方法论","publishAt":"2026-04-27 08:20:00","cover":"https://picsum.photos/seed/multi-article-a1/800/420","summary":"一份可复用的联调检查清单，减少上线前遗漏。","text":"联调前先确认接口契约，再核对异常态和兜底文案。\\n\\n最后做一轮端到端回归，记录问题和修复时点。","images":["https://picsum.photos/seed/multi-article-a1-1/800/500"]},"multi-bob-a1":{"id":"multi-bob-a1","title":"聊天回放性能优化笔记","author":"前端工程实践","publishAt":"2026-04-26 10:00:00","cover":"https://picsum.photos/seed/multi-article-b1/800/420","summary":"从定时器管理和 DOM 更新批次切入，降低掉帧。","text":"把播放定时器和撤回定时器拆分后，回放结束时不再误清撤回逻辑。\\n\\n同时减少无意义重排，列表滚动更顺滑。","images":[]}},"messages":[{"id":"g1","senderId":"alice","timeRaw":"2026-04-09 09:30:00","kind":"text","text":"今天把聊天生成框架串起来。","index":0,"timestamp":"2026-04-09T01:30:00.000Z","timeText":"2026-04-09 09:30"},{"id":"g2","senderId":"bob","timeRaw":"+1m","kind":"text","text":"我先把解析器和时间逻辑补完整。","index":1,"timestamp":"2026-04-09T01:31:00.000Z","timeText":"2026-04-09 09:31"},{"id":"g3","senderId":"clara","timeRaw":"+1m","kind":"text","text":"我这边负责引用和卡片样式。","quote":{"messageId":"g2","senderId":"bob","timeText":"2026-04-09 09:31","snippet":"我先把解析器和时间逻辑补完整。"},"index":2,"timestamp":"2026-04-09T01:32:00.000Z","timeText":"2026-04-09 09:32"},{"id":"g4","senderId":"bob","timeRaw":"+45s","kind":"link-card","linkCard":{"url":"https://example.com/design","title":"交互草图","site":"example.com","desc":"原型里有会话列表和详情页切换。"},"index":3,"timestamp":"2026-04-09T01:32:45.000Z","timeText":"2026-04-09 09:32"},{"id":"g5","senderId":"alice","timeRaw":"+1m","kind":"image","imageUrl":"https://picsum.photos/seed/room-wire/460/320","index":4,"timestamp":"2026-04-09T01:33:45.000Z","timeText":"2026-04-09 09:33"},{"id":"g6","senderId":"clara","timeRaw":"+1m","kind":"text","text":"回放结束后记得显示“当前聊天已结束”。","index":5,"timestamp":"2026-04-09T01:34:45.000Z","timeText":"2026-04-09 09:34"}]},{"id":"conv-2","title":"bob","subtitle":"bob","avatar":"","self":"alice","preview":"可以，我先按 1s 间隔做默认播放。","listTime":"11:01","startIndex":1,"chat":{"type":"single","self":"alice","peer":"bob","title":"bob"},"profiles":{"users":{"alice":{"name":"alice","id":"alice","avatar":"","bio":"","nickName":"alice","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}},"bob":{"name":"bob","id":"bob","avatar":"","bio":"","nickName":"bob","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}},"clara":{"name":"clara","id":"clara","avatar":"","bio":"","nickName":"clara","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{},"officialArticles":[],"chatFiles":[],"groupChats":{}}}},"articles":{"multi-alice-a1":{"id":"multi-alice-a1","title":"MVP 联调清单（可复用模板）","author":"产品方法论","publishAt":"2026-04-27 08:20:00","cover":"https://picsum.photos/seed/multi-article-a1/800/420","summary":"一份可复用的联调检查清单，减少上线前遗漏。","text":"联调前先确认接口契约，再核对异常态和兜底文案。\\n\\n最后做一轮端到端回归，记录问题和修复时点。","images":["https://picsum.photos/seed/multi-article-a1-1/800/500"]},"multi-bob-a1":{"id":"multi-bob-a1","title":"聊天回放性能优化笔记","author":"前端工程实践","publishAt":"2026-04-26 10:00:00","cover":"https://picsum.photos/seed/multi-article-b1/800/420","summary":"从定时器管理和 DOM 更新批次切入，降低掉帧。","text":"把播放定时器和撤回定时器拆分后，回放结束时不再误清撤回逻辑。\\n\\n同时减少无意义重排，列表滚动更顺滑。","images":[]}},"messages":[{"id":"s1","senderId":"alice","timeRaw":"2026-04-09 11:00:00","kind":"text","text":"中午前能出一个可看的 demo 吗？","index":0,"timestamp":"2026-04-09T03:00:00.000Z","timeText":"2026-04-09 11:00"},{"id":"s2","senderId":"bob","timeRaw":"+30s","kind":"text","text":"可以，我先按 1s 间隔做默认播放。","index":1,"timestamp":"2026-04-09T03:00:30.000Z","timeText":"2026-04-09 11:00"},{"id":"s3","senderId":"alice","timeRaw":"+40s","kind":"text","text":"好，另外要支持每个会话单独配置间隔。","quote":{"messageId":"s2","senderId":"bob","timeText":"2026-04-09 11:00","snippet":"可以，我先按 1s 间隔做默认播放。"},"index":2,"timestamp":"2026-04-09T03:01:10.000Z","timeText":"2026-04-09 11:01"},{"id":"s4","senderId":"bob","timeRaw":"+30s","kind":"text","text":"收到，我让回放节奏自动按内容长度推算。","index":3,"timestamp":"2026-04-09T03:01:40.000Z","timeText":"2026-04-09 11:01"}]}],"ui":{"statusBar":{"carrier":"中国移动","time":"12:21","battery":"31%"},"topTitle":"微信","persistKey":"room_wechat_seen_v1"},"story":{}}</script>
+  <script id="chat-data" type="application/json">{"title":"multi","conversations":[{"id":"conv-1","title":"Room MVP 群","subtitle":"Room MVP 群","avatar":"https://picsum.photos/seed/group/100/100","self":"alice","preview":"我先把解析器和时间逻辑补完整。","listTime":"09:34","startIndex":1,"chat":{"type":"group","title":"Room MVP 群","self":"alice","groupInfo":{"avatar":"https://picsum.photos/seed/group/100/100"}},"profiles":{"users":{"alice":{"name":"Alice","id":"alice","avatar":"https://picsum.photos/seed/alice/100/100","bio":"产品经理","nickName":"alice_pm","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{"m1":{"publishAt":"2026-04-28 09:30:00","text":"今天把需求拆分完了，下午开始联调。","images":["https://picsum.photos/seed/multi-alice-m1/300/300"]}},"officialArticles":["multi-alice-a1"],"chatFiles":[],"groupChats":{}},"bob":{"name":"Bob","id":"bob","avatar":"https://picsum.photos/seed/bob/100/100","bio":"前端工程师","nickName":"bob_frontend","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{"m1":{"publishAt":"2026-04-26 19:10:00","text":"语音消息、撤回、文章页都串起来了。"},"m2":{"publishAt":"2026-05-10 10:00:00","text":"未来动态，用来验证时间过滤。"}},"officialArticles":["multi-bob-a1"],"chatFiles":[],"groupChats":{}},"clara":{"name":"Clara","id":"clara","avatar":"https://picsum.photos/seed/clara/100/100","bio":"设计师","nickName":"clara_design","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{"m1":{"publishAt":"2026-04-25 12:00:00","text":"把朋友圈卡片样式统一成白底圆角，阅读更舒适。"}},"officialArticles":[],"chatFiles":[],"groupChats":{}}}},"articles":{"multi-alice-a1":{"id":"multi-alice-a1","title":"MVP 联调清单（可复用模板）","author":"产品方法论","publishAt":"2026-04-27 08:20:00","cover":"https://picsum.photos/seed/multi-article-a1/800/420","summary":"一份可复用的联调检查清单，减少上线前遗漏。","text":"联调前先确认接口契约，再核对异常态和兜底文案。\\n\\n最后做一轮端到端回归，记录问题和修复时点。","images":["https://picsum.photos/seed/multi-article-a1-1/800/500"]},"multi-bob-a1":{"id":"multi-bob-a1","title":"聊天回放性能优化笔记","author":"前端工程实践","publishAt":"2026-04-26 10:00:00","cover":"https://picsum.photos/seed/multi-article-b1/800/420","summary":"从定时器管理和 DOM 更新批次切入，降低掉帧。","text":"把播放定时器和撤回定时器拆分后，回放结束时不再误清撤回逻辑。\\n\\n同时减少无意义重排，列表滚动更顺滑。","images":[]}},"messages":[{"id":"g1","senderId":"alice","timeRaw":"2026-04-09 09:30:00","kind":"text","text":"今天把聊天生成框架串起来。","index":0,"timestamp":"2026-04-09T01:30:00.000Z","timeText":"2026-04-09 09:30"},{"id":"g2","senderId":"bob","timeRaw":"+1m","kind":"text","text":"我先把解析器和时间逻辑补完整。","index":1,"timestamp":"2026-04-09T01:31:00.000Z","timeText":"2026-04-09 09:31"},{"id":"g3","senderId":"clara","timeRaw":"+1m","kind":"text","text":"我这边负责引用和卡片样式。","quote":{"messageId":"g2","senderId":"bob","timeText":"2026-04-09 09:31","snippet":"我先把解析器和时间逻辑补完整。"},"index":2,"timestamp":"2026-04-09T01:32:00.000Z","timeText":"2026-04-09 09:32"},{"id":"g4","senderId":"bob","timeRaw":"+45s","kind":"link-card","linkCard":{"url":"https://example.com/design","title":"交互草图","site":"example.com","desc":"原型里有会话列表和详情页切换。"},"index":3,"timestamp":"2026-04-09T01:32:45.000Z","timeText":"2026-04-09 09:32"},{"id":"g5","senderId":"alice","timeRaw":"+1m","kind":"image","imageUrl":"https://picsum.photos/seed/room-wire/460/320","index":4,"timestamp":"2026-04-09T01:33:45.000Z","timeText":"2026-04-09 09:33"},{"id":"g6","senderId":"clara","timeRaw":"+1m","kind":"text","text":"回放结束后记得显示“当前聊天已结束”。","index":5,"timestamp":"2026-04-09T01:34:45.000Z","timeText":"2026-04-09 09:34"}]},{"id":"conv-2","title":"Bob","subtitle":"Bob","avatar":"https://picsum.photos/seed/bob/100/100","self":"alice","preview":"可以，我先按 1s 间隔做默认播放。","listTime":"11:01","startIndex":1,"chat":{"type":"single","self":"alice","peer":"bob","title":"Bob"},"profiles":{"users":{"alice":{"name":"Alice","id":"alice","avatar":"https://picsum.photos/seed/alice/100/100","bio":"产品经理","nickName":"alice_pm","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{"m1":{"publishAt":"2026-04-28 09:30:00","text":"今天把需求拆分完了，下午开始联调。","images":["https://picsum.photos/seed/multi-alice-m1/300/300"]}},"officialArticles":["multi-alice-a1"],"chatFiles":[],"groupChats":{}},"bob":{"name":"Bob","id":"bob","avatar":"https://picsum.photos/seed/bob/100/100","bio":"前端工程师","nickName":"bob_frontend","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{"m1":{"publishAt":"2026-04-26 19:10:00","text":"语音消息、撤回、文章页都串起来了。"},"m2":{"publishAt":"2026-05-10 10:00:00","text":"未来动态，用来验证时间过滤。"}},"officialArticles":["multi-bob-a1"],"chatFiles":[],"groupChats":{}},"clara":{"name":"Clara","id":"clara","avatar":"https://picsum.photos/seed/clara/100/100","bio":"设计师","nickName":"clara_design","identityTimeline":[],"aliases":{"selfInGroups":{},"contacts":{}},"moments":{"m1":{"publishAt":"2026-04-25 12:00:00","text":"把朋友圈卡片样式统一成白底圆角，阅读更舒适。"}},"officialArticles":[],"chatFiles":[],"groupChats":{}}}},"articles":{"multi-alice-a1":{"id":"multi-alice-a1","title":"MVP 联调清单（可复用模板）","author":"产品方法论","publishAt":"2026-04-27 08:20:00","cover":"https://picsum.photos/seed/multi-article-a1/800/420","summary":"一份可复用的联调检查清单，减少上线前遗漏。","text":"联调前先确认接口契约，再核对异常态和兜底文案。\\n\\n最后做一轮端到端回归，记录问题和修复时点。","images":["https://picsum.photos/seed/multi-article-a1-1/800/500"]},"multi-bob-a1":{"id":"multi-bob-a1","title":"聊天回放性能优化笔记","author":"前端工程实践","publishAt":"2026-04-26 10:00:00","cover":"https://picsum.photos/seed/multi-article-b1/800/420","summary":"从定时器管理和 DOM 更新批次切入，降低掉帧。","text":"把播放定时器和撤回定时器拆分后，回放结束时不再误清撤回逻辑。\\n\\n同时减少无意义重排，列表滚动更顺滑。","images":[]}},"messages":[{"id":"s1","senderId":"alice","timeRaw":"2026-04-09 11:00:00","kind":"text","text":"中午前能出一个可看的 demo 吗？","index":0,"timestamp":"2026-04-09T03:00:00.000Z","timeText":"2026-04-09 11:00"},{"id":"s2","senderId":"bob","timeRaw":"+30s","kind":"text","text":"可以，我先按 1s 间隔做默认播放。","index":1,"timestamp":"2026-04-09T03:00:30.000Z","timeText":"2026-04-09 11:00"},{"id":"s3","senderId":"alice","timeRaw":"+40s","kind":"text","text":"好，另外要支持每个会话单独配置间隔。","quote":{"messageId":"s2","senderId":"bob","timeText":"2026-04-09 11:00","snippet":"可以，我先按 1s 间隔做默认播放。"},"index":2,"timestamp":"2026-04-09T03:01:10.000Z","timeText":"2026-04-09 11:01"},{"id":"s4","senderId":"bob","timeRaw":"+30s","kind":"text","text":"收到，我让回放节奏自动按内容长度推算。","index":3,"timestamp":"2026-04-09T03:01:40.000Z","timeText":"2026-04-09 11:01"}]}],"ui":{"statusBar":{"carrier":"中国移动","time":"12:21","battery":"31%"},"topTitle":"微信","theme":"wechat","persistKey":"room_wechat_seen_v1"},"story":{}}</script>
   <script>
     const payload = JSON.parse(document.getElementById('chat-data').textContent);
     const listView = document.getElementById('list-view');
@@ -461,6 +462,91 @@
     let activePlayback = null;
     let articleRows = [];
     const debugState = { enabled: true };
+
+    const heartbeatEngine = (function() {
+      let audioCtx = null;
+      let intervalId = null;
+      let currentLevel = 0;
+      const bpmMap = { 0: 60, 1: 75, 2: 100, 3: 130 };
+
+      function ensureContext() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return audioCtx;
+      }
+
+      function playBeat() {
+        const ctx = ensureContext();
+        if (ctx.state === 'suspended') {
+          ctx.resume().catch(() => {});
+        }
+        const now = ctx.currentTime;
+
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(50, now);
+        osc1.frequency.exponentialRampToValueAtTime(60, now + 0.05);
+        osc1.frequency.exponentialRampToValueAtTime(30, now + 0.12);
+        gain1.gain.setValueAtTime(0, now);
+        gain1.gain.linearRampToValueAtTime(0.25, now + 0.02);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.16);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(55, now + 0.18);
+        osc2.frequency.exponentialRampToValueAtTime(65, now + 0.23);
+        osc2.frequency.exponentialRampToValueAtTime(35, now + 0.30);
+        gain2.gain.setValueAtTime(0, now + 0.18);
+        gain2.gain.linearRampToValueAtTime(0.20, now + 0.20);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.33);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.18);
+        osc2.stop(now + 0.34);
+      }
+
+      function restartInterval(bpm) {
+        if (intervalId) { clearInterval(intervalId); intervalId = null; }
+        playBeat();
+        intervalId = setInterval(playBeat, 60000 / bpm);
+      }
+
+      function start() {
+        if (intervalId) return;
+        ensureContext();
+        currentLevel = 0;
+        restartInterval(bpmMap[0]);
+      }
+
+      function stop() {
+        if (intervalId) { clearInterval(intervalId); intervalId = null; }
+      }
+
+      function setLevel(n) {
+        if (!intervalId) return;
+        const num = Number(n);
+        if (isNaN(num)) return;
+        currentLevel = num;
+        restartInterval(bpmMap[num] || bpmMap[0]);
+      }
+
+      function reset() {
+        if (intervalId) { setLevel(0); }
+      }
+
+      function isRunning() {
+        return !!intervalId;
+      }
+
+      return { start, stop, setLevel, reset, isRunning };
+    })();
 
     function parseMomentTime(raw) {
       if (!raw) return null;
@@ -1484,6 +1570,7 @@
       recallTimers.forEach((t) => window.clearTimeout(t));
       recallTimers = [];
       stopActiveAudio();
+      heartbeatEngine.reset();
     }
     function stopPlaybackTimer() {
       if (timer) {
@@ -1522,6 +1609,7 @@
       }
       timeline.scrollTop = timeline.scrollHeight;
       debugLog("finishConversation", { account: activeAccountId, day: currentStageMs(), conversationId });
+      heartbeatEngine.reset();
       markSeen(conversationId);
     }
 
@@ -1632,6 +1720,7 @@
           return;
         }
         const msg = stageMessages[playback.current];
+        if (msg.heartbeat !== undefined) heartbeatEngine.setLevel(msg.heartbeat);
         timeline.insertAdjacentHTML('beforeend', renderMessage(msg, conv, { conversationId }));
         queueRecall(conversationId, msg, conv);
         timeline.scrollTop = timeline.scrollHeight;
@@ -1782,6 +1871,11 @@
     initTimelineStages();
     showChatList();
     renderList();
+    heartbeatEngine.start();
+    document.addEventListener('click', function resumeHeartbeat() {
+      document.removeEventListener('click', resumeHeartbeat);
+      if (!heartbeatEngine.isRunning()) heartbeatEngine.start();
+    }, { once: true });
   </script>
 </body>
 </html>

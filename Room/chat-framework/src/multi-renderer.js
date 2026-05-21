@@ -142,6 +142,95 @@ function safeJson(data) {
 }
 
 /**
+ * Shared HeartbeatEngine runtime JS — used by both hub and story pages.
+ * bpmMap defines the BPM for each level: 0=normal, 1/2/3=increasing pace.
+ */
+const HEARTBEAT_ENGINE_JS = `const heartbeatEngine = (function() {
+      let audioCtx = null;
+      let intervalId = null;
+      let currentLevel = 0;
+      const bpmMap = { 0: 10, 1: 65, 2: 75, 3: 90 };
+
+      function ensureContext() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return audioCtx;
+      }
+
+      function playBeat() {
+        const ctx = ensureContext();
+        if (ctx.state === 'suspended') {
+          ctx.resume().catch(() => {});
+        }
+        const now = ctx.currentTime;
+
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(50, now);
+        osc1.frequency.exponentialRampToValueAtTime(60, now + 0.05);
+        osc1.frequency.exponentialRampToValueAtTime(30, now + 0.12);
+        gain1.gain.setValueAtTime(0, now);
+        gain1.gain.linearRampToValueAtTime(0.25, now + 0.02);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.16);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(55, now + 0.18);
+        osc2.frequency.exponentialRampToValueAtTime(65, now + 0.23);
+        osc2.frequency.exponentialRampToValueAtTime(35, now + 0.30);
+        gain2.gain.setValueAtTime(0, now + 0.18);
+        gain2.gain.linearRampToValueAtTime(0.20, now + 0.20);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.33);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.18);
+        osc2.stop(now + 0.34);
+      }
+
+      function restartInterval(bpm) {
+        if (intervalId) { clearInterval(intervalId); intervalId = null; }
+        playBeat();
+        intervalId = setInterval(playBeat, 60000 / bpm);
+      }
+
+      function start() {
+        if (intervalId) return;
+        ensureContext();
+        currentLevel = 0;
+        restartInterval(bpmMap[0]);
+      }
+
+      function stop() {
+        if (intervalId) { clearInterval(intervalId); intervalId = null; }
+      }
+
+      function setLevel(n) {
+        if (!intervalId) return;
+        const num = Number(n);
+        if (isNaN(num)) return;
+        currentLevel = num;
+        restartInterval(bpmMap[num] || bpmMap[0]);
+      }
+
+      function reset() {
+        if (intervalId) { setLevel(0); }
+      }
+
+      function isRunning() {
+        return !!intervalId;
+      }
+
+      return { start, stop, setLevel, reset, isRunning };
+    })();`;
+
+/**
  * Merge UI defaults with user config.
  *
  * @param {Record<string, unknown> | undefined} ui - Optional ui config from YAML.
@@ -156,6 +245,7 @@ function normalizeUi(ui) {
       battery: source.statusBar?.battery || "31%"
     },
     topTitle: source.topTitle || "微信",
+    theme: source.theme || "wechat",
     persistKey: source.persistKey || "chat_framework_seen_v1"
   };
 }
@@ -504,9 +594,94 @@ export function renderWechatHubHtml(input) {
     .profile-item { font-size:13px; color:#444; line-height:1.45; margin-top:4px; word-break:break-word; }
     .profile-close { margin-top:12px; width:100%; border:none; border-radius:8px; background:#f2f2f2; padding:8px 0; cursor:pointer; }
   </style>
+  ${ui.theme === "iterms" ? `<style>
+    [data-theme="iterms"] { --bg:#0a0d14; --panel:#0d1117; --text:#33ff66; --muted:#6aaa70; --line:#173020; --incoming:#141b22; --outgoing:#0e2a15; --green:#00ff41; --accent:#00ff41; --glow:0 0 6px rgba(0,255,65,0.45); }
+    [data-theme="iterms"] body { font-family:"SF Mono","Menlo","Courier New",monospace; background:#05080d; }
+    [data-theme="iterms"] .phone { background:var(--bg); border-color:#173020; }
+    [data-theme="iterms"] .status-bar,[data-theme="iterms"] .top-nav { background:var(--panel); color:var(--text); border-color:var(--line); }
+    [data-theme="iterms"] .list-scroll { background:#0a0d14; }
+    [data-theme="iterms"] .list-item { background:#0a0d14; border-color:#142018; color:var(--text); }
+    [data-theme="iterms"] .list-item:hover { background:#0d1a12; }
+    [data-theme="iterms"] .list-title { color:var(--text); }
+    [data-theme="iterms"] .list-preview { color:#7aba80; }
+    [data-theme="iterms"] .list-time { color:#6aaa70; }
+    [data-theme="iterms"] .list-avatar { border-radius:2px; }
+    [data-theme="iterms"] .list-dot { box-shadow:0 0 0 2px #0a0d14; }
+    [data-theme="iterms"] .tabbar { background:var(--panel); border-color:var(--line); }
+    [data-theme="iterms"] .tabbar .active { color:var(--accent); text-shadow:var(--glow); }
+    [data-theme="iterms"] .tab-icon { color:var(--muted); }
+    [data-theme="iterms"] .tabbar .active .tab-icon,[data-theme="iterms"] .tabbar .active .tab-label { color:var(--accent); }
+    [data-theme="iterms"] .chat-top { background:var(--panel); border-color:var(--line); }
+    [data-theme="iterms"] .chat-title { color:var(--text); text-shadow:0 0 4px rgba(0,255,65,0.3); }
+    [data-theme="iterms"] .back-btn { color:var(--accent); }
+    [data-theme="iterms"] .timeline { background:var(--bg); }
+    [data-theme="iterms"] .msg .meta { color:var(--muted); }
+    [data-theme="iterms"] .bubble { color:var(--text); background:var(--incoming); border:1px solid var(--line); border-radius:2px; text-shadow:0 0 3px rgba(0,255,65,0.2); }
+    [data-theme="iterms"] .msg.self .bubble { background:var(--outgoing); border-color:#1a4020; color:#d0ffd0; }
+    [data-theme="iterms"] .bubble.media { background:transparent; border:none; text-shadow:none; }
+    [data-theme="iterms"] .quote { border-left-color:var(--accent); background:#0d1a12; color:#a0e0a0; text-shadow:0 0 3px rgba(0,255,65,0.15); }
+    [data-theme="iterms"] .img { border:1px solid #1a4020; }
+    [data-theme="iterms"] .avatar { border-radius:2px; }
+    [data-theme="iterms"] .card { background:#0d1a12; border-color:var(--line); color:var(--text); }
+    [data-theme="iterms"] .article-card { background:#0d1a12; border-color:var(--line); border-radius:2px; color:var(--text); }
+    [data-theme="iterms"] .contact-card { background:#0d1a12; border-color:var(--line); border-radius:2px; color:var(--text); }
+    [data-theme="iterms"] .contact-name { color:var(--text); }
+    [data-theme="iterms"] .contact-nick { color:var(--muted); }
+    [data-theme="iterms"] .contact-name { color:var(--text); }
+    [data-theme="iterms"] .contact-nick { color:var(--muted); }
+    [data-theme="iterms"] .contact-avatar { border-radius:2px; }
+    [data-theme="iterms"] .inline-link { color:var(--accent); }
+    [data-theme="iterms"] .mention { color:var(--accent); text-shadow:0 0 4px rgba(0,255,65,0.4); }
+    [data-theme="iterms"] .profile-modal { background:rgba(0,8,5,.75); }
+    [data-theme="iterms"] .profile-card { background:#0a1016; border:1px solid var(--line); box-shadow:0 0 20px rgba(0,255,65,.15); border-radius:4px; }
+    [data-theme="iterms"] .profile-name { color:var(--accent); text-shadow:var(--glow); }
+    [data-theme="iterms"] .profile-item { color:var(--text); }
+    [data-theme="iterms"] .profile-close { background:#0d1a12; border:1px solid var(--line); color:var(--text); }
+    [data-theme="iterms"] .profile-avatar { border-radius:2px; }
+    [data-theme="iterms"] .article-modal { background:#05080d; }
+    [data-theme="iterms"] .article-header { background:#05080d; border-color:var(--line); }
+    [data-theme="iterms"] .article-back { color:var(--accent); }
+    [data-theme="iterms"] .article-body { color:var(--text); }
+    [data-theme="iterms"] .article-title { color:var(--text); text-shadow:var(--glow); }
+    [data-theme="iterms"] .article-sub { color:var(--muted); }
+    [data-theme="iterms"] .article-text { color:var(--text); text-shadow:0 0 3px rgba(0,255,65,0.3); }
+    [data-theme="iterms"] .article-text h1,[data-theme="iterms"] .article-text h2,[data-theme="iterms"] .article-text h3 { color:var(--accent); text-shadow:var(--glow); }
+    [data-theme="iterms"] .article-text blockquote { background:#0d1a12; border-left-color:var(--accent); color:var(--muted); }
+    [data-theme="iterms"] .article-text a { color:var(--accent); }
+    [data-theme="iterms"] .article-images img { border-color:var(--line); }
+    [data-theme="iterms"] .end-tip { color:var(--muted); }
+    [data-theme="iterms"] .recall-tip { color:var(--muted); }
+    [data-theme="iterms"] .voice-icon { color:var(--accent); }
+    [data-theme="iterms"] .voice-btn.playing .voice-icon { color:#fff; }
+    [data-theme="iterms"] .moments-view { background:#0a0d14; }
+    [data-theme="iterms"] .moment-card { background:#0d1117; border:1px solid var(--line); }
+    [data-theme="iterms"] .moment-name { color:var(--text); }
+    [data-theme="iterms"] .moment-time { color:var(--muted); }
+    [data-theme="iterms"] .moment-text { color:var(--text); text-shadow:0 0 3px rgba(0,255,65,0.2); }
+    [data-theme="iterms"] .moment-images img { border:1px solid var(--line); }
+    [data-theme="iterms"] .contacts-view { background:#0a0d14; }
+    [data-theme="iterms"] .oa-card { background:#0d1117; border:1px solid var(--line); }
+    [data-theme="iterms"] .oa-title { color:var(--text); text-shadow:0 0 4px rgba(0,255,65,0.3); }
+    [data-theme="iterms"] .oa-meta { color:var(--muted); }
+    [data-theme="iterms"] .oa-desc { color:var(--text); }
+    [data-theme="iterms"] .oa-open { background:#0d1a12; border:1px solid var(--line); color:var(--accent); }
+    [data-theme="iterms"] .account-view { background:#0a0d14; }
+    [data-theme="iterms"] .account-top { background:var(--panel); border-color:var(--line); }
+    [data-theme="iterms"] .account-back { color:var(--accent); }
+    [data-theme="iterms"] .account-center { color:var(--text); }
+    [data-theme="iterms"] .account-card { background:#0d1117; border:1px solid #142018; color:var(--text); }
+    [data-theme="iterms"] .account-card:hover { background:#0d1a12; }
+    [data-theme="iterms"] .account-name { color:var(--text); }
+    [data-theme="iterms"] .account-current { color:var(--accent); }
+    [data-theme="iterms"] .account-reset { background:#0d1117; border:1px solid #142018; color:#ff3b30; }
+    [data-theme="iterms"] .account-avatar { border-radius:2px; }
+    [data-theme="iterms"] .contacts-empty { color:var(--muted); }
+    [data-theme="iterms"] .moments-empty { color:var(--muted); }
+    [data-theme="iterms"] .article-text blockquote { color:#a0e0a0; }
+  </style>` : ""}
 </head>
 <body>
-  <main class="phone">
+  <main class="phone" data-theme="${escapeHtml(ui.theme)}">
     <div class="status-bar">
       <div id="status-carrier">${escapeHtml(ui.statusBar.carrier)}</div>
       <div id="status-time">${escapeHtml(ui.statusBar.time)}</div>
@@ -524,7 +699,7 @@ export function renderWechatHubHtml(input) {
     <section id="moments-view" class="moments-view">
       <header class="top-nav">
         <div></div>
-        <div class="center-title">朋友圈</div>
+        <div class="center-title">社交圈</div>
         <div></div>
       </header>
       <div id="moments-scroll" class="moments-scroll"></div>
@@ -532,17 +707,17 @@ export function renderWechatHubHtml(input) {
     <section id="contacts-view" class="contacts-view">
       <header class="top-nav">
         <div></div>
-        <div class="center-title">文章</div>
+        <div class="center-title">文档</div>
         <div></div>
       </header>
       <div id="contacts-scroll" class="contacts-scroll"></div>
     </section>
 
     <footer id="home-tabbar" class="tabbar">
-      <div id="tab-chat" class="active tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/></svg></span><span class="tab-label">微信</span><span id="badge-chat" class="tab-badge"></span></div>
-      <div id="tab-contacts" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></span><span class="tab-label">文章</span><span id="badge-contacts" class="tab-badge"></span></div>
-      <div id="tab-moments" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg></span><span class="tab-label">发现</span><span id="badge-moments" class="tab-badge"></span></div>
-      <div id="tab-me" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 19c1.8-3 4-4.5 7-4.5s5.2 1.5 7 4.5"/></svg></span><span class="tab-label">我</span><span id="badge-me" class="tab-badge"></span></div>
+      <div id="tab-chat" class="active tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/></svg></span><span class="tab-label">对话</span><span id="badge-chat" class="tab-badge"></span></div>
+      <div id="tab-contacts" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></span><span class="tab-label">文档</span><span id="badge-contacts" class="tab-badge"></span></div>
+      <div id="tab-moments" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 3"/></svg></span><span class="tab-label">社交</span><span id="badge-moments" class="tab-badge"></span></div>
+      <div id="tab-me" class="tab-item"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 19c1.8-3 4-4.5 7-4.5s5.2 1.5 7 4.5"/></svg></span><span class="tab-label">账号</span><span id="badge-me" class="tab-badge"></span></div>
     </footer>
 
     <section id="detail-view" class="detail-view">
@@ -646,6 +821,8 @@ export function renderWechatHubHtml(input) {
     let activePlayback = null;
     let articleRows = [];
     const debugState = { enabled: true };
+
+    ${HEARTBEAT_ENGINE_JS}
 
     function parseMomentTime(raw) {
       if (!raw) return null;
@@ -1669,6 +1846,7 @@ export function renderWechatHubHtml(input) {
       recallTimers.forEach((t) => window.clearTimeout(t));
       recallTimers = [];
       stopActiveAudio();
+      heartbeatEngine.reset();
     }
     function stopPlaybackTimer() {
       if (timer) {
@@ -1707,6 +1885,7 @@ export function renderWechatHubHtml(input) {
       }
       timeline.scrollTop = timeline.scrollHeight;
       debugLog("finishConversation", { account: activeAccountId, day: currentStageMs(), conversationId });
+      heartbeatEngine.reset();
       markSeen(conversationId);
     }
 
@@ -1817,6 +1996,7 @@ export function renderWechatHubHtml(input) {
           return;
         }
         const msg = stageMessages[playback.current];
+        if (msg.heartbeat !== undefined) heartbeatEngine.setLevel(msg.heartbeat);
         timeline.insertAdjacentHTML('beforeend', renderMessage(msg, conv, { conversationId }));
         queueRecall(conversationId, msg, conv);
         timeline.scrollTop = timeline.scrollHeight;
@@ -1967,6 +2147,11 @@ export function renderWechatHubHtml(input) {
     initTimelineStages();
     showChatList();
     renderList();
+    heartbeatEngine.start();
+    document.addEventListener('click', function resumeHeartbeat() {
+      document.removeEventListener('click', resumeHeartbeat);
+      if (!heartbeatEngine.isRunning()) heartbeatEngine.start();
+    }, { once: true });
   </script>
 </body>
 </html>`;
@@ -2078,6 +2263,50 @@ export function renderWechatStoryHtml(input) {
     .profile-name { font-size:16px; font-weight:600; }
     .profile-item { font-size:13px; color:#444; line-height:1.45; margin-top:4px; word-break:break-word; }
     .profile-close { margin-top:12px; width:100%; border:none; border-radius:8px; background:#f2f2f2; padding:8px 0; cursor:pointer; }
+    [data-theme="iterms"] { --bg:#0a0d14; --panel:#0d1117; --text:#33ff66; --muted:#6aaa70; --line:#173020; --incoming:#141b22; --outgoing:#0e2a15; --green:#00ff41; --accent:#00ff41; --glow:0 0 6px rgba(0,255,65,0.45); }
+    [data-theme="iterms"] body { font-family:"SF Mono","Menlo","Courier New",monospace; background:#05080d; }
+    [data-theme="iterms"] .phone { background:var(--bg); border-color:#173020; }
+    [data-theme="iterms"] .status-bar,[data-theme="iterms"] .top-nav { background:var(--panel); color:var(--text); border-color:var(--line); }
+    [data-theme="iterms"] .list-scroll { background:#0a0d14; }
+    [data-theme="iterms"] .list-item { background:#0a0d14; border-color:#142018; color:var(--text); }
+    [data-theme="iterms"] .list-item:hover { background:#0d1a12; }
+    [data-theme="iterms"] .list-title { color:var(--text); }
+    [data-theme="iterms"] .list-preview { color:#7aba80; }
+    [data-theme="iterms"] .list-time { color:#6aaa70; }
+    [data-theme="iterms"] .list-avatar { border-radius:2px; }
+    [data-theme="iterms"] .tabbar { background:var(--panel); border-color:var(--line); }
+    [data-theme="iterms"] .tabbar .active { color:var(--accent); text-shadow:var(--glow); }
+    [data-theme="iterms"] .chat-top { background:var(--panel); border-color:var(--line); }
+    [data-theme="iterms"] .chat-title { color:var(--text); text-shadow:0 0 4px rgba(0,255,65,0.3); }
+    [data-theme="iterms"] .back-btn { color:var(--accent); }
+    [data-theme="iterms"] .timeline { background:var(--bg); }
+    [data-theme="iterms"] .msg .meta { color:var(--muted); }
+    [data-theme="iterms"] .bubble { color:var(--text); background:var(--incoming); border:1px solid var(--line); border-radius:2px; text-shadow:0 0 3px rgba(0,255,65,0.2); }
+    [data-theme="iterms"] .msg.self .bubble { background:var(--outgoing); border-color:#1a4020; color:#d0ffd0; }
+    [data-theme="iterms"] .bubble.media { background:transparent; border:none; text-shadow:none; }
+    [data-theme="iterms"] .quote { border-left-color:var(--accent); background:#0d1a12; color:#a0e0a0; text-shadow:0 0 3px rgba(0,255,65,0.15); }
+    [data-theme="iterms"] .img { border:1px solid #1a4020; }
+    [data-theme="iterms"] .avatar { border-radius:2px; }
+    [data-theme="iterms"] .card { background:#0d1a12; border-color:var(--line); color:var(--text); }
+    [data-theme="iterms"] .article-card { background:#0d1a12; border-color:var(--line); border-radius:2px; color:var(--text); }
+    [data-theme="iterms"] .contact-card { background:#0d1a12; border-color:var(--line); border-radius:2px; color:var(--text); }
+    [data-theme="iterms"] .contact-name { color:var(--text); }
+    [data-theme="iterms"] .contact-nick { color:var(--muted); }
+    [data-theme="iterms"] .contact-avatar { border-radius:2px; }
+    [data-theme="iterms"] .inline-link { color:var(--accent); }
+    [data-theme="iterms"] .mention { color:var(--accent); text-shadow:0 0 4px rgba(0,255,65,0.4); }
+    [data-theme="iterms"] .profile-modal { background:rgba(0,8,5,.75); }
+    [data-theme="iterms"] .profile-card { background:#0a1016; border:1px solid var(--line); box-shadow:0 0 20px rgba(0,255,65,.15); border-radius:4px; }
+    [data-theme="iterms"] .profile-name { color:var(--accent); text-shadow:var(--glow); }
+    [data-theme="iterms"] .profile-item { color:var(--text); }
+    [data-theme="iterms"] .profile-close { background:#0d1a12; border:1px solid var(--line); color:var(--text); }
+    [data-theme="iterms"] .profile-avatar { border-radius:2px; }
+    [data-theme="iterms"] .end-tip { color:var(--muted); }
+    [data-theme="iterms"] .recall-tip { color:var(--muted); }
+    [data-theme="iterms"] .voice-icon { color:var(--accent); }
+    [data-theme="iterms"] .voice-btn.playing .voice-icon { color:#fff; }
+    [data-theme="iterms"] .scene-tip { background:#0a1a10; color:var(--accent); }
+    [data-theme="iterms"] .scene-next-btn { color:var(--accent); }
   </style>
 </head>
 <body>
@@ -2095,11 +2324,11 @@ export function renderWechatStoryHtml(input) {
         <div class="top-right" id="scene-title"></div>
       </header>
       <div id="scene-tip" class="scene-tip">
-        当前幕已全部看完，可右滑进入下一幕
+        当前幕已全部看完，触屏右滑或点击按钮进入下一幕
         <button id="next-scene-btn" class="scene-next-btn">进入下一幕</button>
       </div>
       <div id="list-scroll" class="list-scroll"></div>
-      <footer class="tabbar"><div class="active">微信</div><div>通讯录</div><div>发现</div><div>我</div></footer>
+      <footer class="tabbar"><div class="active">对话</div><div>文档</div><div>社交</div><div>账号</div></footer>
     </section>
 
     <section id="detail-view" class="detail-view">
@@ -2155,6 +2384,8 @@ export function renderWechatStoryHtml(input) {
     let storyState = { currentScene: 0, seen: {} };
     let touchStartX = 0;
     let touchStartY = 0;
+
+    ${HEARTBEAT_ENGINE_JS}
 
     function esc(s) {
       return String(s || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
@@ -2319,6 +2550,7 @@ export function renderWechatStoryHtml(input) {
       recallTimers.forEach((t) => window.clearTimeout(t));
       recallTimers = [];
       stopActiveAudio();
+      heartbeatEngine.reset();
     }
     function stopPlaybackTimer() {
       if (timer) { window.clearTimeout(timer); timer = null; }
@@ -2334,6 +2566,7 @@ export function renderWechatStoryHtml(input) {
       statusBattery.textContent = ui.statusBar?.battery || '31%';
       topTitle.textContent = ui.topTitle || '微信';
       sceneTitle.textContent = scene.title || '';
+      phone.setAttribute('data-theme', ui.theme || 'wechat');
     }
     function renderQuote(quote, conv) {
       if (!quote) return '';
@@ -2455,6 +2688,7 @@ export function renderWechatStoryHtml(input) {
     function finishConversation(scene, conversationId) {
       timeline.insertAdjacentHTML('beforeend', '<div class="end-tip">当前聊天已结束</div>');
       timeline.scrollTop = timeline.scrollHeight;
+      heartbeatEngine.reset();
       markSeen(scene.id, conversationId);
     }
     function renderList() {
@@ -2489,6 +2723,7 @@ export function renderWechatStoryHtml(input) {
         return;
       }
       let current = Math.max(0, Number(conv.startIndex || 0));
+      if (conv.messages[current] && conv.messages[current].heartbeat !== undefined) heartbeatEngine.setLevel(conv.messages[current].heartbeat);
       timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
       queueRecall(conversationId, conv.messages[current], conv);
       timeline.scrollTop = timeline.scrollHeight;
@@ -2499,6 +2734,7 @@ export function renderWechatStoryHtml(input) {
           finishConversation(scene, conversationId);
           return;
         }
+        if (conv.messages[current] && conv.messages[current].heartbeat !== undefined) heartbeatEngine.setLevel(conv.messages[current].heartbeat);
         timeline.insertAdjacentHTML('beforeend', renderMessage(conv.messages[current], conv, { conversationId }));
         queueRecall(conversationId, conv.messages[current], conv);
         timeline.scrollTop = timeline.scrollHeight;
@@ -2584,6 +2820,11 @@ export function renderWechatStoryHtml(input) {
 
     loadState();
     renderList();
+    heartbeatEngine.start();
+    document.addEventListener('click', function resumeHeartbeat() {
+      document.removeEventListener('click', resumeHeartbeat);
+      if (!heartbeatEngine.isRunning()) heartbeatEngine.start();
+    }, { once: true });
   </script>
 </body>
 </html>`;

@@ -84,7 +84,7 @@ specVersion: "1.0"
 - `profiles`：发送者配置路径，默认 `./profiles.yml`
 - `chat`：会话配置路径，默认 `./chat.yml`
 - `articles`：文章目录路径，默认 `./articles`（单会话页中用于解析文章中引用的 `[article]` 消息）
-- `theme`：单会话页主题，默认 `wechat`
+- `theme`：单会话页主题，可选 `wechat`（默认）、`paper`、`iterms`（绿黑终端风格）
 - `specVersion`：规范版本，建议固定 `1.0`
 
 ### 2.2 消息头语法
@@ -169,6 +169,8 @@ text block 2
 - `[recall]` / `[recall:+10s]`：消息撤回（可设置撤回延时）
 - `[article]`：微信文章转发卡片
 - `[contact-card]`：联系人名片
+- `[heartbeat:1]` / `[heartbeat:2]` / `[heartbeat:3]`：自动播放时将背景心跳声切换为对应节奏档位（1=慢、2=中、3=快）
+- `[heartbeat:end]`：恢复默认正常节奏心跳
 
 #### 文本消息（默认）
 
@@ -403,6 +405,7 @@ ui:
     time: "12:21"  # 仅在未启用 story.yml 的静态展示下生效
     battery: "31%"
   topTitle: "微信"
+  theme: "wechat"
   persistKey: "chat_framework_seen_v1"
 ```
 
@@ -411,6 +414,7 @@ ui:
 - `statusBar.time`：状态栏初始时间文案（若启用 `story.yml`，此字段会被剧情驱动的系统时间覆盖）
 - `statusBar.battery`：状态栏电量文案
 - `topTitle`：总览页主界面标题（默认“微信”）
+- `theme`：总览页主题，可选 `wechat`（默认）、`iterms`（绿黑终端风格）。`paper` 主题仅单会话页可用
 - `persistKey`：回放完成状态的本地存储键（默认 `"chat_framework_seen_v1"`）
 
 ## 5.2 story.yml 规范（账号推进/切换）
