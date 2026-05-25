@@ -20,3 +20,10 @@ profile:
     ./mark/2.md: ./group/group.yml
     ./mark/3.md: ./group/game_designer.yml
     ./mark/5.md: ./group/graduation_group.yml
+  officialArticles: ["./articles/game_design.yml"]
+  moments:
+    p1:
+      author: @admin
+      publishAt: "2025-03-10 09:20:00"
+      text: "请各位业主不要把不用的东西堆在楼道，影响消防安全，拒不处理的会被强行收走丢弃。"
+      images: ["./asset/bicycle.png", "./asset/sofa.png", "./asset/audio.jpeg"]
