@@ -13,3 +13,37 @@ profile:
   aliases:
     contacts:
       sister_mom: "妈妈"
+  officialArticles: ["./articles/psychology.yml"]
+  moments:
+    p1:
+      author: @tutor
+      publishAt: "2017-12-30 08:20:12"
+      text: "本人将会在周五参与知名企业举办的心理学沙龙，欢迎各位有兴趣的朋友前来交流！"
+    p2:
+      author: @sister_mom
+      publishAt: "2018-02-15 22:00:00"
+      text: "一家人聚在一起吃饭真好！"
+      images: ["./asset/reunion.png"]
+    p3:
+      author: @Henry
+      publishAt: "2021-01-30 09:02:00"
+      text: "一个赞入职宇宙大厂,以后拿我工牌吃饭打折，嘿嘿"
+    p4:
+      author: @Mark
+      publishAt: "2020-04-10 08:02:00" 
+      text: "我们结婚了"
+      images: ["./asset/wedding.png"]
+    p5:
+      author: @Vinland
+      publishAt: "2020-04-10 08:03:00" 
+      text: "我们结婚了"
+      images: ["./asset/wedding.png"]
+    p6:
+      author: @Henry
+      publishAt: "2024-04-20 10:21:02"
+      text: "安能摧眉折腰事权贵，使我不得开心颜!"
+    p7:
+      author: @Henry
+      publishAt: "2024-04-25 23:59:59"
+      text: "找到我!找到我!找到我!找到我!找到我!找到我!找到我!璆絿綇縃縎縜縧"
+      images: ["./asset/findme.png"]

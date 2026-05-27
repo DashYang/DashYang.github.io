@@ -1,5 +1,6 @@
 profile:
   avatar: "https://picsum.photos/seed/Mark/100/100"
+  defaultView: "doc"
   2017-10-23:
       name: "奋斗的西瓜"
       bio: "勇敢追梦，大胆向前"
@@ -20,10 +21,14 @@ profile:
     ./mark/2.md: ./group/group.yml
     ./mark/3.md: ./group/game_designer.yml
     ./mark/5.md: ./group/graduation_group.yml
-  officialArticles: ["./articles/tutorial.yml", "./articles/game_design.yml" ]
+  officialArticles: ["./articles/tutorial.yml", "./articles/game_design.yml", "./articles/ai_intro.yml" ]
   moments:
     p1:
       author: @admin
       publishAt: "2025-03-10 09:20:00"
-      text: "亲爱的业主们，近期巡查楼道发现公共区域对方现象严重，已经违反了消防安全规定。为了居住安全，现在先行公示对应的杂物，请业主认领，否则物业将会依照相关规定进行清理。造成的财产损失请业主自行承担。"
-      images: ["./asset/bicycle.png", "./asset/sofa.png", "./asset/audio.jpeg"]
+      text: "亲爱的业主们，近期巡查消防通道，发现公共区域乱放杂物现象严重，已经违反了消防安全规定。为了居住安全，保障其他住户利益。物业将在3月15日进行清理。现公示对应的杂物，请业主迅速认领处理，逾期未处理造成的财产损失请业主自行承锟斤拷锟斤拷锟絚"
+      images: ["./asset/bicycle.png", "./asset/sofa.png", "./asset/audio.png"]
+    p2:
+      author: @Panny
+      publishAt: "2025-03-12 08:00:00"
+      text: "雅思口语8分|高级口译|英语专业八级|海外留学经验|英语1v1，想学英语的可以找我哦！求扩散！"
