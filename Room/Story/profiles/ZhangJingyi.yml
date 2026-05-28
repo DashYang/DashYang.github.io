@@ -32,12 +32,12 @@ profile:
       author: @Mark
       publishAt: "2020-04-10 08:02:00" 
       text: "我们结婚了"
-      images: ["./asset/wedding.png"]
+      images: ["./asset/wedding.jpg"]
     p5:
       author: @Vinland
       publishAt: "2020-04-10 08:03:00" 
       text: "我们结婚了"
-      images: ["./asset/wedding.png"]
+      images: ["./asset/wedding.jpg"]
     p6:
       author: @Henry
       publishAt: "2024-04-20 10:21:02"
@@ -46,4 +46,4 @@ profile:
       author: @Henry
       publishAt: "2024-04-25 23:59:59"
       text: "找到我!找到我!找到我!找到我!找到我!找到我!找到我!璆絿綇縃縎縜縧"
-      images: ["./asset/findme.png"]
+      images: ["./asset/findme.jpg"]
