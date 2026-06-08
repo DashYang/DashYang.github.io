@@ -1,4 +1,13 @@
 profile:
-  name: "周警官"
+  identityTimeline:
+    2024-03-04:
+      name: "周正"
+      bio: ""
+    2020-03-05:
+      name: "周警官"
+      bio: ""
   avatar: "https://picsum.photos/seed/policeman/100/100"
-  bio: ""
+  chatFiles: ["./police/1.md", "./police/2.md", "./police/3.md", "./police/4.md", "./police/5.md"]
+  officialArticles: ["./articles/case1.md", "./articles/case2.md"]
+  groupChats:
+    ./police/1.md: ./group/police_station.yml

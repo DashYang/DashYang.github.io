@@ -1,0 +1,5 @@
+chat:
+  type: "group"
+  title: "刑侦一组工作群"
+  groupInfo:
+    avatar: "https://picsum.photos/seed/police-station/100/100"
