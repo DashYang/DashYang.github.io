@@ -1,0 +1,5 @@
+chat:
+  type: "group"
+  title: "Henry的亲属"
+  groupInfo:
+    avatar: "https://picsum.photos/seed/family/100/100"

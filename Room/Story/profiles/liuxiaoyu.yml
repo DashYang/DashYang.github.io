@@ -1,4 +1,9 @@
 profile:
-  name: "联络员"
   avatar: "https://picsum.photos/seed/lianluoyuan/100/100"
-  bio: ""
+  identityTimeline:
+    2024-03-08:
+      name: "联络员"
+      bio: "客服小刘24小时在线！"
+    2024-03-08:
+      name: "刘小雨"
+      bio: "客服小刘24小时在线！"

@@ -1,13 +1,15 @@
 profile:
   identityTimeline:
-    2024-03-04:
+    2020-03-04:
       name: "周正"
       bio: ""
     2020-03-05:
       name: "周警官"
       bio: ""
   avatar: "https://picsum.photos/seed/policeman/100/100"
-  chatFiles: ["./police/1.md", "./police/2.md", "./police/3.md", "./police/4.md", "./police/5.md"]
-  officialArticles: ["./articles/case1.md", "./articles/case2.md"]
+  chatFiles: ["./police/1.md", "./police/2.md", "./police/3.md", "./police/4.md", "./police/5.md", "./police/6.md", "./police/7.md", "./police/8.md","./police/9.md", "./police/10.md", "./sister/6.md", "./police/11.md", "./police/12.md"]
+  officialArticles: ["./articles/case1.md", "./articles/case2.md", "./articles/case3.md", "./articles/ghost1.md", "./articles/death_report.md", "./articles/case4.md"]
   groupChats:
     ./police/1.md: ./group/police_station.yml
+    ./police/7.md: ./group/team.yml
+    ./police/8.md: ./group/wang_family.yml

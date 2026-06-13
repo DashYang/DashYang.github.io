@@ -1,0 +1,5 @@
+chat:
+  type: "group"
+  title: "葬鬼家族"
+  groupInfo:
+    avatar: "https://picsum.photos/seed/team/100/100"
