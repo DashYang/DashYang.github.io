@@ -6,10 +6,46 @@ profile:
     2020-03-05:
       name: "周警官"
       bio: ""
+  aliases:
+    contacts:
+      zhou_mom: "娘"
   avatar: "https://picsum.photos/seed/policeman/100/100"
   chatFiles: ["./police/1.md", "./police/2.md", "./police/3.md", "./police/4.md", "./police/5.md", "./police/6.md", "./police/7.md", "./police/8.md","./police/9.md", "./police/10.md", "./sister/6.md", "./police/11.md", "./police/12.md"]
-  officialArticles: ["./articles/case1.md", "./articles/case2.md", "./articles/case3.md", "./articles/ghost1.md", "./articles/death_report.md", "./articles/case4.md"]
+  officialArticles: ["./articles/case1.md", "./articles/case2.md", "./articles/case3.md", "./articles/ghost1.md", "./articles/death_report.md", "./articles/case4.md", "./articles/ghost2.md", "./articles/truth.md"]
   groupChats:
     ./police/1.md: ./group/police_station.yml
     ./police/7.md: ./group/team.yml
     ./police/8.md: ./group/wang_family.yml
+  moments:
+    p1:
+      author: @meng_fan
+      publishAt: "2024-03-05 23:20:12"
+      text: "出任务回来晚了，闺女已经睡了。桌上给我留了半块饼干，说爸爸辛苦了"
+    p2:
+      author: @meng_fan
+      publishAt: "2024-03-08 01:20:12"
+      text: "有人在有人在有人在有人在有人在璆絿綇縃縎縜縧"
+      images: ["./asset/case3.png"]
+    p3:
+      author: @fengquan
+      publishAt: "2024-03-09 22:20:12"
+      text: "出来混，有些人靠脑子，有些人靠关系。而我不一样，我靠自己"
+    p4:
+      author: @fengquan
+      publishAt: "2024-03-12 23:20:12"
+      text: "做人不能太飘，但是也不能不飘，什么时候该飘，什么时候不该飘，主要看我什么时候吹"
+    p5:
+      author: @fengquan
+      publishAt: "2024-04-12 22:20:12"
+      text: "事已至此，那就先吃饭吧，毕竟我也饿了"
+    p6:
+      author: @fengquan
+      publishAt: "2024-05-29 23:50:12"
+      text: "冯哥，大昌市的梦魇，又回来了，颤抖吧，凡人们"
+    
+
+    
+
+
+    
+
