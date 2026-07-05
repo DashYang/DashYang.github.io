@@ -1,0 +1,5 @@
+chat:
+  type: "group"
+  title: "研发一群"
+  groupInfo:
+    avatar: "https://picsum.photos/seed/techgroup2/100/100"

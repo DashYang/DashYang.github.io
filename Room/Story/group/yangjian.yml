@@ -1,0 +1,5 @@
+chat:
+  type: "group"
+  title: "杨戬计划"
+  groupInfo:
+    avatar: "./asset/yangjiansymbol.png"
