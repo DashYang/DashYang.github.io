@@ -3,12 +3,11 @@ profile:
     2017-12-29:
       name: "静祎"
       bio: "拥不拥有也会记住谁，快不快乐有天总过去"
+      avatar: "./asset/zhang_jingyi-student-v4.png"
     2020-03-12:
       name: "张医生"
       bio: "欢迎添加微信沟通心里咨询"
-     
-
-  avatar: "https://picsum.photos/seed/ZhangJingyi/100/100"
+      avatar: "./asset/zhang_jingyi-doctor-v4.png"
   chatFiles: ["./sister/1.md", "./sister/2.md", "./sister/3.md", "./sister/4.md", "./sister/5.md", "./sister/6.md", "./sister/7.md"]
   aliases:
     contacts:

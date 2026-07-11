@@ -1,5 +1,5 @@
 profile:
-  avatar: "https://picsum.photos/seed/stu2/100/100"
+  avatar: "./asset/zack-v5.png"
   identityTimeline:
     2017-01-01:
       name: "Zack"
@@ -62,8 +62,8 @@ profile:
     p10:
       author: 每日要闻
       publishAt: "2025-06-18"
-      text: "Checkmate联盟成立：海外AI巨头组建垄断协作体，超级数据中心计划启动燃爆市场" 
+      text: "对抗毫无意义？科技巨头开始加深彼此之间的合作，垄断担忧加剧" 
     p11:
       author: 每日要闻
       publishAt: "2026-01-01"
-      text: "Checkmate实施AI访问管制，全球市场恐慌情绪进一步升级" 
+      text: "壁垒（C.A.S.T.L.E）联盟诞生，人类迈向新世纪的坚强后盾" 

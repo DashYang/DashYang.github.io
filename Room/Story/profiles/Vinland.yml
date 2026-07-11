@@ -1,4 +1,10 @@
 profile:
-  name: "文兰"
-  avatar: "https://picsum.photos/seed/vinland/100/100"
-  bio: "丰富的人无法简介"
+  identityTimeline:
+    2017-01-01:
+      name: "文兰"
+      bio: "丰富的人无法简介"
+      avatar: "./asset/vinland-student-v4.png"
+    2020-03-12:
+      name: "文兰"
+      bio: "丰富的人无法简介"
+      avatar: "./asset/vinland-later-v4.png"

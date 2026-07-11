@@ -1,2 +1,5 @@
 story:
-  accountOrder: ["Mark", "ZhangJingyi", "zhou_police", "Zack"]
+  accountOrder: ["Mark", "ZhangJingyi", "zhou_police", "Zack", "wo"]
+  resetInfo: "前缘尽灭，再入轮回"
+  resetAccount: "wo"
+  endInfo: "《噪音》的故事到此结束，感谢您的阅读。欢迎关注XXX"

@@ -6,4 +6,4 @@ profile:
     2024-03-29:
       name: "王教授"
       bio: ""
-  avatar: "https://picsum.photos/seed/professor/100/100"
+  avatar: "./asset/wang_professor-v3.png"
