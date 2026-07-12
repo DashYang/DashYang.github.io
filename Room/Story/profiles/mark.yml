@@ -1,15 +1,18 @@
 profile:
-  avatar: "https://picsum.photos/seed/Mark/100/100"
+  avatar: "./asset/mark-v1.png"
   defaultView: "doc"
   identityTimeline:
     2017-10-23:
       name: "奋斗的西瓜"
+      avatar: "./asset/mark-student-watermelon-v1.png"
       bio: "勇敢追梦，大胆向前"
     2018-06-30:
       name: "Mark"
+      avatar: "./asset/mark-manager-v2.png"
       bio: "一枚研发"
-    2025-12-01:
+    2025-03-01:
       name: "Mark"
+      avatar: "./asset/mark-indie-v1.png"
       bio: "新人独立游戏开发者，求关注!"
   aliases:
     selfInGroups:                                                           

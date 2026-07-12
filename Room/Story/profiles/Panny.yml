@@ -1,4 +1,4 @@
 profile:
   name: "Panny"
-  avatar: "https://picsum.photos/seed/Panny/100/100"
+  avatar: "./asset/panny-v1.png"
   bio: "此情可待成追忆，只是当时已惘然。"

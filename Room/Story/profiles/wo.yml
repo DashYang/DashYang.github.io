@@ -1,0 +1,27 @@
+profile:
+  avatar: "./asset/wo-v1.png"
+  identityTimeline:
+    2086-01-03:
+      name: "我"
+  aliases:
+    contacts:
+      QinGuangWang: "秦广王"
+  officialArticles: ["./articles/terms.md", "./articles/ttky.md", "./articles/timeline.md", "./articles/force.md"]
+  chatFiles: ["./wo/1.md", "./wo/2.md", "./wo/3.md"]
+  moments:
+    p1:
+      author: @QinGuangWang
+      publishAt: "2086-01-03 04:00:00"
+      text: "新出炉的阴差，大家好好期待一番"
+    p2:
+      author: @YanLuoWang
+      publishAt: "2086-01-03 04:02:00"
+      text: "‘百面千貌之城’太难打了，家人们谁懂啊"
+    p3:
+      author: @TaiShanWang
+      publishAt: "2086-01-03 04:03:00"
+      text: "看似合纵连横，实则到处求人"
+    p4:
+      author: @DuShiWang
+      publishAt: "2086-01-03 04:04:00"
+      text: "500块一天干不干?干就快提桶过来！"

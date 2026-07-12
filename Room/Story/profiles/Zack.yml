@@ -14,18 +14,18 @@ profile:
       WangXiaoqiang: "王总"
       Karen: "HR"
   officialArticles: ["./articles/diary1.md", "./articles/diary2.md", "./articles/diary3.md", "./articles/diary4.md", "./articles/diary5.md", "./articles/diary6.md", "./articles/diary7.md", "./articles/diary8.md", "./articles/diary9.md"]
-  chatFiles: ["./zack/1.md", "./zack/2.md", "./zack/3.md", "./zack/4.md", "./zack/5.md", "./police/10.md", "./zack/6.md", "./zack/7.md", "./zack/8.md", "./zack/9.md", "./mark/5.md"]
+  chatFiles: ["./zack/1.md", "./zack/2.md", "./zack/3.md", "./zack/4.md", "./zack/5.md", "./police/10.md", "./zack/6.md", "./zack/8.md", "./zack/9.md", "./mark/5.md"]
   groupChats:
     ./zack/4.md: ./group/work_chat.yml
     ./mark/5.md: ./group/graduation_group.yml
     ./zack/9.md: ./group/yangjian.yml
   moments:
     p1:
-      author: 每日要闻
+      author: @DailyReport
       publishAt: "2017-01-03"
       text: "折叠无人机时代来了：普通人也能拍电影级画面"
     p2:
-      author: 每日要闻
+      author: @DailyReport
       publishAt: "2018-03-19"
       text: "自动驾驶视频刷屏：人类是否还需要司机？"
     p3:
@@ -34,15 +34,15 @@ profile:
       text: "我们结婚了"
       images: ["./asset/wedding.jpg"]
     p4:
-      author: 每日要闻
+      author: @DailyReport
       publishAt: "2020-06-11"
       text: "AI写作能力接近人类？1750亿参数模型震惊业界"
     p5:
-      author: 每日要闻
+      author: @DailyReport
       publishAt: "2021-08-22"
       text: "AI绘画模型开源：人人都能成为插画师"
     p6:
-      author: 每日要闻
+      author: @DailyReport
       publishAt: "2022-11-30"
       text: "AI元年:它可以写论文、写代码、回答任何问题!"
     p7:
@@ -51,7 +51,7 @@ profile:
       text: "别裁我!别裁我!别裁我!别裁我!别裁我!别裁我!别裁我!璆絿綇縃縎縜縧"
       images: ["./asset/case2.png"]
     p8:
-      author: 每日要闻
+      author: @DailyReport
       publishAt: "2024-03-13"
       text: "机器人开始像人一样对话和工作：具身智能引爆投资圈？" 
     p9:
@@ -60,10 +60,10 @@ profile:
       text: "找到我!找到我!找到我!找到我!找到我!找到我!找到我!璆絿綇縃縎縜縧"
       images: ["./asset/findme.png"]
     p10:
-      author: 每日要闻
+      author: @DailyReport
       publishAt: "2025-06-18"
       text: "对抗毫无意义？科技巨头开始加深彼此之间的合作，垄断担忧加剧" 
     p11:
-      author: 每日要闻
+      author: @DailyReport
       publishAt: "2026-01-01"
       text: "壁垒（C.A.S.T.L.E）联盟诞生，人类迈向新世纪的坚强后盾" 
