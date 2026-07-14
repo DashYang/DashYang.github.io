@@ -101,4 +101,4 @@ cover: ""
 
 ### 七. 附录
 
-![诡异照片](./asset/case3.png)
+![诡异照片](./assets/case3.png)

@@ -3,8 +3,8 @@ profile:
     2017-01-01:
       name: "文兰"
       bio: "丰富的人无法简介"
-      avatar: "./asset/vinland-student-v4.png"
+      avatar: "./assets/vinland-student-v4.png"
     2020-03-12:
       name: "文兰"
       bio: "丰富的人无法简介"
-      avatar: "./asset/vinland-later-v4.png"
+      avatar: "./assets/vinland-later-v4.png"

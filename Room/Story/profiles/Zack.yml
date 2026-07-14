@@ -1,5 +1,5 @@
 profile:
-  avatar: "./asset/zack-v5.png"
+  avatar: "./assets/zack-v5.png"
   identityTimeline:
     2017-01-01:
       name: "Zack"
@@ -32,7 +32,7 @@ profile:
       author: @Mark
       publishAt: "2020-04-10 08:02:00" 
       text: "我们结婚了"
-      images: ["./asset/wedding.jpg"]
+      images: ["./assets/wedding.jpg"]
     p4:
       author: @DailyReport
       publishAt: "2020-06-11"
@@ -49,7 +49,7 @@ profile:
       author: @Jack
       publishAt: "2024-03-03 22:59:59"
       text: "别裁我!别裁我!别裁我!别裁我!别裁我!别裁我!别裁我!璆絿綇縃縎縜縧"
-      images: ["./asset/case2.png"]
+      images: ["./assets/case2.png"]
     p8:
       author: @DailyReport
       publishAt: "2024-03-13"
@@ -58,7 +58,7 @@ profile:
       author: @Henry
       publishAt: "2024-03-15 23:59:59"
       text: "找到我!找到我!找到我!找到我!找到我!找到我!找到我!璆絿綇縃縎縜縧"
-      images: ["./asset/findme.png"]
+      images: ["./assets/findme.png"]
     p10:
       author: @DailyReport
       publishAt: "2025-06-18"

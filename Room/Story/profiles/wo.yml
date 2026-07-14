@@ -1,5 +1,5 @@
 profile:
-  avatar: "./asset/wo-v1.png"
+  avatar: "./assets/wo-v1.png"
   identityTimeline:
     2086-01-03:
       name: "我"

@@ -171,4 +171,4 @@ Mark事发当时并未离开公司，不具备作案能力
 
 ### 七. 附录
 
-![诡异照片](./asset/findme.png)
+![诡异照片](./assets/findme.png)

@@ -10,7 +10,7 @@ profile:
   aliases:
     contacts:
       zhou_mom: "娘"
-  avatar: "./asset/zhou_police-v1.png"
+  avatar: "./assets/zhou_police-v1.png"
   chatFiles: ["./police/1.md", "./police/2.md", "./police/3.md", "./police/4.md", "./police/5.md", "./police/6.md", "./police/7.md", "./police/8.md","./police/9.md", "./police/10.md", "./sister/6.md", "./police/11.md", "./police/12.md"]
   officialArticles: ["./articles/case1.md", "./articles/case2.md", "./articles/case3.md", "./articles/ghost1.md", "./articles/death_report.md", "./articles/case4.md", "./articles/ghost2.md", "./articles/truth.md"]
   groupChats:
@@ -26,7 +26,7 @@ profile:
       author: @meng_fan
       publishAt: "2024-03-08 01:20:12"
       text: "有人在有人在有人在有人在有人在璆絿綇縃縎縜縧"
-      images: ["./asset/case3.png"]
+      images: ["./assets/case3.png"]
     p3:
       author: @fengquan
       publishAt: "2024-03-09 22:20:12"

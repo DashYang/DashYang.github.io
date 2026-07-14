@@ -160,4 +160,4 @@ cover: ""
 
 ### 6. 附录
 
-![诡异照片](./asset/case1.png)
+![诡异照片](./assets/case1.png)

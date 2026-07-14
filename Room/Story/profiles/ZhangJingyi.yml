@@ -3,11 +3,11 @@ profile:
     2017-12-29:
       name: "静祎"
       bio: "拥不拥有也会记住谁，快不快乐有天总过去"
-      avatar: "./asset/zhang_jingyi-student-v4.png"
+      avatar: "./assets/zhang_jingyi-student-v4.png"
     2020-03-12:
       name: "张医生"
       bio: "欢迎添加微信沟通心里咨询"
-      avatar: "./asset/zhang_jingyi-doctor-v4.png"
+      avatar: "./assets/zhang_jingyi-doctor-v4.png"
   chatFiles: ["./sister/1.md", "./sister/2.md", "./sister/3.md", "./sister/4.md", "./sister/5.md", "./sister/6.md", "./sister/7.md"]
   aliases:
     contacts:
@@ -22,7 +22,7 @@ profile:
       author: @sister_mom
       publishAt: "2018-02-15 22:00:00"
       text: "一家人聚在一起吃饭真好！"
-      images: ["./asset/reunion.png"]
+      images: ["./assets/reunion.png"]
     p3:
       author: @Henry
       publishAt: "2021-02-10 09:02:00"
@@ -31,12 +31,12 @@ profile:
       author: @Mark
       publishAt: "2020-04-10 08:02:00" 
       text: "我们结婚了"
-      images: ["./asset/wedding.jpg"]
+      images: ["./assets/wedding.jpg"]
     p5:
       author: @Vinland
       publishAt: "2020-04-10 08:03:00" 
       text: "我们结婚了"
-      images: ["./asset/wedding.jpg"]
+      images: ["./assets/wedding.jpg"]
     p6:
       author: @Henry
       publishAt: "2024-03-10 10:21:02"
@@ -45,4 +45,4 @@ profile:
       author: @Henry
       publishAt: "2024-03-15 23:59:59"
       text: "找到我!找到我!找到我!找到我!找到我!找到我!找到我!璆絿綇縃縎縜縧"
-      images: ["./asset/findme.png"]
+      images: ["./assets/findme.png"]
