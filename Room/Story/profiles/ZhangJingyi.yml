@@ -1,4 +1,5 @@
 profile:
+  version: 1
   identityTimeline:
     2017-12-29:
       name: "静祎"
