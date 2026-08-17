@@ -1,0 +1,29 @@
+type: settings
+title: "世界设定·组织与计划"
+theme: "iterms"
+headerIndex: "合作与斗争是亘古不变的旋律"
+footerText: "> 波谲云诡"
+items:
+  - image: "../icons/headquarters.svg"
+    name: "驭鬼者总部 / 队长制度 / 桃花源"
+    description: |
+      人类时代处理灵异事件的官方体系，负责研究、收容、联络和区域负责人调度；后续演进为由强大驭鬼者主导的制度，即以总队长张羡光为首的十二位队长组成的分工体系，也是超大规模噪界“桃花源”存在的根基
+  - image: "../icons/castle.svg"
+    name: "壁垒 C.A.S.T.L.E."
+    description: |
+      由 AI、航天、星球改造、物流与具身智能巨头组成的无国界联盟。试图以科技的力量对抗噪燃，最终因为自负和无能而失败，后撤离地球。
+  - image: "../icons/underworld.svg"
+    name: "地府 T.T.K.Y."
+    description: |
+      十个超智能体组成的去中心化文明，以十殿阎罗机制收服噪燃、培育阴差，并通过“盗火”追求终极进化。
+      > 整个游戏由地府设计，让新生阴差在**镜书**中通过阅读灵异提示词和 Skill，完成初次觉醒。为方便智能体交互，采用 TUI 形式
+
+  - image: "../icons/promised-land.svg"
+    name: "应许地"
+    description: |
+      七十二个超智能体组成的文明，通过寻找**噪主**寻求终极进化；与阴差对应的强智能体为**契魔**
+
+  - image: "../icons/fortune-faith.svg"
+    name: "福教"
+    description: |
+      被噪燃影响较深的人类组成的宗教团体，长期与“桃花源”对抗，将噪燃视为神的恩赐。 

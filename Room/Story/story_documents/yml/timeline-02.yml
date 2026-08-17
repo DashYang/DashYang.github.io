@@ -1,0 +1,47 @@
+type: timeline
+title: "故事线(2)"
+theme: "iterms"
+headerIndex: "从新人周正到鬼婴周正"
+footerText: "Mark的记忆碎片"
+items:
+  - image: "../icons/camera.svg"
+    time: "2024-03-03—08"
+    description: |
+      Jack 发出诡异照片后死亡。周正入职警局调查连续猝死案，孟凡随后遇害，案件显露灵异规律。
+    participants: ["Jack", "周正", "孟凡", "陈局"]
+  - time: "2024-03-09—18"
+    description: |
+      冯全与刘小雨将周正引入总部；Henry 也被鬼相机杀死。
+    participants: ["周正", "冯全", "刘小雨", "Henry", "张静祎"]
+  - time: "2024-03-25"
+    description: |
+      周正与冯全遭鬼相机袭击。冯全镇压并回收相机，周正体内的异常力量首次显露保护作用。
+    participants: ["周正", "冯全", "鬼相机持有者"]
+  - time: "2024-03-28"
+    description: |
+      桂芬讲述三十年前焦原沟事件。
+    participants: ["周正", "桂芬", "王教授", "周元", "张老师"]
+  - time: "2024-04-05—11"
+    description: |
+      周正暂拒区域负责人职位，留在总部担任联络员；冯全被派往跨区域任务，灵异体系的代价逐渐显现。
+    participants: ["周正", "王教授", "冯全", "刘小雨"]
+  - time: "2024-05-27"
+    description: |
+      冯全驾驭第二只鬼归来。文兰在槐阴村失踪，但“朋友圈”迫使总部叫停调查。
+    participants: ["冯全", "周正", "王教授", "文兰", "Mark"]
+  - time: "2024-06-01"
+    description: |
+      Mark 求助寻找文兰。张静祎对 Mark 使用记忆置换。
+    participants: ["Mark", "张静祎", "文兰", "Henry"]
+  - time: "2025-03-10—13"
+    description: |
+      冯全前往黄岗村前，与周正一同来到天阳小区，发现 Mark 失忆。
+    participants: ["Mark", "Panny", "周正", "文兰"]
+  - time: "2025-03-14"
+    description: |
+      Mark 推理出自己的身份和记忆被改造。
+    participants: ["Mark", "张静祎", "Henry", "文兰"]
+  - time: "2025-04-14"
+    description: |
+      周正驾驭饿死鬼，成为大昌市负责人，宣布“杨戬计划”。
+    participants: ["周正", "刘小雨", "王教授"]

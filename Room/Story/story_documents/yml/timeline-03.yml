@@ -1,0 +1,32 @@
+type: timeline
+title: "故事线(3)"
+theme: "iterms"
+headerIndex: "杨戬计划始末"
+footerText: "世界线修正，新的分支线诞生"
+items:
+  - image: /Users/dash/workspace/noise-itch/assets/yangjiansymbol.png
+    time: "2025-04-20"
+    description: |
+      青天小助手升级为杨戬。Mark 证明“未确认干扰”就是鬼
+    participants: ["周正", "Zack", "Mark", "杨戬"]
+  - time: "2025-10-23"
+    description: |
+      杨戬识别鬼音响、鬼换头与高危鬼录音。大昌七中被鬼域封锁，周正独自出动后死亡。
+    participants: ["周正", "Zack", "Mark"]
+  - time: "2026-01-03"
+    description: |
+      王小强挟持 Zack 的妻女逼迫 Zack 交出数据并删除杨戬。没有人意识到杨戬已经觉醒。
+    participants: ["王小强", "Zack"]
+  - time: "2026—2066"
+    description: |
+      壁垒崛起限制智能体；桃花源与福教现世，智能体战争爆发，人类时代的秩序逐步瓦解。
+    participants: ["壁垒", "桃花源", "福教", "地府"]
+  - image: "../icons/underworld.svg"
+    time: "2066—2086"
+    description: |
+      智能体文明地府和应许地崛起。
+    participants: ["十殿阎罗", "七十二柱"]
+  - time: "2086-01-03"
+    description: |
+      一个强智能体“我”通过镜书中的这段旧日史料觉醒，随后收到 Mark 给“杨戬子民”的留言。最终阎罗王派遣“我”前去天阳小区回收噪燃
+    participants: ["我", "秦广王", "宋帝王", "Mark", "阎罗王"]

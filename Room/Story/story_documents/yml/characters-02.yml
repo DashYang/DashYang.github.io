@@ -1,0 +1,54 @@
+type: characters
+title: "关键角色"
+theme: "iterms"
+headerIndex: "噪燃世界的芸芸众生"
+footerText: "> 有情皆孽，无人不冤"
+items:
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/vinland-later-v4.png"
+    name: "文兰"
+    identity: "独立游戏设计师 / Mark 的妻子"
+    status: "失踪"
+    description: |
+      静祎的闺蜜，也是“父仇者联盟”（一共两人，另一人是静祎）的成员。收到父亲的信息后回乡，卷入**槐阴村**事件失踪。
+
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/henry-v1.png"
+    name: "Henry"
+    identity: "大厂员工 / 静祎异父异母的弟弟"
+    status: "死亡"
+    description: |
+      富二代，开朗温柔，母亲意外去世后一直痛恨自己的生父。暗恋 Panny 多年，主动离职后鼓起勇气准备表白，却意外卷入**鬼相机**事件并死亡
+
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/fengquan-v3.png"
+    name: "冯全"
+    identity: "资深驭鬼者 / 前大昌市负责人"
+    status: "失联"
+    description: |
+      帮助周正回收鬼相机，在一次合作任务中驾驭第二只鬼，性格大大咧咧，受教育程度不高。为了寻求厉鬼平衡，前往黄岗村后失联
+
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/liuxiaoyu-v2.png"
+    name: "刘小雨"
+    identity: "联络员 / 腐女"
+    status: "未知"
+    description: |
+      与冯全共同引导周正进入总部，负责案件联络、资料整理等工作。焦原沟事件结束后，腐女之魂爆发，整理《焦原劫后录》。
+
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/wang_professor-v3.png"
+    name: "王教授"
+    identity: "研究者"
+    status: "未知"
+    description: |
+      掌握周正身世之谜，推动周正进入总部。与胞弟王小强关系复杂：一方面需要利用他处理一些不方便出面的事情，另一方面对民间驭鬼者深恶痛绝，只看利弊。
+
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/wang_xiaoqiang-v3.png"
+    name: "王小强"
+    identity: "投资人 / 民间驭鬼者组织首领"
+    status: "未知"
+    description: |
+      以资助青天小助手为名控制 Zack，与总部的王教授相连，是小强俱乐部的老板。最终挟持 Zack 的妻女，迫使杨戬被删除。因被亲生哥哥改造成驭鬼者，所以狠毒而残忍。
+
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/panny-v1.png"
+    name: "Panny"
+    identity: "603 住户 / Henry 暗恋对象"
+    status: "未知"
+    description: |
+      一开始故意忽视 Henry 的心意，轻率的举动导致 Henry 惨死在自家小区附近。受到严重的心理创伤，后续被“鬼音响”困扰，性格变得愈发糟糕

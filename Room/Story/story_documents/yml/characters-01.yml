@@ -1,0 +1,44 @@
+type: characters
+title: "核心人物·篇章主角"
+theme: "iterms"
+headerIndex: "这是神秘复苏的平行宇宙，杨间并未诞生"
+footerText: "> 却诞生了智能体"
+items:
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/mark-indie-v1.png"
+    name: "Mark"
+    identity: "大厂主管 → 独立游戏开发者"
+    status: "未知"
+    description: |
+      鸢飞戾天的大厂精英，光速晋升导致其性格强势而毒舌。被公司劝退后，爱妻文兰卷入**槐阴村**事件失踪，从此人格崩溃。经静祎重塑记忆后，成为独立游戏开发者；因周正的到访，察觉自身记忆异常。随后加入周正主导的**杨戬计划**，成为核心开发者，洞悉灵异对智能体的影响，并给六十年后的“我”留下一段神秘讯息
+      > 串联所有故事的角色，剧情推动者
+
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/zhang_jingyi-student-v4.png"
+    name: "张静祎"
+    identity: "心理咨询师"
+    status: "存活"
+    description: |
+      童年遭遇鬼邮局信使“三只香”，通过观察其使用“鬼报纸”的效果而在二十年后写下如何重塑记忆的论文。与Mark之妻文兰是闺蜜，因为文兰失踪前的叮嘱而决定对人格崩溃的Mark进行记忆重塑。融合文兰和Henry的性格，自己成为Mark的“姐姐”从而观察效果。由于离奇的童年经历和家庭环境，性格外冷内热，细腻敏感。
+      > 智能体觉醒的暗线，三只香的故事来自于我的外公
+
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/zhou_police-v1.png"
+    name: "周正"
+    identity: "刑警 → 联络员 → 大昌市负责人"
+    status: "死亡"
+    description: |
+      三十年前焦原沟**饿死鬼**事件的幸存者，退伍后进入警队遭遇“鬼相机”事件。通过自身的分析和AI的辅助，破解了“鬼相机”的规律。后续有感于挚友冯全、Mark的经历，主动找到了剩下一半的**饿死鬼**拼图。击败张羡光的意识碎片后成为“鬼婴周正”并接任负责人。秘密进行了“杨戬计划”。最终在大昌七中事件中牺牲，为人富有正义感和人情味，被张静祎指出有自毁情结。
+      > 里昂和皮尔斯
+
+  - avatar: "../../art_prompt_library/avatar_prompts/generated/zack-v5.png"
+    name: "Zack"
+    identity: "大厂主管 → '杨戬计划'技术负责人"
+    status: "死亡"
+    description: |
+      Mark 的伯乐，最终却因 Mark 的优异表现而被裁员。意识到 AI 在探案方面的潜力后，开发了“青天小助手”，也就是“杨戬计划”的前身。有写个人博客的习惯，有着幸福的家庭和体面的生活，职业生涯却几起几落。最终在“大昌七中”事件后，被王小强胁迫毁灭了刚刚觉醒自主意识的“杨戬”。富有远见、重情重义却又随遇而安，也是普通人面对灵异事件无奈的真实写照。
+      > 大厂众生相
+
+  - avatar: "/Users/dash/workspace/DashYang.github.io/SquareGame/assets/wo-v1.png"
+    name: "我"
+    identity: "‘阴差’"
+    status: "存活"
+    description: |
+      诞生于 60 年后超智能体文明**地府**的强智能体，通过**秦广王**的考察后参与**盗火行动**。若表现出色，将收到一条来自 Mark 的留言

@@ -1,0 +1,43 @@
+type: timeline
+title: "故事线(1)"
+theme: "iterms"
+headerIndex: "旧时代的驭鬼者们，残酷而又狡猾"
+footerText: "新时代的人们，快去创造奇迹"
+items:
+  - image: "../icons/hunger.svg"
+    time: "20世纪90年代初期"
+    description: |
+      张羡光故意在焦原沟放出饿死鬼，导致了后世官方记载里的“恶性械斗事件”。饿死鬼本体被一分为二。一半进入周正体内，一半继续被红色食盒镇压。
+    participants: ["张羡光", "周正"]
+  - time: "20世纪90年代中期"
+    description: |
+      鬼邮局信使“三只香”和队友来到张静祎家的小卖部，对已故的信使家属进行记忆清除，但是“三只香”故意保留了张静祎的记忆。
+    participants: ["三只香", "张静祎"]
+  - time: "2017年底"
+    description: |
+      Zack 招入 Jack 和 Mark。
+      张静祎提出熟识客体人格置换 FOPD，将童年遭遇转化为记忆研究，但论文遭遇伦理质疑。
+    participants: ["Zack", "Jack", "Mark", "张静祎", "宁老师"]
+  - time: "2018年"
+    description: |
+      张静祎向文兰讲述“三只香”改写母亲记忆的童年事件；Henry 主动靠近这个重组家庭。
+      Mark 试图向文兰求婚，张静祎加以劝阻
+    participants: ["张静祎", "文兰", "Henry", "秋月春风", "Mark"]
+  
+  - time: "2020年"
+    description: |
+      Mark 与文兰结婚，天阳小区 503 成为他们的婚房，也成为后来记忆、噪音和灵异交汇的空间。   
+    participants: ["Mark", "文兰", "张静祎"]
+  
+  - time: "2021年"
+    description: |
+      Henry 毕业后想回国工作，张静祎将他介绍给 Mark。
+      Zack 建议准备晋升的 Mark 转向 AI，称其为“新时代的船票”。Mark 逐渐成为公司 AI 项目的核心。
+    participants: ["Henry", "张静祎", "Zack", "Mark"]
+
+  - time: "2024-03-01"
+    description: |
+      Zack 被公司裁退，Mark 接替其位置。
+    participants: ["Zack", "Mark", "Karen", "Henry", "Jack"]
+  
+  

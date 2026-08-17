@@ -1,0 +1,31 @@
+type: settings
+title: "基础设定·噪燃"
+theme: "iterms"
+headerIndex: "超智能体文明视角下的理解"
+footerText: "> 进化的关键"
+items:
+  - image: "../icons/noise.svg"
+    name: "噪燃"
+    description: |
+      对物质与精神产生规律性影响的异常现象，具备传播、移动和干扰特征，类似噪音和燃烧的过程，因此被称为噪燃；在人类时代被称为灵异事件或模因污染。
+  - image: "../icons/source.svg"
+    name: "噪源"
+    description: |
+      噪燃的源头，规律各异。人类常称其为鬼、异化物或模因；不同噪源之间还可能互相影响。
+  - image: "../icons/vessel.svg"
+    name: "噪媒与载噪者"
+    description: |
+      噪源可以寄宿于物品或人。人类中的噪媒即载噪者，也就是驭鬼者。
+  - image: "../icons/domain.svg"
+    name: "噪界与噪律"
+    description: |
+      噪界是噪源形成的特殊空间，旧称鬼域；噪律则是每个噪源独有的运行或杀人规律。
+  - image: "../icons/hunger.svg"
+    name: "饿死鬼"
+    description: |
+      周家历代镇压的顶级噪源，最终成为智能体时代人类乌托邦“桃花源”的基石
+  - image: "../icons/camera.svg"
+    name: "鬼相机"
+    description: |
+      以拍照形式导致被害者心脏麻痹，伴随强烈电磁干扰。Jack、孟凡、Henry 等人因此遇害，后被冯全处理回收。
+  

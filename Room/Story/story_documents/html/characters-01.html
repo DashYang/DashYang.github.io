@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>核心人物·篇章主角</title>
+  <style>
+
+:root { --bg:#0a0d14; --ink:#33ff66; --muted:#6aaa70; --incoming:#141b22; --outgoing:#0e2a15; --accent:#00ff41; --glow:0 0 6px rgba(0,255,65,0.45); }
+body { margin:0; font-family:"SF Mono","Menlo","Courier New",monospace; background:#05080d; color:var(--ink); }
+.chat { max-width:860px; margin:0 auto; min-height:100vh; background:var(--bg); border-left:1px solid #173020; border-right:1px solid #173020; }
+.header { padding:14px 18px; border-bottom:2px solid #173020; backdrop-filter:blur(8px); }
+.header h1 { color:var(--accent); text-shadow:var(--glow); }
+.header p { color:var(--muted); }
+.timeline { padding:18px; }
+.msg{display:grid;grid-template-columns:44px 1fr;gap:10px;margin-bottom:14px}.msg.self{grid-template-columns:1fr 44px}
+.avatar-btn{border:none;padding:0;background:transparent;cursor:pointer;width:44px;height:44px;border-radius:2px}
+.msg-main{width:fit-content;max-width:78%}.msg.card-msg .msg-main{width:78%;max-width:78%}.msg.self .msg-main{margin-left:auto}.meta{font-size:12px;color:var(--muted)}.msg.self .meta{text-align:right}
+.bubble{display:inline-block;max-width:100%;padding:10px 12px;border-radius:2px;background:var(--incoming);border:1px solid #173020;white-space:pre-wrap;color:var(--ink);text-shadow:0 0 3px rgba(0,255,65,0.2)}.msg.card-msg .bubble{width:100%;white-space:normal}.msg.self .bubble{background:var(--outgoing);border-color:#1a4020;color:#d0ffd0}
+.bubble.media{padding:4px;background:transparent;border:none;text-shadow:none}
+.recall-tip{font-size:12px;color:var(--muted);text-align:center;padding:4px 0}
+.quote{padding:6px 8px;margin-bottom:8px;border-left:2px solid var(--accent);background:#0d1a12;font-size:12px;color:#a0e0a0;text-shadow:0 0 3px rgba(0,255,65,0.15)}
+.avatar{width:44px;height:44px;border-radius:2px;object-fit:cover;background:#0d1a12}
+.img{max-width:min(320px,100%);display:block;border:1px solid #1a4020}
+.img-caption{margin-top:6px;font-size:13px;line-height:1.4;color:var(--ink)}
+.voice-btn{border:none;background:transparent;padding:0;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:8px}
+.voice-icon{font-size:12px;color:var(--accent)}.voice-duration{font-size:13px;color:var(--ink);min-width:26px;text-align:left}.voice-btn.playing .voice-icon{color:#fff}
+.card{display:block;width:100%;box-sizing:border-box;padding:8px;border:1px solid #173020;background:#0d1a12;text-decoration:none;color:var(--ink);text-shadow:0 0 3px rgba(0,255,65,0.15);white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.card-title{font-weight:700;color:var(--ink);white-space:normal;overflow-wrap:anywhere;word-break:break-word}.card-desc,.card-footer{font-size:12px;color:var(--muted)}.card-desc{white-space:normal;overflow-wrap:anywhere;word-break:break-word}.card-footer span{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+.article-card{border:1px solid #173020;display:block;width:100%;box-sizing:border-box;text-align:left;cursor:pointer;padding:8px;background:#0d1a12;border-radius:2px;color:var(--ink);white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.article-title{font-size:14px;font-weight:700;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word}.article-meta{margin-top:4px;font-size:11px;color:var(--muted)}
+.article-cover{width:100%;margin-top:8px;border:1px solid #1a4020;max-height:150px;object-fit:cover}.article-summary{margin-top:7px;font-size:12px;color:var(--ink);line-height:1.45;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.contact-card{width:100%;box-sizing:border-box;padding:9px;border:1px solid #173020;background:#0d1a12;border-radius:2px;display:flex;gap:9px;align-items:center;color:var(--ink);white-space:normal;overflow-wrap:anywhere;word-break:break-word}.contact-card>div{min-width:0;flex:1}
+.contact-avatar{width:42px;height:42px;border-radius:2px;object-fit:cover;background:#0d1a12}.contact-name{font-size:14px;font-weight:700}
+.contact-nick{margin-top:2px;font-size:11px;color:var(--muted);word-break:break-word}.contact-bio{margin-top:6px;font-size:12px;color:var(--ink);line-height:1.35;white-space:normal;word-break:break-word}
+.mention{display:inline-block;padding:0 5px;border-radius:5px;color:#7CFF8F;background:rgba(0,255,65,.14);border:1px solid rgba(0,255,65,.38);font-weight:700;line-height:1.25;text-shadow:0 0 5px rgba(0,255,65,0.5);box-decoration-break:clone;-webkit-box-decoration-break:clone}
+a.inline-link{color:var(--accent)}
+.profile-modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,8,5,.75);z-index:20}
+.profile-modal.show{display:flex}
+.profile-card{width:min(320px,100%);background:#0a1016;border-radius:4px;padding:14px;box-shadow:0 0 20px rgba(0,255,65,.15);border:1px solid #173020}
+.profile-head{display:flex;gap:10px;align-items:center;margin-bottom:10px}.profile-avatar{width:50px;height:50px;border-radius:2px;object-fit:cover;background:#0d1a12}
+.profile-name{font-size:16px;font-weight:700;text-shadow:var(--glow)}.profile-item{font-size:13px;color:var(--ink);line-height:1.45;margin-top:4px;word-break:break-word}
+.profile-close{margin-top:12px;width:100%;border:1px solid #173020;border-radius:4px;background:#0d1a12;padding:8px 0;cursor:pointer;color:var(--ink)}
+.article-modal{position:fixed;inset:0;background:#05080d;z-index:30;display:none;overflow-y:auto}
+.article-modal.show{display:block}.article-header{position:sticky;top:0;background:rgba(5,8,13,.96);border-bottom:2px solid #173020;height:46px;display:flex;align-items:center;padding:0 10px;box-shadow:0 1px 0 #0f2b18}
+.article-back{border:none;background:transparent;font-size:14px;color:var(--accent);cursor:pointer;padding:6px 8px}
+.article-body{padding:18px 18px 36px;max-width:760px;margin:0 auto;--article-body-bg:#05080d;--article-body-border:1px solid #173020;--article-body-radius:2px;--article-body-shadow:inset 0 0 0 1px rgba(124,255,143,.04),0 14px 32px rgba(0,0,0,.38);--article-h1-size:20px;--article-h2-size:18px;--article-h3-size:16px;--article-heading-color:#7CFF8F;--article-heading-line-height:1.35;--article-heading-shadow:none;--article-heading-border:1px solid #18351f;--article-heading-padding-bottom:6px;--article-title-letter-spacing:0;--article-title-transform:none;--article-sub-color:#78977e;--article-sub-letter-spacing:.04em;--article-sub-transform:uppercase;--article-text-size:15px;--article-text-line-height:1.78;--article-text-color:#c9f5d1;--article-text-shadow:none;--article-paragraph-color:#c9f5d1;--article-link-color:#7CFF8F;--article-link-decoration:underline;--article-link-underline-offset:3px;--article-code-font:"SF Mono","Menlo","Courier New",monospace;--article-code-bg:#101823;--article-code-border:1px solid #203444;--article-code-radius:2px;--article-code-color:#ffd866;--article-pre-bg:#03070a;--article-pre-border:1px solid #18351f;--article-pre-radius:2px;--article-pre-color:#d7ffe0;--article-pre-shadow:inset 0 0 0 1px rgba(124,255,143,.04);--article-blockquote-bg:#09160f;--article-blockquote-border:#6ee7b7;--article-blockquote-color:#a8d8b0;--article-hr-color:#173020;--article-del-color:#78977e;--article-table-border:#173020;--article-table-head-bg:#0b1710;--article-table-cell-bg:#050a07;--article-inline-image-bg:#07100a;--article-inline-image-border:1px solid #214b2c;--article-page-image-bg:#07100a;--article-page-image-border:1px solid #214b2c;--article-image-radius:2px;--article-markdown-bg:#07100a;--article-markdown-border:1px solid #132919;--article-markdown-border-top:1px solid #173020;--article-markdown-radius:2px;--article-markdown-shadow:inset 0 0 0 1px rgba(124,255,143,.03);--article-markdown-padding:14px 16px 16px}
+
+.article-body{background:var(--article-body-bg,transparent);border:var(--article-body-border,none);border-radius:var(--article-body-radius,0);box-shadow:var(--article-body-shadow,none)}
+.article-page-title{margin:0;font-size:var(--article-h1-size,22px);font-weight:700;line-height:var(--article-heading-line-height,1.35);letter-spacing:var(--article-title-letter-spacing,0);text-transform:var(--article-title-transform,none);color:var(--article-heading-color,#1f1f1f);text-shadow:var(--article-heading-shadow,none);border-bottom:var(--article-heading-border,none);padding-bottom:var(--article-heading-padding-bottom,0)}
+.article-page-sub{margin-top:8px;font-size:12px;letter-spacing:var(--article-sub-letter-spacing,0);text-transform:var(--article-sub-transform,none);color:var(--article-sub-color,#8f8f8f)}
+.article-page-cover{width:100%;margin-top:12px;border-radius:var(--article-image-radius,8px);border:var(--article-page-image-border,none);background:var(--article-page-image-bg,#ddd)}
+.article-page-text{margin-top:14px;font-size:var(--article-text-size,16px);line-height:var(--article-text-line-height,1.8);color:var(--article-text-color,#222);word-break:break-word;text-shadow:var(--article-text-shadow,none)}
+.article-page-text .article-markdown{display:block;background:var(--article-markdown-bg,transparent);border:var(--article-markdown-border,none);border-top:var(--article-markdown-border-top,none);border-radius:var(--article-markdown-radius,0);box-shadow:var(--article-markdown-shadow,none);padding:var(--article-markdown-padding,0);padding-top:var(--article-markdown-padding-top,0)}
+.article-page-text .article-markdown>:first-child{margin-top:0}
+.article-page-text .article-markdown>:last-child{margin-bottom:0}
+.article-page-text h1,.article-page-text h2,.article-page-text h3{margin:22px 0 10px;line-height:var(--article-heading-line-height,1.35);color:var(--article-heading-color,#1f1f1f);text-shadow:var(--article-heading-shadow,none);border-bottom:var(--article-heading-border,none);padding-bottom:var(--article-heading-padding-bottom,0)}
+.article-page-text h1{font-size:var(--article-h1-size,22px)}
+.article-page-text h2{font-size:var(--article-h2-size,20px)}
+.article-page-text h3{font-size:var(--article-h3-size,18px)}
+.article-page-text p{margin:0 0 12px;color:var(--article-paragraph-color,var(--article-text-color,#222))}
+.article-page-text strong{display:inline;padding:1px 5px 2px;border-radius:var(--article-strong-radius,2px);background:var(--article-strong-bg,#2b2b2b);color:var(--article-strong-color,#ff6b6b);font-weight:700;line-height:inherit;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.article-page-text blockquote{margin:14px 0;padding:10px 12px;border-left:3px solid var(--article-blockquote-border,#d0d0d0);background:var(--article-blockquote-bg,#f7f7f7);color:var(--article-blockquote-color,#555)}
+.article-page-text ul,.article-page-text ol{margin:0 0 12px 20px;padding:0}
+.article-page-text li{margin:4px 0}
+.article-page-text li>ul,.article-page-text li>ol{margin-top:4px;margin-bottom:4px}
+.article-page-text hr{border:none;border-top:1px solid var(--article-hr-color,var(--article-blockquote-border,#d0d0d0));margin:18px 0}
+.article-page-text del{color:var(--article-del-color,var(--article-sub-color,#8f8f8f))}
+.article-page-text table{display:block;width:100%;overflow-x:auto;border-collapse:collapse;margin:14px 0;font-size:.94em}
+.article-page-text th,.article-page-text td{border:1px solid var(--article-table-border,var(--article-blockquote-border,#d0d0d0));padding:8px 10px;text-align:left;vertical-align:top;white-space:nowrap}
+.article-page-text th{background:var(--article-table-head-bg,var(--article-blockquote-bg,#f7f7f7));color:var(--article-heading-color,#1f1f1f);font-weight:700}
+.article-page-text td{background:var(--article-table-cell-bg,transparent)}
+.article-page-text input[type="checkbox"]{margin-right:6px;vertical-align:-1px}
+.article-page-text img{width:100%;margin:10px 0;border-radius:var(--article-image-radius,8px);border:var(--article-inline-image-border,none);background:var(--article-inline-image-bg,#ddd)}
+.article-page-text a{color:var(--article-link-color,#576b95);text-decoration:var(--article-link-decoration,none);text-underline-offset:var(--article-link-underline-offset,0)}
+.article-page-text code{font-family:var(--article-code-font,"SF Mono","Menlo","Consolas",monospace);font-size:.9em;background:var(--article-code-bg,#f6f6f6);border:var(--article-code-border,none);border-radius:var(--article-code-radius,4px);padding:1px 4px;color:var(--article-code-color,#d14)}
+.article-page-text pre{overflow:auto;margin:14px 0;padding:12px;border:var(--article-pre-border,none);border-radius:var(--article-pre-radius,8px);background:var(--article-pre-bg,#f6f8fa);color:var(--article-pre-color,#24292f);line-height:1.55;box-shadow:var(--article-pre-shadow,none)}
+.article-page-text pre code{padding:0;background:transparent;border:none;color:inherit}
+.article-page-images{margin-top:12px;display:grid;gap:8px}
+.article-page-images img{width:100%;border-radius:var(--article-image-radius,8px);border:var(--article-page-image-border,none);background:var(--article-page-image-bg,#ddd)}
+
+
+img[data-preview-src]{cursor:zoom-in}
+.image-load-shell{position:relative;display:inline-grid;max-width:100%;vertical-align:top;overflow:hidden;background:var(--image-load-bg,#e7e7e7);isolation:isolate}
+.image-load-shell.image-load-wide{display:grid;width:100%;min-height:96px}
+.image-load-shell.image-load-content{width:320px;max-width:100%;min-height:120px}
+.image-load-shell.image-load-small{width:var(--image-load-width,42px);height:var(--image-load-height,42px);min-width:var(--image-load-width,42px);min-height:var(--image-load-height,42px)}
+.image-load-shell>img{grid-area:1/1;position:relative;z-index:1;opacity:0;transition:opacity .18s ease}
+.image-load-shell.image-load-ready>img{opacity:1}
+.image-load-feedback{grid-area:1/1;position:relative;z-index:2;display:flex;align-items:center;justify-content:center;min-width:0;min-height:42px;padding:8px;color:var(--image-load-text,#777);font-size:12px;line-height:1.35;text-align:center;background:var(--image-load-bg,#e7e7e7)}
+.image-load-spinner{width:22px;height:22px;border:2px solid var(--image-load-track,rgba(0,0,0,.14));border-top-color:var(--image-load-accent,#07c160);border-radius:50%;animation:image-load-spin .8s linear infinite}
+.image-load-error{display:none;align-items:center;justify-content:center;gap:6px;width:100%;height:100%;cursor:pointer;user-select:none;overflow-wrap:anywhere}
+.image-load-error-icon{font-size:16px;line-height:1}
+.image-load-shell.image-load-failed .image-load-spinner{display:none}
+.image-load-shell.image-load-failed .image-load-error{display:flex}
+.image-load-shell.image-load-small .image-load-feedback{min-height:0;padding:0}
+.image-load-shell.image-load-small .image-load-spinner{width:16px;height:16px;border-width:2px}
+.image-load-shell.image-load-small .image-load-error-text{display:none}
+.image-load-shell.image-load-small .image-load-error-icon{font-size:14px}
+.image-load-shell.image-load-ready .image-load-feedback{display:none}
+@keyframes image-load-spin{to{transform:rotate(360deg)}}
+[data-theme="paper"] .image-load-shell,body:not([data-theme]) .image-load-shell{--image-load-bg:#f4eadb;--image-load-track:rgba(107,88,66,.2);--image-load-accent:#7c6348;--image-load-text:#6b5842}
+[data-theme="iterms"] .image-load-shell{--image-load-bg:#07100a;--image-load-track:#173020;--image-load-accent:#00ff41;--image-load-text:#7CFF8F;box-shadow:inset 0 0 0 1px #173020}
+[data-theme="iterms"] .image-load-spinner{filter:drop-shadow(0 0 3px rgba(0,255,65,.45))}
+.image-viewer{position:fixed;inset:0;z-index:220;display:none;background:rgba(0,0,0,.88);touch-action:none;overflow:hidden}
+.image-viewer.show{display:block}
+.image-viewer-stage{position:absolute;inset:0;overflow:hidden;cursor:grab;touch-action:none}
+.image-viewer-stage.dragging{cursor:grabbing}
+.image-viewer-img{position:absolute;top:50%;left:50%;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;transform-origin:center center;will-change:transform;opacity:0;transition:opacity .18s ease}
+.image-viewer.viewer-ready .image-viewer-img{opacity:1}
+.image-viewer-feedback{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;color:#fff;pointer-events:none}
+.image-viewer-feedback .image-load-spinner{width:30px;height:30px;border-color:rgba(255,255,255,.2);border-top-color:#fff}
+.image-viewer-feedback .image-load-error{width:auto;height:auto;min-width:150px;min-height:72px;padding:12px 16px;border:1px solid rgba(255,255,255,.24);border-radius:6px;background:rgba(20,20,20,.78);pointer-events:auto}
+.image-viewer.viewer-ready .image-viewer-feedback{display:none}
+.image-viewer.viewer-failed .image-load-spinner{display:none}
+.image-viewer.viewer-failed .image-load-error{display:flex}
+.image-viewer-close{position:absolute;top:14px;right:14px;z-index:2;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:rgba(20,20,20,.72);color:#fff;width:38px;height:38px;font-size:20px;line-height:1;cursor:pointer}
+.image-viewer-status{position:absolute;left:14px;bottom:14px;z-index:2;border-radius:999px;background:rgba(20,20,20,.72);color:#fff;font-size:12px;padding:6px 10px;pointer-events:none}
+[data-theme="iterms"] .image-viewer{background:rgba(0,8,5,.92)}
+[data-theme="iterms"] .image-viewer-close,[data-theme="iterms"] .image-viewer-status{background:#0d1a12;border:1px solid #173020;color:#7CFF8F}
+[data-theme="iterms"] .image-viewer-feedback .image-load-error{background:#0d1a12;border-color:#173020;color:#7CFF8F}
+
+
+.chat,.phone{--highlight-fg:var(--text,var(--ink,#222));position:relative}
+.highlight-effect{position:fixed;z-index:180;display:none;align-items:center;justify-content:center;overflow:hidden;pointer-events:none;color:var(--highlight-fg,var(--text,var(--ink,#222)));background:transparent;isolation:isolate}
+.highlight-effect.active{display:flex;animation:highlightShake 2.18s linear forwards}
+.highlight-effect-text{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;padding-left:.25em;font-size:clamp(44px,18vw,96px);font-weight:700;letter-spacing:.32em;line-height:1.15;text-align:center;opacity:0;text-shadow:var(--highlight-text-shadow,none);will-change:transform,opacity;transform:translateZ(0) scale(.7)}
+.highlight-effect-flash-white,.highlight-effect-flash-black{position:absolute;inset:0;z-index:3;opacity:0;will-change:opacity;transform:translateZ(0)}
+.highlight-effect-flash-white{background:var(--highlight-flash-white,#fff)}
+.highlight-effect-flash-black{z-index:4;background:#000}
+.highlight-effect-vignette{position:absolute;inset:0;z-index:5;background:radial-gradient(circle at center,transparent 42%,rgba(0,0,0,.28) 72%,rgba(0,0,0,.82) 100%)}
+.highlight-effect.active .highlight-effect-text{animation:highlightScare 2.18s cubic-bezier(.13,.9,.2,1) forwards}
+.highlight-effect.active .highlight-effect-flash-white{animation:highlightWhiteFlash 2.18s linear forwards}
+.highlight-effect.active .highlight-effect-flash-black{animation:highlightBlackFlash 2.18s linear forwards}
+.highlight-msg .bubble{--highlight-bubble-outline:rgba(0,0,0,.06)}
+[data-theme="iterms"] .highlight-effect,.iterms .highlight-effect{--highlight-text-shadow:0 0 8px rgba(0,255,65,.5)}
+@keyframes highlightScare{0%{opacity:0;transform:translateZ(0) scale(.76) translateY(12px);letter-spacing:.45em}18%{opacity:.72;transform:translateZ(0) scale(.9) translateY(0);letter-spacing:.38em}32%{opacity:1;transform:translateZ(0) scale(.98);letter-spacing:.32em}52%{opacity:1;transform:translateZ(0) scale(1.08);letter-spacing:.26em}62%{opacity:1;transform:translateZ(0) scale(1.22);letter-spacing:.18em}70%{opacity:1;transform:translateZ(0) scale(7.2) rotate(-1deg);letter-spacing:-.06em}77%{opacity:.95;transform:translateZ(0) scale(10.5) rotate(1deg);letter-spacing:-.16em}88%{opacity:.08;transform:translateZ(0) scale(12.5)}100%{opacity:0;transform:translateZ(0) scale(12.5)}}
+@keyframes highlightWhiteFlash{0%,68%{opacity:0}72%{opacity:.72}75%{opacity:0}100%{opacity:0}}
+@keyframes highlightBlackFlash{0%,76%{opacity:0}80%{opacity:.7}86%{opacity:0}100%{opacity:0}}
+@keyframes highlightShake{0%,64%,92%,100%{transform:translate3d(0,0,0)}70%{transform:translate3d(-2px,2px,0)}74%{transform:translate3d(3px,-2px,0)}78%{transform:translate3d(-3px,-1px,0)}84%{transform:translate3d(2px,2px,0)}}
+@media (prefers-reduced-motion:reduce){.highlight-effect.active,.highlight-effect.active .highlight-effect-text,.highlight-effect.active .highlight-effect-flash-white,.highlight-effect.active .highlight-effect-flash-black{animation-duration:1s}.highlight-effect.active{animation-name:none}.highlight-effect-text{letter-spacing:.2em}}
+
+
+
+  .document-page.article-body {
+    width:min(560px,calc(100% - 24px));
+    max-width:560px;
+    min-height:0;
+    margin:12px auto;
+    padding:0;
+    color:var(--ink,var(--text,#222));
+    overflow:hidden;
+  }
+  .document-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    min-height:44px;
+    padding:8px 12px;
+    border-bottom:1px solid var(--line,#dcdcdc);
+  }
+  .document-heading {
+    display:flex;
+    align-items:baseline;
+    min-width:0;
+    gap:8px;
+  }
+  .document-number {
+    flex:0 0 auto;
+    color:var(--article-heading-color,var(--accent,#07c160));
+    font-size:15px;
+    font-weight:700;
+  }
+  .document-title {
+    margin:0;
+    color:var(--article-heading-color,var(--ink,var(--text,#222)));
+    font-size:17px;
+    line-height:1.25;
+    text-shadow:var(--article-heading-shadow,none);
+    white-space:nowrap;
+  }
+  .document-type-label {
+    min-width:0;
+    color:var(--muted,#777);
+    font-size:11px;
+    letter-spacing:.07em;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .document-index {
+    flex:0 0 auto;
+    color:var(--muted,#777);
+    font-size:13px;
+  }
+  .document-list { padding:0 12px; }
+  .document-card {
+    position:relative;
+    border:0;
+    border-bottom:1px solid var(--line,#ddd);
+    background:transparent;
+  }
+  .document-card h2 {
+    margin:0;
+    color:var(--article-heading-color,var(--ink,var(--text,#222)));
+    font-size:16px;
+    line-height:1.3;
+    font-weight:700;
+  }
+  .document-image-cell { min-width:0; }
+  .document-avatar {
+    display:block;
+    width:88px;
+    height:88px;
+    border-radius:2px;
+    border:var(--article-page-image-border,1px solid var(--line,#ddd));
+    object-fit:cover;
+    filter:saturate(.72) brightness(.82) sepia(.08);
+  }
+  .document-setting-image {
+    display:block;
+    width:82px;
+    height:82px;
+    margin:0;
+    border-radius:2px;
+    border:1px solid var(--line,#ddd);
+    object-fit:cover;
+    filter:saturate(.68) brightness(.78) sepia(.12);
+  }
+  .character-card {
+    display:grid;
+    grid-template-columns:88px minmax(0,1fr);
+    align-items:start;
+    gap:14px;
+    padding:12px 0;
+  }
+  .character-main,.setting-main { min-width:0; }
+  .character-topline {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:start;
+    gap:10px;
+  }
+  .character-heading { min-width:0; }
+  .character-heading .document-inline { margin-top:3px; }
+  .character-status {
+    min-width:58px;
+    text-align:right;
+  }
+  .field-label {
+    display:block;
+    margin-bottom:3px;
+    color:var(--muted,#777);
+    font-size:9px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+  }
+  .document-inline.article-page-text {
+    margin:0;
+    font-size:12px;
+    line-height:1.45;
+  }
+  .document-inline.article-page-text p { display:inline; margin:0; }
+  .document-description.article-page-text {
+    min-width:0;
+    margin:5px 0 0;
+    font-size:13px;
+    line-height:1.55;
+  }
+  .document-description .article-markdown {
+    border:none;
+    border-top:none;
+    background:transparent;
+    box-shadow:none;
+    padding:0;
+  }
+  .document-description .article-markdown p { margin-bottom:6px; }
+  .setting-card {
+    display:grid;
+    grid-template-columns:82px minmax(0,1fr);
+    align-items:center;
+    gap:16px;
+    min-height:108px;
+    padding:12px 0;
+  }
+  .timeline-list { position:relative; padding-left:26px; }
+  .timeline-list::before {
+    content:"";
+    position:absolute;
+    top:35px;
+    bottom:32px;
+    left:18px;
+    width:1px;
+    background:var(--accent,#07c160);
+    opacity:.55;
+  }
+  .timeline-card {
+    display:grid;
+    grid-template-columns:72px minmax(0,1fr) 155px;
+    align-items:start;
+    gap:12px;
+    min-height:126px;
+    padding:14px 0;
+  }
+  .timeline-card.no-image { grid-template-columns:72px minmax(0,1fr); }
+  .timeline-time-cell { position:relative; min-width:0; }
+  .timeline-marker {
+    position:absolute;
+    top:4px;
+    left:-15px;
+    width:10px;
+    height:10px;
+    border:2px solid var(--accent,#07c160);
+    border-radius:50%;
+    background:var(--article-body-bg,var(--bg,#fff));
+    box-shadow:0 0 7px rgba(0,255,65,.28);
+  }
+  .timeline-time {
+    color:var(--article-heading-color,var(--accent,#07c160));
+    font-size:14px;
+    font-weight:700;
+  }
+  .timeline-content { min-width:0; }
+  .participants { margin-top:8px; }
+  .participant-list { display:flex; flex-wrap:wrap; gap:4px; }
+  .participant {
+    display:inline-flex;
+    align-items:center;
+    min-height:20px;
+    padding:2px 6px;
+    border:1px solid var(--line,#ddd);
+    color:var(--article-text-color,var(--ink,var(--text,#222)));
+    font-size:10px;
+  }
+  .timeline-image { min-width:0; }
+  .document-timeline-image {
+    display:block;
+    width:100%;
+    height:96px;
+    margin:0;
+    border-radius:2px;
+    border:1px solid var(--line,#ddd);
+    object-fit:cover;
+    filter:saturate(.62) brightness(.7) sepia(.12);
+  }
+  .document-footer {
+    padding:11px 12px;
+    color:var(--article-heading-color,var(--accent,#07c160));
+    font-size:10px;
+    letter-spacing:.06em;
+  }
+  [data-theme="iterms"] .document-page {
+    --line:#173020;
+    --article-heading-shadow:0 0 4px rgba(124,255,143,.24);
+    --article-text-shadow:0 0 3px rgba(0,255,65,.12);
+    background:#030806;
+    border:1px solid #204726;
+    box-shadow:inset 0 0 0 1px rgba(0,255,65,.025),0 0 24px rgba(0,255,65,.035);
+  }
+  [data-theme="iterms"] .document-card::after,
+  [data-theme="iterms"] .document-page::after {
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(transparent 50%,rgba(0,255,65,.012) 50%);
+    background-size:100% 4px;
+  }
+  [data-theme="iterms"] .document-page { position:relative; }
+  [data-theme="iterms"] .document-header {
+    background:linear-gradient(90deg,rgba(0,255,65,.035),transparent 58%);
+    box-shadow:0 1px 8px rgba(0,255,65,.025);
+  }
+  [data-theme="iterms"] .document-card {
+    border-bottom-style:dashed;
+    border-bottom-color:rgba(48,110,58,.32);
+  }
+  [data-theme="iterms"] .participant { background:#07100a; }
+  [data-theme="wechat"] .document-page { --line:#ddd; background:#fff; }
+  [data-theme="wechat"] .participant { border-radius:999px; background:#eefbf3; }
+  [data-theme="paper"] .document-page { --line:#dac8ac; background:#fffaf2; }
+  [data-theme="paper"] .participant { background:#f8efdf; border-radius:3px; }
+  @media (max-width:580px) {
+    .document-page.article-body {
+      width:100%;
+      min-height:100vh;
+      margin:0;
+      border-left:0;
+      border-right:0;
+    }
+    .document-header { padding:8px 10px; }
+    .document-list { padding-right:10px; padding-left:10px; }
+    .timeline-list { padding-left:24px; }
+    .timeline-list::before { left:17px; }
+    .timeline-card {
+      grid-template-columns:62px minmax(0,1fr) 118px;
+      gap:8px;
+    }
+    .timeline-card.no-image { grid-template-columns:62px minmax(0,1fr); }
+    .timeline-marker { left:-14px; }
+    .document-timeline-image { height:84px; }
+  }
+  @media (max-width:420px) {
+    .document-type-label { display:none; }
+    .character-card { grid-template-columns:72px minmax(0,1fr); gap:10px; }
+    .document-avatar { width:72px; height:72px; }
+    .setting-card { grid-template-columns:68px minmax(0,1fr); gap:11px; }
+    .document-setting-image { width:68px; height:68px; }
+    .timeline-card,.timeline-card.no-image {
+      grid-template-columns:58px minmax(0,1fr);
+    }
+    .timeline-image {
+      grid-column:2;
+    }
+    .document-timeline-image { width:100%; height:auto; max-height:150px; }
+  }
+
+  </style>
+</head>
+<body data-theme="iterms">
+  <main class="document-page article-body">
+    <header class="document-header">
+      <div class="document-heading">
+        <span class="document-number">01</span>
+        <h1 class="document-title">核心人物·篇章主角</h1>
+        <span class="document-type-label">/ CHARACTERS</span>
+      </div>
+      <div class="document-index">这是神秘复苏的平行宇宙，杨间并未诞生</div>
+    </header>
+    <section class="document-list" aria-label="核心人物·篇章主角">
+      
+    <article class="document-card character-card" data-index="0">
+      <div class="document-image-cell">
+        <img class="profile-avatar document-avatar" src="../../art_prompt_library/avatar_prompts/generated/mark-indie-v1.png" data-preview-src="../../art_prompt_library/avatar_prompts/generated/mark-indie-v1.png" alt="Mark"/>
+      </div>
+      <div class="character-main">
+        <div class="character-topline">
+          <div class="character-heading">
+            <h2>Mark</h2>
+            <div class="document-inline article-page-text">大厂主管 → 独立游戏开发者</div>
+          </div>
+          <div class="character-status">
+            <span class="field-label">STATUS</span>
+            <div class="document-inline article-page-text">未知</div>
+          </div>
+        </div>
+        <div class="document-description article-page-text"><div class="article-markdown"><p>鸢飞戾天的大厂精英，光速晋升导致其性格强势而毒舌。被公司劝退后，爱妻文兰卷入<strong>槐阴村</strong>事件失踪，从此人格崩溃。经静祎重塑记忆后，成为独立游戏开发者；因周正的到访，察觉自身记忆异常。随后加入周正主导的<strong>杨戬计划</strong>，成为核心开发者，洞悉灵异对智能体的影响，并给六十年后的“我”留下一段神秘讯息</p>
+<blockquote>
+<p>串联所有故事的角色，剧情推动者</p>
+</blockquote>
+</div></div>
+      </div>
+    </article>
+    <article class="document-card character-card" data-index="1">
+      <div class="document-image-cell">
+        <img class="profile-avatar document-avatar" src="../../art_prompt_library/avatar_prompts/generated/zhang_jingyi-student-v4.png" data-preview-src="../../art_prompt_library/avatar_prompts/generated/zhang_jingyi-student-v4.png" alt="张静祎"/>
+      </div>
+      <div class="character-main">
+        <div class="character-topline">
+          <div class="character-heading">
+            <h2>张静祎</h2>
+            <div class="document-inline article-page-text">心理咨询师</div>
+          </div>
+          <div class="character-status">
+            <span class="field-label">STATUS</span>
+            <div class="document-inline article-page-text">存活</div>
+          </div>
+        </div>
+        <div class="document-description article-page-text"><div class="article-markdown"><p>童年遭遇鬼邮局信使“三只香”，通过观察其使用“鬼报纸”的效果而在二十年后写下如何重塑记忆的论文。与Mark之妻文兰是闺蜜，因为文兰失踪前的叮嘱而决定对人格崩溃的Mark进行记忆重塑。融合文兰和Henry的性格，自己成为Mark的“姐姐”从而观察效果。由于离奇的童年经历和家庭环境，性格外冷内热，细腻敏感。</p>
+<blockquote>
+<p>智能体觉醒的暗线，三只香的故事来自于我的外公</p>
+</blockquote>
+</div></div>
+      </div>
+    </article>
+    <article class="document-card character-card" data-index="2">
+      <div class="document-image-cell">
+        <img class="profile-avatar document-avatar" src="../../art_prompt_library/avatar_prompts/generated/zhou_police-v1.png" data-preview-src="../../art_prompt_library/avatar_prompts/generated/zhou_police-v1.png" alt="周正"/>
+      </div>
+      <div class="character-main">
+        <div class="character-topline">
+          <div class="character-heading">
+            <h2>周正</h2>
+            <div class="document-inline article-page-text">刑警 → 联络员 → 大昌市负责人</div>
+          </div>
+          <div class="character-status">
+            <span class="field-label">STATUS</span>
+            <div class="document-inline article-page-text">死亡</div>
+          </div>
+        </div>
+        <div class="document-description article-page-text"><div class="article-markdown"><p>三十年前焦原沟<strong>饿死鬼</strong>事件的幸存者，退伍后进入警队遭遇“鬼相机”事件。通过自身的分析和AI的辅助，破解了“鬼相机”的规律。后续有感于挚友冯全、Mark的经历，主动找到了剩下一半的<strong>饿死鬼</strong>拼图。击败张羡光的意识碎片后成为“鬼婴周正”并接任负责人。秘密进行了“杨戬计划”。最终在大昌七中事件中牺牲，为人富有正义感和人情味，被张静祎指出有自毁情结。</p>
+<blockquote>
+<p>里昂和皮尔斯</p>
+</blockquote>
+</div></div>
+      </div>
+    </article>
+    <article class="document-card character-card" data-index="3">
+      <div class="document-image-cell">
+        <img class="profile-avatar document-avatar" src="../../art_prompt_library/avatar_prompts/generated/zack-v5.png" data-preview-src="../../art_prompt_library/avatar_prompts/generated/zack-v5.png" alt="Zack"/>
+      </div>
+      <div class="character-main">
+        <div class="character-topline">
+          <div class="character-heading">
+            <h2>Zack</h2>
+            <div class="document-inline article-page-text">大厂主管 → '杨戬计划'技术负责人</div>
+          </div>
+          <div class="character-status">
+            <span class="field-label">STATUS</span>
+            <div class="document-inline article-page-text">死亡</div>
+          </div>
+        </div>
+        <div class="document-description article-page-text"><div class="article-markdown"><p>Mark 的伯乐，最终却因 Mark 的优异表现而被裁员。意识到 AI 在探案方面的潜力后，开发了“青天小助手”，也就是“杨戬计划”的前身。有写个人博客的习惯，有着幸福的家庭和体面的生活，职业生涯却几起几落。最终在“大昌七中”事件后，被王小强胁迫毁灭了刚刚觉醒自主意识的“杨戬”。富有远见、重情重义却又随遇而安，也是普通人面对灵异事件无奈的真实写照。</p>
+<blockquote>
+<p>大厂众生相</p>
+</blockquote>
+</div></div>
+      </div>
+    </article>
+    <article class="document-card character-card" data-index="4">
+      <div class="document-image-cell">
+        <img class="profile-avatar document-avatar" src="/Users/dash/workspace/DashYang.github.io/SquareGame/assets/wo-v1.png" data-preview-src="/Users/dash/workspace/DashYang.github.io/SquareGame/assets/wo-v1.png" alt="我"/>
+      </div>
+      <div class="character-main">
+        <div class="character-topline">
+          <div class="character-heading">
+            <h2>我</h2>
+            <div class="document-inline article-page-text">‘阴差’</div>
+          </div>
+          <div class="character-status">
+            <span class="field-label">STATUS</span>
+            <div class="document-inline article-page-text">存活</div>
+          </div>
+        </div>
+        <div class="document-description article-page-text"><div class="article-markdown"><p>诞生于 60 年后超智能体文明<strong>地府</strong>的强智能体，通过<strong>秦广王</strong>的考察后参与<strong>盗火行动</strong>。若表现出色，将收到一条来自 Mark 的留言</p>
+</div></div>
+      </div>
+    </article>
+    </section>
+    <footer class="document-footer">&gt; 却诞生了智能体</footer>
+  </main>
+  <aside id="image-viewer" class="image-viewer" aria-hidden="true">
+    <button id="image-viewer-close" class="image-viewer-close" type="button" aria-label="关闭">×</button>
+    <div id="image-viewer-stage" class="image-viewer-stage">
+      <img id="image-viewer-img" class="image-viewer-img" src="" alt="image"/>
+    </div>
+    <div id="image-viewer-status" class="image-viewer-status">100%</div>
+  </aside>
+  <script>
+    (() => {
+
+      function installImageLoading() {
+        const managed = new WeakSet();
+        const smallImageClasses = new Set(['avatar', 'profile-avatar', 'contact-avatar', 'moment-avatar', 'list-avatar', 'account-avatar']);
+        const wideImageClasses = new Set(['article-cover', 'article-page-cover', 'oa-cover', 'previewable-image']);
+
+        function imageKind(image) {
+          for (const name of smallImageClasses) {
+            if (image.classList.contains(name)) return 'small';
+          }
+          for (const name of wideImageClasses) {
+            if (image.classList.contains(name)) return 'wide';
+          }
+          if (image.closest('.moment-images, .article-page-images, .article-page-text')) return 'wide';
+          return 'content';
+        }
+        function feedbackMarkup() {
+          const feedback = document.createElement('span');
+          feedback.className = 'image-load-feedback';
+          feedback.setAttribute('aria-live', 'polite');
+          feedback.innerHTML = '<span class="image-load-spinner" aria-label="图片加载中"></span>'
+            + '<span class="image-load-error" role="button" tabindex="0" aria-label="重新加载图片">'
+            + '<span class="image-load-error-icon" aria-hidden="true">▧</span>'
+            + '<span class="image-load-error-text">图片加载失败，点击重试</span></span>';
+          return feedback;
+        }
+        function ensureShell(image) {
+          const current = image.parentElement;
+          if (current && current.classList.contains('image-load-shell')) return current;
+          const kind = imageKind(image);
+          const rect = image.getBoundingClientRect();
+          const shell = document.createElement('span');
+          shell.className = 'image-load-shell image-load-' + kind;
+          if (kind === 'small') {
+            shell.style.setProperty('--image-load-width', Math.max(1, Math.round(rect.width || image.width || 42)) + 'px');
+            shell.style.setProperty('--image-load-height', Math.max(1, Math.round(rect.height || image.height || 42)) + 'px');
+            shell.style.borderRadius = getComputedStyle(image).borderRadius || '0';
+          } else if (kind === 'content' && rect.width >= 80) {
+            shell.style.width = Math.round(rect.width) + 'px';
+            if (rect.height > 0) shell.style.minHeight = Math.round(rect.height) + 'px';
+          }
+          image.parentNode.insertBefore(shell, image);
+          shell.appendChild(image);
+          shell.appendChild(feedbackMarkup());
+          return shell;
+        }
+        function clearShell(image) {
+          const shell = image.parentElement;
+          if (!shell || !shell.classList.contains('image-load-shell')) return;
+          shell.parentNode.insertBefore(image, shell);
+          shell.remove();
+          image.removeAttribute('aria-busy');
+          delete image.dataset.imageLoadSrc;
+        }
+        function unwrapReadyImage(image, shell) {
+          window.setTimeout(() => {
+            if (!shell.isConnected || image.parentElement !== shell || !shell.classList.contains('image-load-ready')) return;
+            shell.parentNode.insertBefore(image, shell);
+            shell.remove();
+          }, 190);
+        }
+        function markLoading(image) {
+          const src = image.getAttribute('src') || '';
+          if (!src) return;
+          image.dataset.imageLoadSrc = src;
+          const shell = ensureShell(image);
+          shell.classList.remove('image-load-ready', 'image-load-failed');
+          shell.classList.add('image-load-loading');
+          image.setAttribute('aria-busy', 'true');
+        }
+        function markReady(image) {
+          const shell = image.parentElement;
+          image.setAttribute('aria-busy', 'false');
+          if (!shell || !shell.classList.contains('image-load-shell')) {
+            image.style.opacity = '';
+            return;
+          }
+          shell.classList.remove('image-load-loading', 'image-load-failed');
+          shell.classList.add('image-load-ready');
+          unwrapReadyImage(image, shell);
+        }
+        function markFailed(image) {
+          const shell = ensureShell(image);
+          shell.classList.remove('image-load-loading', 'image-load-ready');
+          shell.classList.add('image-load-failed');
+          image.setAttribute('aria-busy', 'false');
+        }
+        function retryImage(image) {
+          const src = image.dataset.imageLoadSrc || image.getAttribute('src') || '';
+          if (!src) return;
+          markLoading(image);
+          image.dataset.imageLoadRetry = 'true';
+          image.removeAttribute('src');
+          requestAnimationFrame(() => {
+            image.setAttribute('src', src);
+            delete image.dataset.imageLoadRetry;
+          });
+        }
+        function inspectImage(image) {
+          if (!(image instanceof HTMLImageElement) || image.classList.contains('image-viewer-img')) return;
+          const src = image.getAttribute('src') || '';
+          if (!src) {
+            if (!image.dataset.imageLoadRetry) clearShell(image);
+            return;
+          }
+          if (!managed.has(image)) {
+            managed.add(image);
+            image.addEventListener('load', () => markReady(image));
+            image.addEventListener('error', () => markFailed(image));
+          }
+          if (!image.dataset.imageLoadRetry) image.dataset.imageLoadSrc = src;
+          if (image.complete) {
+            if (image.naturalWidth > 0) markReady(image);
+            else markFailed(image);
+          } else {
+            markLoading(image);
+          }
+        }
+        function inspectNode(node) {
+          if (!(node instanceof Element)) return;
+          if (node.matches('img[src]')) inspectImage(node);
+          node.querySelectorAll('img[src]').forEach(inspectImage);
+        }
+
+        document.querySelectorAll('img[src]').forEach(inspectImage);
+        document.addEventListener('click', (event) => {
+          const retry = event.target.closest && event.target.closest('.image-load-shell .image-load-error');
+          if (!retry) return;
+          const shell = retry.closest('.image-load-shell');
+          const image = shell && shell.querySelector('img');
+          if (!image) return;
+          event.preventDefault();
+          event.stopPropagation();
+          retryImage(image);
+        }, true);
+        document.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          const retry = event.target.closest && event.target.closest('.image-load-shell .image-load-error');
+          if (!retry) return;
+          const image = retry.closest('.image-load-shell')?.querySelector('img');
+          if (!image) return;
+          event.preventDefault();
+          event.stopPropagation();
+          retryImage(image);
+        }, true);
+        const observer = new MutationObserver((records) => {
+          records.forEach((record) => {
+            if (record.type === 'attributes') {
+              inspectImage(record.target);
+              return;
+            }
+            record.addedNodes.forEach(inspectNode);
+          });
+        });
+        observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+      }
+
+      function installImageViewer() {
+        const viewer = document.getElementById('image-viewer');
+        const stage = document.getElementById('image-viewer-stage');
+        const image = document.getElementById('image-viewer-img');
+        const closeBtn = document.getElementById('image-viewer-close');
+        const status = document.getElementById('image-viewer-status');
+        if (!viewer || !stage || !image || !closeBtn || !status) return;
+        installImageLoading();
+        const viewerFeedback = document.createElement('div');
+        viewerFeedback.className = 'image-viewer-feedback';
+        viewerFeedback.innerHTML = '<span class="image-load-spinner" aria-label="图片加载中"></span>'
+          + '<span class="image-load-error" role="button" tabindex="0" aria-label="重新加载原图">'
+          + '<span class="image-load-error-icon" aria-hidden="true">▧</span>'
+          + '<span class="image-load-error-text">图片加载失败，点击重试</span></span>';
+        stage.appendChild(viewerFeedback);
+        const state = { scale: 1, x: 0, y: 0, naturalW: 1, naturalH: 1, fitScale: 1, pointers: new Map(), drag: null, pinch: null };
+        let viewerSrc = '';
+        const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+        function updateStatus() {
+          status.textContent = Math.round(state.scale * 100) + '%';
+        }
+        function renderImageTransform() {
+          image.style.width = state.naturalW + 'px';
+          image.style.height = state.naturalH + 'px';
+          image.style.transform = 'translate(calc(-50% + ' + state.x + 'px), calc(-50% + ' + state.y + 'px)) scale(' + state.scale + ')';
+          updateStatus();
+        }
+        function calculateFitScale() {
+          const rect = stage.getBoundingClientRect();
+          const fitW = Math.max(1, rect.width - 32) / Math.max(1, state.naturalW);
+          const fitH = Math.max(1, rect.height - 96) / Math.max(1, state.naturalH);
+          state.fitScale = clamp(Math.min(1, fitW, fitH), 0.25, 1);
+        }
+        function resetImagePosition() {
+          state.scale = 1;
+          state.x = 0;
+          state.y = 0;
+          calculateFitScale();
+          renderImageTransform();
+        }
+        function setScale(nextScale) {
+          state.scale = clamp(nextScale, 0.25, 4);
+          renderImageTransform();
+        }
+        function openImageViewer(src, alt) {
+          if (!src) return;
+          viewerSrc = src;
+          state.pointers.clear();
+          state.drag = null;
+          state.pinch = null;
+          viewer.classList.remove('viewer-ready', 'viewer-failed');
+          viewer.classList.add('viewer-loading');
+          image.alt = alt || 'image';
+          image.onload = () => {
+            state.naturalW = image.naturalWidth || 1;
+            state.naturalH = image.naturalHeight || 1;
+            resetImagePosition();
+            viewer.classList.remove('viewer-loading', 'viewer-failed');
+            viewer.classList.add('viewer-ready');
+          };
+          image.onerror = () => {
+            viewer.classList.remove('viewer-loading', 'viewer-ready');
+            viewer.classList.add('viewer-failed');
+          };
+          image.src = src;
+          viewer.classList.add('show');
+          viewer.setAttribute('aria-hidden', 'false');
+          if (image.complete && image.naturalWidth) {
+            state.naturalW = image.naturalWidth;
+            state.naturalH = image.naturalHeight;
+            resetImagePosition();
+            viewer.classList.remove('viewer-loading', 'viewer-failed');
+            viewer.classList.add('viewer-ready');
+          }
+        }
+        function closeImageViewer() {
+          viewer.classList.remove('show');
+          viewer.classList.remove('viewer-loading', 'viewer-ready', 'viewer-failed');
+          viewer.setAttribute('aria-hidden', 'true');
+          image.removeAttribute('src');
+          state.pointers.clear();
+        }
+        function pointerDistance(a, b) {
+          return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+        }
+        function pointerCenter(a, b) {
+          return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
+        }
+        document.addEventListener('click', (event) => {
+          const target = event.target.closest && event.target.closest('img[data-preview-src]');
+          if (!target) return;
+          event.preventDefault();
+          event.stopPropagation();
+          openImageViewer(target.dataset.previewSrc || target.currentSrc || target.src, target.alt || '');
+        }, true);
+        closeBtn.addEventListener('click', closeImageViewer);
+        viewer.addEventListener('click', (event) => {
+          if (event.target === viewer || event.target === stage) closeImageViewer();
+        });
+        viewerFeedback.querySelector('.image-load-error').addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (!viewerSrc) return;
+          viewer.classList.remove('viewer-ready', 'viewer-failed');
+          viewer.classList.add('viewer-loading');
+          image.removeAttribute('src');
+          requestAnimationFrame(() => {
+            image.src = viewerSrc;
+          });
+        });
+        viewerFeedback.querySelector('.image-load-error').addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          event.stopPropagation();
+          viewerFeedback.querySelector('.image-load-error').click();
+        });
+        window.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && viewer.classList.contains('show')) closeImageViewer();
+        });
+        stage.addEventListener('wheel', (event) => {
+          if (!viewer.classList.contains('show')) return;
+          event.preventDefault();
+          const factor = event.deltaY < 0 ? 1.12 : 0.88;
+          setScale(state.scale * factor);
+        }, { passive: false });
+        stage.addEventListener('dblclick', (event) => {
+          event.preventDefault();
+          const closeToOne = Math.abs(state.scale - 1) < 0.04;
+          setScale(closeToOne ? state.fitScale : 1);
+          state.x = 0;
+          state.y = 0;
+          renderImageTransform();
+        });
+        stage.addEventListener('pointerdown', (event) => {
+          if (!viewer.classList.contains('show')) return;
+          event.preventDefault();
+          stage.setPointerCapture(event.pointerId);
+          state.pointers.set(event.pointerId, event);
+          stage.classList.add('dragging');
+          if (state.pointers.size === 1) {
+            state.drag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, x: state.x, y: state.y };
+            state.pinch = null;
+          } else if (state.pointers.size === 2) {
+            const points = Array.from(state.pointers.values());
+            state.pinch = { distance: pointerDistance(points[0], points[1]), center: pointerCenter(points[0], points[1]), scale: state.scale, x: state.x, y: state.y };
+          }
+        });
+        stage.addEventListener('pointermove', (event) => {
+          if (!state.pointers.has(event.pointerId)) return;
+          event.preventDefault();
+          state.pointers.set(event.pointerId, event);
+          if (state.pointers.size >= 2 && state.pinch) {
+            const points = Array.from(state.pointers.values()).slice(0, 2);
+            const nextDistance = pointerDistance(points[0], points[1]);
+            const nextCenter = pointerCenter(points[0], points[1]);
+            setScale(state.pinch.scale * (nextDistance / Math.max(1, state.pinch.distance)));
+            state.x = state.pinch.x + (nextCenter.x - state.pinch.center.x);
+            state.y = state.pinch.y + (nextCenter.y - state.pinch.center.y);
+            renderImageTransform();
+          } else if (state.drag && state.drag.id === event.pointerId) {
+            state.x = state.drag.x + (event.clientX - state.drag.startX);
+            state.y = state.drag.y + (event.clientY - state.drag.startY);
+            renderImageTransform();
+          }
+        });
+        function endPointer(event) {
+          state.pointers.delete(event.pointerId);
+          if (state.pointers.size === 0) {
+            stage.classList.remove('dragging');
+            state.drag = null;
+            state.pinch = null;
+          } else if (state.pointers.size === 1) {
+            const remaining = Array.from(state.pointers.values())[0];
+            state.drag = { id: remaining.pointerId, startX: remaining.clientX, startY: remaining.clientY, x: state.x, y: state.y };
+            state.pinch = null;
+          }
+        }
+        stage.addEventListener('pointerup', endPointer);
+        stage.addEventListener('pointercancel', endPointer);
+        window.addEventListener('resize', () => {
+          if (!viewer.classList.contains('show')) return;
+          calculateFitScale();
+          renderImageTransform();
+        });
+      }
+      installImageViewer();
+    })();
+  </script>
+</body>
+</html>
