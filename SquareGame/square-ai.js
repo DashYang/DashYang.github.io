@@ -1,23 +1,3 @@
-function squareManage() {
-  for (var i = 0; i < row; i++) {
-    for (var j = 0; j < column; j++) {
-      var square = G.O["square" + (i * column + j)];
-      if (
-        square &&
-        typeof square.tagContainsMouseClick === "function" &&
-        square.tagContainsMouseClick() &&
-        isTouched == false
-      ) {
-        try {
-          squareHandler(square);
-        } catch (e) {
-          console.log("squareHandler error", e);
-        }
-      }
-    }
-  }
-}
-
 G.F.explosionAI = function (cmd) {
   // Improved explosion animation: expand + fade
   var t = this,

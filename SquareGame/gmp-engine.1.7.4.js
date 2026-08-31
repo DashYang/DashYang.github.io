@@ -2,13 +2,8 @@
  *
  * GogoMakePlay Game Engine v1.7.4
  * Copyright (c) 2006-2010 Trevor Cowley
- * http://gogomakeplay.com/
  *
- * Dual licensed under MIT and GPLv2 licenses:
- * http://gogomakeplay.com/licenses
- *
- * For the full documentation of this code, go to:
- * http://gogomakeplay.com/gmp/api
+ * Dual licensed under the MIT and GPLv2 licenses.
  *
  */
 

@@ -71,54 +71,15 @@ G.F.mainAI = function () {
           : "I got {score} in Square Game,Can you beat me?";
       document.title = shareTitle.replace("{score}", score);
     } else if (timer > 0) {
-      // main per-frame logic
-      try {
-        squareManage();
-      } catch (e) {
-        console.log("squareManage error", e);
-      }
-      // update dashboard via centralized updater
-      try {
-        if (typeof updateDashboard === "function") updateDashboard();
-      } catch (e) {
-        console.log("updateDashboard error", e);
-      }
-    }
-
-    try {
-      if (
-        G.O.viewport &&
-        G.O.viewport.tagContainsMouseClick &&
-        G.O.viewport.tagContainsMouseClick() &&
-        gamestate == "off" &&
-        isTouched == false
-      ) {
-        resetGame();
-      }
-    } catch (e) { console.error("[square-main] caught error", e); }
-
-    try {
-      if (
-        G.O.tutorial &&
-        G.O.tutorial.tagContainsMouseClick &&
-        G.O.tutorial.tagContainsMouseClick() &&
-        isTouched == false
-      ) {
-        var suppressTutorialClick = false;
+      // Paused and transition states update the HUD at their state boundaries.
+      if (gamestate == "on") {
         try {
-          if (
-            typeof tutorialClickSuppressUntil !== "undefined" &&
-            Date.now() < tutorialClickSuppressUntil
-          ) {
-            suppressTutorialClick = true;
-          }
-        } catch (e) { console.error("[square-main] caught error", e); }
-        if (!suppressTutorialClick) {
-          if (gamestate == "on") popTutorial();
-          else if (gamestate == "pause") resumeGame();
+          if (typeof updateDashboard === "function") updateDashboard();
+        } catch (e) {
+          console.log("updateDashboard error", e);
         }
       }
-    } catch (e) { console.error("[square-main] caught error", e); }
+    }
   } catch (err) {
     // Catch any unexpected error to avoid bubbling into the engine master loop
     console.log("G.F.mainAI uncaught error", err);
