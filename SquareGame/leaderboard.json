@@ -1,0 +1,8 @@
+{
+  "boardKind": "PLAYER_VALUE",
+  "reducer": "MAX",
+  "rankDirection": "DESC",
+  "selectedViewCodes": ["weekly"],
+  "inputBounds": { "min": 0, "max": 1000000 },
+  "entryBounds": { "min": 0, "max": 1000000 }
+}

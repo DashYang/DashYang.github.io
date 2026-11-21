@@ -11,6 +11,9 @@
     <link rel="icon" type="image/png" href="./square-game-logo-v3.png" />
     <link rel="apple-touch-icon" href="./square-game-logo-v3.png" />
     <link rel="stylesheet" href="./square.css?v=mobile-fullscreen-1" />
+    <!-- Star-letter Game SDK. Major-version segment so patch updates roll in
+         automatically (see skill trap #7). Loaded before the game scripts. -->
+    <script src="https://gz-vchar-pub.nosdn.127.net/star-letter/game-sdk/v2/sdk.iife.js"></script>
   </head>
   <body>
     <div class="container">
@@ -21,9 +24,16 @@
 
     <script src="./gmp-engine.1.7.4.js"></script>
     <script src="./zepto.min.js"></script>
+    <script src="./square-platform.js?v=platform-1"></script>
     <script src="./square-tools.js?v=mobile-fullscreen-1"></script>
     <script src="./square-config.js?v=tutorial-scenes-1"></script>
     <script src="./square-ai.js"></script>
+    <script>
+      // The dev page keeps the track at the project root; the packaged minitool
+      // build stores it under assets/ and injects its own path.
+      window.SQUAREGAME_BGM_SRC = "./story-time.mp3";
+    </script>
+    <script src="./squaregame-bgm.js?v=bgm-1"></script>
     <script src="./square-main.js"></script>
   </body>
 </html>

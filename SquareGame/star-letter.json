@@ -1,0 +1,57 @@
+{
+  "gameId": 8299,
+  "title": "极速方块-巨爽巨解压！",
+  "summary": "在格子矩阵中找出四角同类型的矩形，配对消除得分并延长游戏时间的轻量益智小游戏。",
+  "tags": [
+    "休闲",
+    "益智",
+    "消除"
+  ],
+  "screen": 1,
+  "priceType": 0,
+  "gameCategory": [
+    10005
+  ],
+  "cover": "./square-game-logo-v3.png",
+  "gameFile": "./minitool-square-game",
+  "capabilityDeclaration": {
+    "schemaVersion": 1,
+    "capabilities": {
+      "exchange": {
+        "enabled": true
+      },
+      "leaderboard": {
+        "enabled": true,
+        "boards": [
+          "squaregame_weekly"
+        ]
+      }
+    }
+  },
+  "description": "《噪音》联动游戏，Mark的无人问津小游戏，暂停有惊喜哦",
+  "controls": "实在不行就乱点，巨爽巨解压！",
+  "assets": [
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/assets/liuxiaoyu-game-v3.png?uid=246160&t1=1790521971&t2=1790349171&sign=3cc0b29faf9cf5647d5696f251437d8e867ce5d4cdca0642cdb36af5097aaebd",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/assets/liuxiaoyu-v2.png?uid=246160&t1=1790521971&t2=1790349171&sign=3235bf9b68149604a8d6ad929252991ec07825bfe55daa2ba325894c8f93c8a9",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/assets/mark-indie-v1.png?uid=246160&t1=1790521971&t2=1790349171&sign=c34b93a0823fa61e16c24ddc43068ead38eb63eb0c70257a64f3d2ea7d803820",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/assets/mark-student-watermelon-v1.png?uid=246160&t1=1790521971&t2=1790349171&sign=7a9b88e21dce343ca4623032d056f06127216ff2a1420faee29c45492aa1e650",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/assets/panny-game-v2.png?uid=246160&t1=1790521971&t2=1790349171&sign=9ee0409c90f21538dc199a063b3b141de14f04659fbd7d3d0f59c2c66b441346",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/assets/zack-v5.png?uid=246160&t1=1790521971&t2=1790349171&sign=0557de8ceb6c16476f2d76096e73c621ae215ef52767b80fdb8e301a0afc8c9b",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/assets/zhang_jingyi-student-v4.png?uid=246160&t1=1790521971&t2=1790349171&sign=1ea2344e26085980d43b829700cb412af07ec993d3c759f62aa47212f1f07760",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/assets/zhou_police-v1.png?uid=246160&t1=1790521971&t2=1790349171&sign=8977a0094272a4d7b1a3f3bddc9ad57b925599d4a09f76b89c2a6d49028ae68d",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/game-icon.png?uid=246160&t1=1790521971&t2=1790349171&sign=d5113eeb10c4beb10cc367655fdfc51a8247dbd119185216970692630ff1abaa",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/gmp-engine.1.7.4.js?uid=246160&t1=1790521971&t2=1790349171&sign=a6c7025c335671c7319b465806dafe6994b57442ad01ce4a639c20c6101eccc8",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/square-ai.js?uid=246160&t1=1790521971&t2=1790349171&sign=b7e8c59e15554b41330754400377ac5191239780844dd9c72f5ea237984b8fb7",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/square-config.js?uid=246160&t1=1790521971&t2=1790349171&sign=1eda4dabcbf85d29a0011f549e7580941cc687596f182322eccf3f881d43ed88",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/square-main.js?uid=246160&t1=1790521971&t2=1790349171&sign=93efc053414d322bfe10832b410fe03c511cd7ddeda6e68e12873a3ee80ce081",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/square-platform.js?uid=246160&t1=1790521971&t2=1790349171&sign=e7981b133bfd807c00c534f5be07140cf03d611b97396357c3af055c769e951d",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/square-tools.js?uid=246160&t1=1790521971&t2=1790349171&sign=365ed35c830f2d5132ca8b6384b1022d8d3446e558f600fc180f0bfd227aab73",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/square.css?uid=246160&t1=1790521971&t2=1790349171&sign=1238db2b195218a5269f42ca7cfa308f7ca99a350d5b7bd47a7c7c13b9a0079e",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/squaregame-audio.js?uid=246160&t1=1790521971&t2=1790349171&sign=12bbcf1befd51444cd151475966361e2a522831b6ad31e8c67a27dd189c6b511",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/squaregame-bgm.js?uid=246160&t1=1790521971&t2=1790349171&sign=e850bb6d12fdc387b4c304e94f9c0aacf6290d4fd8fd60ff268d8754354be56c",
+    "https://oss.virtualoverapp.com/7667616d65-3c190/e4/1790255960841-zawzqknlt0r5s85j/assets/story-time.mp3?uid=246160&t1=1790521971&t2=1790349171&sign=901a285f8fe14151bd3bffe33570ed2ecced99400d50f13e17926fda0fd2a537"
+  ],
+  "gameType": 0,
+  "price": 0,
+  "visibility": 1
+}

@@ -107,26 +107,38 @@ const index = `<!doctype html>
   <link rel="icon" type="image/png" href="./assets/game-icon.png">
   <link rel="apple-touch-icon" href="./assets/game-icon.png">
   <link rel="stylesheet" href="./assets/square.css?v=embedded-audio-1">
+  <!-- Star-letter Game SDK. Major-version segment so patch updates roll in
+       automatically. Degrades to a no-op when the game runs off-platform. -->
+  <script src="https://gz-vchar-pub.nosdn.127.net/star-letter/game-sdk/v2/sdk.iife.js"></script>
 </head>
 <body>
   <div class="container"><div class="row"><div id="gameboard"></div></div></div>
   <script src="./assets/gmp-engine.1.7.4.js"></script>
   <script src="./assets/squaregame-audio.js?v=embedded-audio-1"></script>
+  <!-- Must precede square-tools.js: that script registers its leaderboard
+       redraw listener against window.SL at load time. -->
+  <script src="./assets/square-platform.js?v=platform-1"></script>
   <script src="./assets/square-tools.js?v=embedded-audio-1"></script>
   <script src="./assets/square-config.js"></script>
   <script src="./assets/square-ai.js"></script>
+  <script>window.SQUAREGAME_BGM_SRC = "./assets/story-time.mp3";</script>
+  <script src="./assets/squaregame-bgm.js?v=bgm-1"></script>
   <script src="./assets/square-main.js"></script>
 </body>
 </html>
 `;
 
 writeAsset("gmp-engine.1.7.4.js", readSource("gmp-engine.1.7.4.js"));
+writeAsset("square-platform.js", readSource("square-platform.js"));
+writeAsset("squaregame-bgm.js", readSource("squaregame-bgm.js"));
 writeAsset("square-tools.js", releaseTools(readSource("square-tools.js")));
 writeAsset("square-config.js", readSource("square-config.js"));
 writeAsset("square-ai.js", readSource("square-ai.js"));
 writeAsset("square-main.js", readSource("square-main.js"));
 fs.copyFileSync(path.join(scriptDir, "square-game-logo-v3.png"), path.join(assetsDir, "game-icon.png"));
 fs.copyFileSync(path.join(scriptDir, "squaregame-audio.js"), path.join(assetsDir, "squaregame-audio.js"));
+// BGM is a real audio file rather than embedded PCM, so it ships as an asset.
+fs.copyFileSync(path.join(scriptDir, "story-time.mp3"), path.join(assetsDir, "story-time.mp3"));
 writeAsset(
   "square.css",
   `${readSource("square.css")}\n\n/* Mini-tool mobile compatibility. */\nhtml { touch-action: manipulation; }\nbody { -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }\n#gameboard {\n  box-sizing: border-box;\n}\n/* The engine gives the controls a fixed 48px canvas height. */\n.help .tutorial {\n  box-sizing: border-box;\n  height: 100%;\n  margin: 0 !important;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  line-height: 1;\n}\n.help .time,\n.help .score {\n  margin: 0 !important;\n  line-height: 1.35;\n}\n`

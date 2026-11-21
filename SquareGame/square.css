@@ -1239,6 +1239,26 @@ body {
   box-sizing: border-box;
 }
 
+/* Rewarded-ad revive prompt. Mounted as an overlay inside #viewport rather than
+   rendered through setSrc(), so the board tiles underneath survive the ad and
+   are still there when play resumes. #viewport is static, so this anchors to
+   #gameboard (full screen). */
+.revive-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 12px;
+  background: rgba(10, 11, 17, 0.94);
+  touch-action: manipulation;
+}
+
 .game-over-title {
   margin: 2px 0;
   font-size: 26px;
@@ -1354,6 +1374,58 @@ body {
   padding: 4px 4px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   line-height: 1.25;
+}
+
+/* Platform rows carry an avatar and a nickname. The local board keeps the
+   original inline-text layout, so these stay scoped to the platform row. */
+.leaderboard-item-platform {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.leaderboard-rank {
+  flex: 0 0 auto;
+  min-width: 14px;
+  text-align: right;
+  color: #ccc;
+  font-size: 11px;
+}
+
+.leaderboard-avatar {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* The nickname takes the slack so the score sits in its own right-hand column
+   instead of butting up against the name and reading as part of it. */
+.leaderboard-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #fff;
+  font-weight: bold;
+}
+
+.leaderboard-score {
+  flex: 0 0 auto;
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffd700;
+  font-weight: bold;
+}
+
+/* Tint only the nickname on the player's own row, so the score keeps its gold. */
+.leaderboard-item-mine .leaderboard-name {
+  color: #ffd700;
 }
 
 /* name picker */
@@ -1621,6 +1693,12 @@ body {
   margin: 0;
   font-size: 24px;
   font-weight: bold;
+}
+
+/* Score and rank are two separate lines; .rank-flash p zeroes the margins. */
+.rank-flash p + p {
+  margin-top: 6px;
+  font-size: 18px;
 }
 
 .rank-flash-anim {

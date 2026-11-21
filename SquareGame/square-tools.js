@@ -541,16 +541,26 @@ function getLeaderboard() {
   }
 }
 
-function renderLeaderboardHTML() {
-  var list = getLeaderboard();
-  var titleText =
-    I18N && I18N.leaderboardTitle ? I18N.leaderboardTitle : "Leaderboard";
+// Player display names come from platform accounts, so escape before injecting.
+function escapeHTMLText(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function renderLocalLeaderboardRowsHTML() {
   var emptyText =
     I18N && I18N.leaderboardEmpty ? I18N.leaderboardEmpty : "(no scores yet)";
   var anonText = I18N && I18N.leaderboardAnon ? I18N.leaderboardAnon : "---";
-  var html = '<div class="leaderboard"><h4>' + titleText + "</h4>";
-  if (list.length == 0)
+  var list = getLeaderboard() || [];
+  var html = "";
+  if (list.length == 0) {
     html += '<div class="leaderboard-item">' + emptyText + "</div>";
+    return html;
+  }
   for (var i = 0; i < list.length; i++) {
     var it = list[i];
     var name = it.name && it.name.length > 0 ? it.name : anonText;
@@ -558,16 +568,314 @@ function renderLeaderboardHTML() {
       '<div class="leaderboard-item">' +
       (i + 1) +
       '. <span style="color:#fff; font-weight:bold;">' +
-      name +
+      escapeHTMLText(name) +
       '</span> &nbsp; <span style="color:#FFD700; font-weight:bold;">' +
       it.score +
       '</span> &nbsp; <span style="color:#ccc; font-size:10px">' +
-      it.t.split("T")[0] +
+      String(it.t || "").split("T")[0] +
       "</span></div>";
   }
-  html += "</div>";
   return html;
 }
+
+// Prefer the platform board when its projection is readable, and fall back to
+// the local board otherwise (off-platform, or the platform is unavailable).
+function buildLeaderboardRowsHTML() {
+  var page = null;
+  try {
+    if (window.SL && typeof SL.getCachedTop === "function") page = SL.getCachedTop();
+  } catch (e) { console.error("[square-tools] caught error", e); }
+
+  // No cached platform page at all (off-platform, or it never loaded): the
+  // local board is the offline fallback.
+  if (!page) return renderLocalLeaderboardRowsHTML();
+
+  var status = page.projection ? page.projection.status : null;
+  if (status === "READY" && page.items && page.items.length) {
+    var anonText = I18N && I18N.leaderboardAnon ? I18N.leaderboardAnon : "---";
+    var html = "";
+    for (var i = 0; i < page.items.length; i++) {
+      var entry = page.items[i] || {};
+      var player = entry.player || {};
+      var name =
+        player.displayName && player.displayName.length > 0
+          ? player.displayName
+          : anonText;
+      // avatarUrl comes from the platform and is escaped into the attribute to
+      // keep a hostile display name/URL from breaking out of it.
+      var avatar = player.avatarUrl
+        ? '<img class="leaderboard-avatar" src="' +
+          escapeHTMLText(player.avatarUrl) +
+          '" alt="" loading="lazy" referrerpolicy="no-referrer">'
+        : '<span class="leaderboard-avatar leaderboard-avatar-empty" aria-hidden="true"></span>';
+      html +=
+        '<div class="leaderboard-item leaderboard-item-platform' +
+        (player.isCurrentPlayer ? " leaderboard-item-mine" : "") +
+        '">' +
+        '<span class="leaderboard-rank">' +
+        (entry.rank == null ? i + 1 : entry.rank) +
+        "</span>" +
+        avatar +
+        '<span class="leaderboard-name">' +
+        escapeHTMLText(name) +
+        "</span>" +
+        '<span class="leaderboard-score">' +
+        entry.value +
+        "</span></div>";
+    }
+    return html;
+  }
+
+  if (status === "DELAYED") {
+    var updatingText =
+      I18N && I18N.leaderboardUpdating
+        ? I18N.leaderboardUpdating
+        : "(updating...)";
+    return '<div class="leaderboard-item">' + updatingText + "</div>";
+  }
+
+  // EMPTY (or READY with no entries): the platform board genuinely has nothing
+  // in this window. Falling back to the local board here would pass device-local
+  // scores off as platform standings.
+  var emptyText =
+    I18N && I18N.leaderboardEmpty ? I18N.leaderboardEmpty : "(no scores yet)";
+  return '<div class="leaderboard-item">' + emptyText + "</div>";
+}
+
+function renderLeaderboardHTML() {
+  var titleText =
+    I18N && I18N.leaderboardTitle ? I18N.leaderboardTitle : "Leaderboard";
+  return (
+    '<div class="leaderboard"><h4>' +
+    titleText +
+    "</h4>" +
+    buildLeaderboardRowsHTML() +
+    "</div>"
+  );
+}
+
+// The platform board arrives after the end screen is drawn. Swap the rows in
+// place when that screen is still on show, rather than re-rendering the panel
+// (which would drop the player's letter-picker progress).
+function patchLeaderboardInPlace() {
+  try {
+    var node = document.querySelector(".game-over-panel .leaderboard");
+    if (!node) return;
+    node.innerHTML =
+      "<h4>" +
+      (I18N && I18N.leaderboardTitle ? I18N.leaderboardTitle : "Leaderboard") +
+      "</h4>" +
+      buildLeaderboardRowsHTML();
+  } catch (e) { console.error("[square-tools] caught error", e); }
+}
+
+// -----------------------------
+// Rewarded-ad revive
+// -----------------------------
+var reviveUsedThisRound = false;
+var revivePromptNotice = "";
+var reviveInFlight = false;
+
+function canOfferRevive() {
+  if (reviveUsedThisRound) return false;
+  try {
+    return !!(window.SL && typeof SL.canRevive === "function" && SL.canRevive());
+  } catch (e) {
+    console.error("[square-tools] caught error", e);
+    return false;
+  }
+}
+
+// Applies the revive. Idempotent: the platform may invoke deliver() again for
+// the same order, and a second revive must never be granted.
+function applyRevive() {
+  if (reviveUsedThisRound) return;
+  reviveUsedThisRound = true;
+  revivePromptNotice = "";
+  timer = typeof reviveTicks === "number" ? reviveTicks : 375;
+  gamestate = "on";
+  // Drop the prompt overlay only. The board tiles live inside #viewport and were
+  // never torn down, so removing the viewport here would leave a black screen.
+  removeReviveOverlay();
+  try {
+    if (typeof updateDashboard === "function") updateDashboard();
+  } catch (e) { console.error("[square-tools] caught error", e); }
+}
+
+var REVIVE_OVERLAY_ID = "reviveOverlay";
+
+function removeReviveOverlay() {
+  try {
+    var overlay = document.getElementById(REVIVE_OVERLAY_ID);
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+  } catch (e) { console.error("[square-tools] caught error", e); }
+}
+
+// Round teardown, shared by the no-revive path and the prompt's skip path.
+function endRound(scoreValue) {
+  removeReviveOverlay();
+  try {
+    clearSquares(0, 0, row, column);
+  } catch (e) { console.error("[square-tools] caught error", e); }
+  try {
+    showEndScreen(scoreValue);
+  } catch (e) { console.log("showEndScreen error", e); }
+  gamestate = "off";
+  try {
+    var shareTitle =
+      I18N && I18N.shareTitle
+        ? I18N.shareTitle
+        : "I got {score} in Square Game,Can you beat me?";
+    document.title = shareTitle.replace("{score}", scoreValue);
+  } catch (e) { console.error("[square-tools] caught error", e); }
+}
+
+function reviveFailureText(code) {
+  switch (code) {
+    case "EXCHANGE_PATH_NOT_AVAILABLE":
+    case "ITEM_NOT_FOUND":
+      return I18N && I18N.reviveUnavailable
+        ? I18N.reviveUnavailable
+        : "Rewarded ads are unavailable right now.";
+    default:
+      return I18N && I18N.reviveFailed
+        ? I18N.reviveFailed
+        : "Ad not completed. Try again or skip.";
+  }
+}
+
+function renderRevivePrompt(scoreValue) {
+  var titleText = I18N && I18N.reviveTitle ? I18N.reviveTitle : "Keep going?";
+  var scoreLabel =
+    I18N && I18N.reviveScoreLabel ? I18N.reviveScoreLabel : "Current score";
+  var reviveText = I18N && I18N.reviveByAd ? I18N.reviveByAd : "Watch ad to revive";
+  var skipText = I18N && I18N.skipText ? I18N.skipText : "Skip";
+  var offerable = canOfferRevive();
+
+  var html =
+    '<div class="game-over-panel" style="text-align:center; color:#fff;">' +
+    '<h1 class="game-over-title">' + titleText + "</h1>" +
+    '<h2 class="you-got-text">' + scoreLabel + "</h2>" +
+    '<h1 class="score-display">' + scoreValue + "</h1>" +
+    (revivePromptNotice
+      ? '<div class="revive-notice" style="color:#ffb3b3; font-size:12px; margin-bottom:8px;">' +
+        escapeHTMLText(revivePromptNotice) +
+        "</div>"
+      : "") +
+    '<div style="margin-top:8px;">' +
+    (offerable
+      ? '<button id="reviveAd">' + reviveText + "</button> "
+      : "") +
+    '<button id="reviveSkip">' + skipText + "</button>" +
+    "</div>" +
+    renderLeaderboardHTML() +
+    "</div>";
+
+  gamestate = "revive";
+  // Prevent a stray viewport tap from restarting the round under the prompt.
+  isTouched = true;
+
+  // Appended as an overlay rather than rendered through G.O.viewport.setSrc():
+  // setSrc() replaces the viewport's contents, and the board tiles live inside
+  // it — coming back from the ad would land the player on an empty board.
+  var viewport = document.getElementById("viewport");
+  if (!viewport) return;
+  var overlay = document.createElement("div");
+  overlay.id = REVIVE_OVERLAY_ID;
+  overlay.className = "revive-overlay";
+  overlay.innerHTML = html;
+  viewport.appendChild(overlay);
+
+  try {
+    overlay.addEventListener("touchend", stopEventBubble, false);
+    overlay.addEventListener("click", stopEventBubble, false);
+  } catch (e) { console.error("[square-tools] caught error", e); }
+
+  try {
+    var reviveBtn = document.getElementById("reviveAd");
+    if (reviveBtn) {
+      reviveBtn.addEventListener("click", function (e) {
+        stopEventBubble(e);
+        runReviveAd(scoreValue);
+      });
+    }
+  } catch (e) { console.error("[square-tools] caught error", e); }
+
+  try {
+    var skipBtn = document.getElementById("reviveSkip");
+    if (skipBtn) {
+      skipBtn.addEventListener("click", function (e) {
+        stopEventBubble(e);
+        endRound(scoreValue);
+      });
+    }
+  } catch (e) { console.error("[square-tools] caught error", e); }
+}
+
+function runReviveAd(scoreValue) {
+  // One exchange at a time: a second tap while the ad is open would start a
+  // duplicate order (and a duplicate charge of the player's time).
+  if (reviveInFlight) return;
+  reviveInFlight = true;
+  revivePromptNotice = "";
+
+  // The ad takes over the screen with its own audio; duck the BGM for its
+  // duration. settle() resumes it on every exit path.
+  try {
+    if (window.SQUAREGAME_BGM) window.SQUAREGAME_BGM.pause();
+  } catch (e) { console.error("[square-tools] caught error", e); }
+
+  try {
+    var btn = document.getElementById("reviveAd");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = I18N && I18N.reviveWorking ? I18N.reviveWorking : "Loading ad...";
+    }
+  } catch (e) { console.error("[square-tools] caught error", e); }
+
+  function settle(result) {
+    reviveInFlight = false;
+    // The ad is full-screen with its own audio; bring the music back either way.
+    try {
+      if (window.SQUAREGAME_BGM) window.SQUAREGAME_BGM.resume();
+    } catch (e) { console.error("[square-tools] caught error", e); }
+    if (result && result.ok) return; // applyRevive already put the game back in play
+    revivePromptNotice = reviveFailureText(result && result.code);
+    renderRevivePrompt(scoreValue);
+  }
+
+  try {
+    if (!window.SL || typeof SL.reviveByAd !== "function") {
+      settle({ ok: false });
+      return;
+    }
+    SL.reviveByAd(applyRevive).then(settle).catch(function (e) {
+      console.log("[square-tools] revive failed", e);
+      settle({ ok: false });
+    });
+  } catch (e) {
+    console.log("[square-tools] revive error", e);
+    settle({ ok: false });
+  }
+}
+
+// Returns true when the prompt took over the round end; false to end normally.
+function offerRewardedRevive(scoreValue) {
+  if (!canOfferRevive()) return false;
+  // Without a viewport to mount the prompt on we cannot take over the round, so
+  // fall through to the normal end-of-round path instead of stalling in "revive".
+  if (!document.getElementById("viewport")) return false;
+  revivePromptNotice = "";
+  renderRevivePrompt(scoreValue);
+  return true;
+}
+
+// Redraw the on-screen rows whenever the platform board refreshes.
+try {
+  if (window.SL && typeof SL.setTopListener === "function") {
+    SL.setTopListener(patchLeaderboardInPlace);
+  }
+} catch (e) { console.error("[square-tools] caught error", e); }
 
 function getStageIntroText(stage) {
   if (stage === 1) return I18N && I18N.stage1Intro ? I18N.stage1Intro : "";
@@ -599,6 +907,11 @@ function showRankFlashAndRestart(rankInfo) {
     I18N && I18N.rankSavedPrefix ? I18N.rankSavedPrefix : "Saved as";
   var rankText =
     rankInfo && rankInfo.rank > 0 ? "#" + rankInfo.rank : notTopText;
+  // saveScoreWithName already hands back the score, but this flash only ever
+  // rendered the rank — which reads as if the score had been dropped.
+  var pointsLabel = I18N && I18N.pointsLabel ? I18N.pointsLabel : "Score:";
+  var scoreText =
+    rankInfo && typeof rankInfo.score === "number" ? rankInfo.score : 0;
   var html =
     '<div class="rank-flash-wrap">' +
     '<div class="rank-flash rank-flash-anim">' +
@@ -607,6 +920,11 @@ function showRankFlashAndRestart(rankInfo) {
     " " +
     (rankInfo && rankInfo.name ? rankInfo.name : "---") +
     "</h3>" +
+    "<p>" +
+    pointsLabel +
+    " " +
+    scoreText +
+    "</p>" +
     "<p>" +
     rankLabel +
     ": " +
@@ -652,7 +970,27 @@ function updateStageControl() {
   } catch (e) { console.error("[square-tools] caught error", e); }
 }
 
+// Sharing posts a note through the Xiaohongshu mini-tool JSAPI, which only
+// exists inside that host. Everywhere else (Star-letter, plain web) the control
+// is omitted rather than rendered as a button that can only ever fail.
+function canShareScore() {
+  try {
+    if (window.SL && typeof SL.canShareToXhs === "function") {
+      return SL.canShareToXhs();
+    }
+    return !!(
+      window.xhs &&
+      window.xhs.miniTool &&
+      typeof window.xhs.miniTool.postNote === "function"
+    );
+  } catch (e) {
+    console.error("[square-tools] caught error", e);
+    return false;
+  }
+}
+
 function shareControlsHTML(scoreValue) {
+  if (!canShareScore()) return "";
   var shareLabel = I18N && I18N.shareButton ? I18N.shareButton : "Share score";
   var shareHint = I18N && I18N.shareHint ? I18N.shareHint : "";
   return (
@@ -854,6 +1192,13 @@ function bindScoreShare(scoreValue) {
 function showEndScreen(scoreValue) {
   try {
     stopStageCycle();
+    // The round is over for real by now — the rewarded-ad revive is intercepted
+    // before this screen. Fire-and-forget: submitScore never throws.
+    try {
+      if (window.SL && typeof SL.submitScore === "function") {
+        SL.submitScore(scoreValue);
+      }
+    } catch (e) { console.error("[square-tools] caught error", e); }
     var list = getLeaderboard() || [];
     var qualifies = false;
     if (!list || list.length < (leaderboardSize || 0)) {
@@ -863,9 +1208,18 @@ function showEndScreen(scoreValue) {
       // allow tie to qualify
       if (scoreValue >= lowest) qualifies = true;
     }
-    if (qualifies) {
+    // Name entry is off in this build — the platform board carries the player's
+    // account name, so the local board only needs score-only rows. Unknown
+    // config keeps the original behaviour.
+    var wantNameEntry = typeof askForName === "undefined" || askForName;
+    if (wantNameEntry && qualifies) {
       // delegate to name picker for qualified scores
       return showNamePicker(scoreValue);
+    }
+    if (!wantNameEntry) {
+      try {
+        saveScoreWithName(scoreValue, "");
+      } catch (e) { console.error("[square-tools] caught error", e); }
     }
     // non-qualifying: show read-only score + Skip
     gamestate = "off";
@@ -2055,11 +2409,10 @@ function squareHandler(square) {
   var nowTick = typeof gameTick !== "undefined" ? gameTick : 0;
   var elapsedTicks = nowTick - (lastClearTick || 0);
   var elapsedSec = Math.floor(elapsedTicks / 25);
+  // Time bonuses existed only during the opening bonus phase, which has been
+  // removed — a clear never extends the clock now. secBonus is kept at 0 for the
+  // score popup and dashboard, which simply never render a bonus line.
   var secBonus = 0;
-  if (stageIndex === 2) {
-    secBonus = Math.max(0, Math.min(5, 5 - elapsedSec));
-    timer += secBonus * 25;
-  }
 
   var prevLastClear = lastClearTick;
   var sinceLastClearSec = elapsedTicks / 25;
@@ -2117,6 +2470,13 @@ function resetGame() {
   // If this is the first run (startFlag true), keep the game paused until the user presses Start
   timer = gametimer;
   score = 0;
+  // A new round is a new leaderboard result and a fresh revive allowance.
+  reviveUsedThisRound = false;
+  revivePromptNotice = "";
+  reviveInFlight = false;
+  try {
+    if (window.SL && typeof SL.resetRound === "function") SL.resetRound();
+  } catch (e) { console.error("[square-tools] caught error", e); }
   comboStreak = 0;
   completedGravityClears = 0;
   firepowerUntilTick = 0;
@@ -2242,7 +2602,9 @@ function resetGame() {
   if (!startFlag) {
     resumeGame();
     // initialize phase cycle
-    stageIndex = 2; // when starting gameplay, enter stage 2
+    // Gameplay now opens straight into the final ruleset: the timed bonus phase
+    // (stage 2) was removed, so nothing ever grants extra playtime.
+    stageIndex = 3;
     // initialize lastClearTick to current gameTick (gameTick may be zero at start)
     lastClearTick = typeof gameTick !== "undefined" ? gameTick : 0;
     lastHintTick = lastClearTick;
@@ -2448,7 +2810,7 @@ function resumeGame() {
   // if game was not started yet (first-run), start timers and phase cycle now
   if (!gameStarted) {
     try {
-      /* normalize to stage flow */ stageIndex = 2;
+      /* normalize to stage flow */ stageIndex = 3;
     } catch (e) { console.error("[square-tools] caught error", e); }
     try {
       lastClearTick = typeof gameTick !== "undefined" ? gameTick : 0;

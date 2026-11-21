@@ -14,6 +14,23 @@ var helpheight = 48;
 // Leaderboard configuration
 var leaderboardSize = 5; // keep top N scores in localStorage
 
+// Game over shows the 3-letter name picker first. This build skips it: the
+// platform board uses the player's account name, so the local board only needs
+// score-only rows. Set true to bring the picker back.
+var askForName = false;
+
+// Star-letter platform configuration
+// boardCode / boardViewCode must match the board configured with
+// `star-letter leaderboard board apply` and declared in star-letter.json.
+var boardCode = "squaregame_weekly";
+var boardViewCode = "weekly";
+// Rewarded-ad revive: extra ticks granted on revive. 25 ticks == 1 visible second.
+var reviveTicks = 375;
+
+// Background music, 0..1. The track path is injected per-variant by the host
+// page via window.SQUAREGAME_BGM_SRC (dev page and packaged build differ).
+var bgmVolume = 0.35;
+
 // Text configuration (easy to change / localize)
 var I18N_PACKS = {
   en: {
@@ -35,6 +52,13 @@ var I18N_PACKS = {
     leaderboardTitle: "Leaderboard",
     leaderboardEmpty: "(no scores yet)",
     leaderboardAnon: "---",
+    leaderboardUpdating: "(updating...)",
+    reviveTitle: "Keep going?",
+    reviveScoreLabel: "Current score",
+    reviveByAd: "Watch ad to revive",
+    reviveWorking: "Loading ad...",
+    reviveFailed: "Ad not completed. Try again or skip.",
+    reviveUnavailable: "Rewarded ads are unavailable right now.",
     rankLabel: "Rank",
     rankNotInTop: "Out of Top",
     rankSavedPrefix: "Saved as",
@@ -101,6 +125,13 @@ var I18N_PACKS = {
     leaderboardTitle: "排行榜",
     leaderboardEmpty: "(暂无记录)",
     leaderboardAnon: "---",
+    leaderboardUpdating: "(更新中...)",
+    reviveTitle: "要再战一次吗？",
+    reviveScoreLabel: "当前分数",
+    reviveByAd: "看广告复活",
+    reviveWorking: "广告加载中...",
+    reviveFailed: "广告未完成，可重试或跳过。",
+    reviveUnavailable: "激励广告暂时不可用。",
     rankLabel: "排名",
     rankNotInTop: "未上榜",
     rankSavedPrefix: "已保存为",

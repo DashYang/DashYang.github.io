@@ -57,19 +57,13 @@ G.F.mainAI = function () {
     } catch (e) { console.error("[square-main] caught error", e); }
     if (timer <= 0 && gamestate == "on") {
       timer = 0;
-      clearSquares(0, 0, row, column);
-      // show end-of-game screen (may allow name entry if score qualifies)
-      try {
-        showEndScreen(score);
-      } catch (e) {
-        console.log("showEndScreen error", e);
+      // Offer a rewarded-ad revive once per round, before the board is torn
+      // down — clearSquares() would otherwise leave an empty board behind.
+      // Returns false when no revive is on offer, and the round ends normally.
+      if (offerRewardedRevive(score)) {
+        return;
       }
-      gamestate = "off";
-      var shareTitle =
-        I18N && I18N.shareTitle
-          ? I18N.shareTitle
-          : "I got {score} in Square Game,Can you beat me?";
-      document.title = shareTitle.replace("{score}", score);
+      endRound(score);
     } else if (timer > 0) {
       // Paused and transition states update the HUD at their state boundaries.
       if (gamestate == "on") {
